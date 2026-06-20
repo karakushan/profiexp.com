@@ -1,0 +1,30 @@
+.DS_Store
+
+# Local environment
+app/.env
+app/.env.backup
+
+# Dependencies
+app/vendor/
+app/node_modules/
+
+# Runtime files
+app/*.log
+app/*.pid
+app/storage/logs/*.log
+app/storage/framework/cache/data/*
+app/storage/framework/sessions/*
+app/storage/framework/testing/*
+app/storage/framework/views/*
+app/bootstrap/cache/*.php
+
+# Local docker overrides
+docker-compose.override.yml
+
+# Source package leftovers
+codecanyon_tCpDW74g_bulistio_business_listing_directory_website/
+codecanyon_tCpDW74g_bulistio_business_listing_directory_website.zip
+
+# OS / editor junk
+*.swp
+*.swo

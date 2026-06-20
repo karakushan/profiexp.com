@@ -1,0 +1,111 @@
+@font-face {
+  font-family: 'icomoon';
+  src:  url('fonts/icomoon.eot?4npkan');
+  src:  url('fonts/icomoon.eot?4npkan#iefix') format('embedded-opentype'),
+    url('fonts/icomoon.ttf?4npkan') format('truetype'),
+    url('fonts/icomoon.woff?4npkan') format('woff'),
+    url('fonts/icomoon.svg?4npkan#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+[class^="ico-"], [class*=" ico-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.ico-vector:before {
+  content: "\e91a";
+}
+.ico-gift:before {
+  content: "\e91b";
+}
+.ico-location-pin:before {
+  content: "\e906";
+}
+.ico-target:before {
+  content: "\e907";
+}
+.ico-air-balloon:before {
+  content: "\e900";
+}
+.ico-airplane-travel:before {
+  content: "\e901";
+}
+.ico-category:before {
+  content: "\e902";
+}
+.ico-clinic:before {
+  content: "\e903";
+}
+.ico-costumer:before {
+  content: "\e904";
+}
+.ico-dumbbell:before {
+  content: "\e905";
+}
+.ico-grid:before {
+  content: "\e908";
+}
+.ico-gym:before {
+  content: "\e909";
+}
+.ico-hospital:before {
+  content: "\e90a";
+}
+.ico-job-seeker:before {
+  content: "\e90b";
+}
+.ico-job-seeker-Traced-1:before {
+  content: "\e90c";
+}
+.ico-landscape:before {
+  content: "\e90d";
+}
+.ico-mall:before {
+  content: "\e90e";
+}
+.ico-management:before {
+  content: "\e90f";
+}
+.ico-menu:before {
+  content: "\e910";
+}
+.ico-restaurant:before {
+  content: "\e911";
+}
+.ico-serving-dish:before {
+  content: "\e912";
+}
+.ico-shopping-mall:before {
+  content: "\e913";
+}
+.ico-suitcase:before {
+  content: "\e914";
+}
+.ico-to-do-list:before {
+  content: "\e915";
+}
+.ico-travel-and-tourism-Traced:before {
+  content: "\e916";
+}
+.ico-travel-and-tourism:before {
+  content: "\e917";
+}
+.ico-trophy:before {
+  content: "\e918";
+}
+.ico-column:before {
+  content: "\e919";
+}

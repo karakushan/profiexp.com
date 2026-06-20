@@ -1,0 +1,179 @@
+{
+	"info": {
+		"_postman_id": "db42ffb8-6603-42a6-addd-86281e1f93e9",
+		"name": "Evento-Scanner",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16294994",
+		"_collection_link": "https://red-trinity-540697.postman.co/workspace/satkhira~7a1472cc-7612-4c17-a3a8-c0887b8b9617/collection/16294994-db42ffb8-6603-42a6-addd-86281e1f93e9?action=share&source=collection_link&creator=16294994"
+	},
+	"item": [
+		{
+			"name": "api.organizer.login_submit",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/organizer/login/submit?username=organizer&password=123456",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"organizer",
+						"login",
+						"submit"
+					],
+					"query": [
+						{
+							"key": "username",
+							"value": "organizer"
+						},
+						{
+							"key": "password",
+							"value": "123456"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "api.get-basic",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "79|opWVnbRt92gMNerIVQBCBWRKi19pNQkMs6rdJsvp88fba2d6",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/get-basic",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"get-basic"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "api.organizer.check-qr-code",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "74|7fyRhk7VWduRkw4r7r1Of7nDih29jlkozot5dvFP6be507ff",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/admin/check-qrcode",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"admin",
+						"check-qrcode"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "api.organizer.logout",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "api.admin.login_submit",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "api.admin.check-qr-code",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "77|j9jrgZsjRzWzDBJEeWY7PPNj6nAtD7NJjdZzzHFa92935308",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/admin/check-qrcode",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"admin",
+						"check-qrcode"
+					],
+					"query": [
+						{
+							"key": "",
+							"value": null,
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "api.admin.logout",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "79|opWVnbRt92gMNerIVQBCBWRKi19pNQkMs6rdJsvp88fba2d6",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/admin/logout",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"admin",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

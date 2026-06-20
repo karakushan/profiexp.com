@@ -1,0 +1,23 @@
+.header-area.header-2:not(.is-sticky) :is(.nav-link:not(:is(.active, .menu-dropdown .nav-link)), .btn-icon, .nice-select, .nice-select::after) {
+  color: var(--color-white);
+}
+.header-area.header-2:not(.is-sticky) .nice-select::after {
+  color: var(--color-white);
+}
+.header-area.header-2 .nice-select li {
+  color: var(--color-dark);
+}
+
+.theme_2_3 .header-area.header-2:not(.is-sticky) :is(.nav-link:not(:is(.active, .menu-dropdown .nav-link)), .btn-icon, .nice-select, .nice-select::after) {
+  color: var(--color-dark);
+}
+.theme_2_3 .header-area.header-2:not(.is-sticky) .nice-select::after {
+  color: var(--color-dark);
+}
+
+@media (max-width: 1199px) {
+  .header-area.header-2:not(.is-sticky) .nice-select::after,
+  .header-area.header-2:not(.is-sticky) :is(.nav-link:not(:is(.active, .menu-dropdown .nav-link)), .btn-icon, .nice-select, .nice-select::after) {
+    color: var(--color-dark);
+  }
+}
