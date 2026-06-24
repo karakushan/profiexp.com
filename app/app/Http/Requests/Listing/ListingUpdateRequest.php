@@ -91,14 +91,21 @@ class ListingUpdateRequest extends FormRequest
                     $country = false;
                 }
 
-                $rules[$language->code . '_title'] = 'required|max:255';
-                $rules[$language->code . '_address'] = 'required';
-                $rules[$language->code . '_category_id'] = 'required';
-                $rules[$language->code . '_city_id'] = 'required';
-                $rules[$language->code . '_state_id'] = $State ? 'required' : '';
-                $rules[$language->code . '_country_id'] = $country ? 'required' : '';
-                $rules[$language->code . '_description'] = 'required|min:15';
-                $rules[$language->code . '_aminities'] = 'required';
+                $isDefault = $language->is_default == 1;
+                $titleRule = $isDefault ? 'required|max:255' : 'nullable|max:255';
+                $requiredOrNullable = $isDefault ? 'required' : 'nullable';
+                $descriptionRule = $isDefault ? 'required|min:15' : 'nullable|min:15';
+                $stateRule = $State ? $requiredOrNullable : '';
+                $countryRule = $country ? $requiredOrNullable : '';
+
+                $rules[$language->code . '_title'] = $titleRule;
+                $rules[$language->code . '_address'] = $requiredOrNullable;
+                $rules[$language->code . '_category_id'] = $requiredOrNullable;
+                $rules[$language->code . '_city_id'] = $requiredOrNullable;
+                $rules[$language->code . '_state_id'] = $stateRule;
+                $rules[$language->code . '_country_id'] = $countryRule;
+                $rules[$language->code . '_description'] = $descriptionRule;
+                $rules[$language->code . '_aminities'] = $requiredOrNullable;
             }
 
             return $rules;
@@ -184,14 +191,21 @@ class ListingUpdateRequest extends FormRequest
                     $country = false;
                 }
 
-                $rules[$language->code . '_title'] = 'required|max:255';
-                $rules[$language->code . '_address'] = 'required';
-                $rules[$language->code . '_category_id'] = 'required';
-                $rules[$language->code . '_state_id'] = $State ? 'required' : '';
-                $rules[$language->code . '_country_id'] = $country ? 'required' : '';
-                $rules[$language->code . '_city_id'] = 'required';
-                $rules[$language->code . '_description'] = 'required|min:15';
-                $rules[$language->code . '_aminities'] = $Amenities ? 'required|array|max:' . $aminitiesLimit : '';
+                $isDefault = $language->is_default == 1;
+                $titleRule = $isDefault ? 'required|max:255' : 'nullable|max:255';
+                $requiredOrNullable = $isDefault ? 'required' : 'nullable';
+                $descriptionRule = $isDefault ? 'required|min:15' : 'nullable|min:15';
+                $stateRule = $State ? $requiredOrNullable : '';
+                $countryRule = $country ? $requiredOrNullable : '';
+
+                $rules[$language->code . '_title'] = $titleRule;
+                $rules[$language->code . '_address'] = $requiredOrNullable;
+                $rules[$language->code . '_category_id'] = $requiredOrNullable;
+                $rules[$language->code . '_state_id'] = $stateRule;
+                $rules[$language->code . '_country_id'] = $countryRule;
+                $rules[$language->code . '_city_id'] = $requiredOrNullable;
+                $rules[$language->code . '_description'] = $descriptionRule;
+                $rules[$language->code . '_aminities'] = $Amenities ? ($isDefault ? 'required' : 'nullable') . '|array|max:' . $aminitiesLimit : '';
                 $rules[$language->code . '_feature_heading'] = 'sometimes|array|max:' . $additionalFeatureLimit;
             }
 

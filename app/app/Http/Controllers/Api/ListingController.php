@@ -26,6 +26,7 @@ use App\Models\Listing\ProductMessage;
 use App\Models\ListingCategory;
 use App\Models\Location\City;
 use App\Models\Location\Country;
+use App\Models\Language;
 use App\Models\Location\State;
 use App\Models\Shop\Product;
 use App\Models\Vendor;
@@ -1236,15 +1237,15 @@ class ListingController extends Controller
         }
 
         $data = [];
-        $data['states'] = State::where(
-            ['country_id' => $request->country_id],
-            ['language_id' => $language->id]
-        )->get();
+        $baseCountryId = $this->getBaseCountryId($request->country_id, $language);
 
-        $data['cities'] = City::where(
-            ['country_id' => $request->country_id],
-            ['language_id' => $language->id]
-        )->get();
+        $data['states'] = State::where('country_id', $baseCountryId)
+            ->where('language_id', $language->id)
+            ->get();
+
+        $data['cities'] = City::where('country_id', $baseCountryId)
+            ->where('language_id', $language->id)
+            ->get();
 
         return response()->json([
             'success' => true,
@@ -1268,14 +1269,51 @@ class ListingController extends Controller
             ], 422);
         }
 
-        $data['cities'] = City::where(
-            ['state_id' => $request->state_id],
-            ['language_id' => $language->id]
-        )->get();
+        $baseStateId = $this->getBaseStateId($request->state_id, $language);
+
+        $data['cities'] = City::where('state_id', $baseStateId)
+            ->where('language_id', $language->id)
+            ->get();
 
         return response()->json([
             'success' => true,
             'data' => $data
         ], 200);
+    }
+
+    private function getBaseCountryId($countryId, $language)
+    {
+        $position = Country::where('language_id', $language->id)
+            ->orderBy('id')
+            ->pluck('id')
+            ->search($countryId);
+
+        if ($position === false) {
+            return $countryId;
+        }
+
+        $enLang = Language::where('code', 'en')->first();
+        return Country::where('language_id', $enLang->id)
+            ->orderBy('id')
+            ->skip($position)
+            ->value('id') ?: $countryId;
+    }
+
+    private function getBaseStateId($stateId, $language)
+    {
+        $position = State::where('language_id', $language->id)
+            ->orderBy('id')
+            ->pluck('id')
+            ->search($stateId);
+
+        if ($position === false) {
+            return $stateId;
+        }
+
+        $enLang = Language::where('code', 'en')->first();
+        return State::where('language_id', $enLang->id)
+            ->orderBy('id')
+            ->skip($position)
+            ->value('id') ?: $stateId;
     }
 }

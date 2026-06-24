@@ -462,8 +462,15 @@ class ListingController extends Controller
 
     public function getState(Request $request)
     {
-        $data['states'] = State::where('country_id', $request->id)->get();
-        $data['cities'] = City::where('country_id', $request->id)->get();
+        $language = Language::where('code', $request->lang)->first();
+        $baseCountryId = $this->getBaseCountryId($request->id, $language);
+
+        $data['states'] = State::where('country_id', $baseCountryId)
+            ->where('language_id', $language->id)
+            ->get();
+        $data['cities'] = City::where('country_id', $baseCountryId)
+            ->where('language_id', $language->id)
+            ->get();
         return $data;
     }
     public function getVideo(Request $request)
@@ -473,7 +480,12 @@ class ListingController extends Controller
 
     public function getCity(Request $request)
     {
-        $data = City::where('state_id', $request->id)->get();
+        $language = Language::where('code', $request->lang)->first();
+        $baseStateId = $this->getBaseStateId($request->id, $language);
+
+        $data = City::where('state_id', $baseStateId)
+            ->where('language_id', $language->id)
+            ->get();
         return $data;
     }
 
@@ -543,12 +555,17 @@ class ListingController extends Controller
                 }
 
                 foreach ($languages as $language) {
+                    $title = $request[$language->code . '_title'];
+                    if (empty($title)) {
+                        continue;
+                    }
+
                     $listingContent = new ListingContent();
 
                     $listingContent->language_id = $language->id;
                     $listingContent->listing_id = $listing->id;
-                    $listingContent->title = $request[$language->code . '_title'];
-                    $listingContent->slug = createSlug($request[$language->code . '_title']);
+                    $listingContent->title = $title;
+                    $listingContent->slug = createSlug($title);
                     $listingContent->category_id = $request[$language->code . '_category_id'];
                     $listingContent->country_id = $request[$language->code . '_country_id'];
                     $listingContent->state_id = $request[$language->code . '_state_id'];
@@ -848,13 +865,18 @@ class ListingController extends Controller
         }
 
         foreach ($languages as $language) {
+            $title = $request[$language->code . '_title'];
+            if (empty($title)) {
+                continue;
+            }
+
             $listingContent =  ListingContent::where('listing_id', $request->listing_id)->where('language_id', $language->id)->first();
             if (empty($listingContent)) {
                 $listingContent = new ListingContent();
             }
             $listingContent->language_id = $language->id;
-            $listingContent->title = $request[$language->code . '_title'];
-            $listingContent->slug = createSlug($request[$language->code . '_title']);
+            $listingContent->title = $title;
+            $listingContent->slug = createSlug($title);
             $listingContent->category_id = $request[$language->code . '_category_id'];
             $listingContent->country_id = $request[$language->code . '_country_id'];
             $listingContent->state_id = $request[$language->code . '_state_id'];
@@ -1570,5 +1592,41 @@ class ListingController extends Controller
         }
         Session::flash('success', __('Business Hours Updated successfully') . '!');
         return back();
+    }
+
+    private function getBaseCountryId($countryId, $language)
+    {
+        $position = Country::where('language_id', $language->id)
+            ->orderBy('id')
+            ->pluck('id')
+            ->search($countryId);
+
+        if ($position === false) {
+            return $countryId;
+        }
+
+        $enLang = Language::where('code', 'en')->first();
+        return Country::where('language_id', $enLang->id)
+            ->orderBy('id')
+            ->skip($position)
+            ->value('id') ?: $countryId;
+    }
+
+    private function getBaseStateId($stateId, $language)
+    {
+        $position = State::where('language_id', $language->id)
+            ->orderBy('id')
+            ->pluck('id')
+            ->search($stateId);
+
+        if ($position === false) {
+            return $stateId;
+        }
+
+        $enLang = Language::where('code', 'en')->first();
+        return State::where('language_id', $enLang->id)
+            ->orderBy('id')
+            ->skip($position)
+            ->value('id') ?: $stateId;
     }
 }

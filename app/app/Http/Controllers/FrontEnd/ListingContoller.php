@@ -15,6 +15,7 @@ use App\Models\BusinessHour;
 use App\Models\ClaimListing;
 use App\Models\Form;
 use App\Models\FormInput;
+use App\Models\Language;
 use App\Models\Listing\Listing;
 use App\Models\Listing\ListingContent;
 use App\Models\Listing\ListingFaq;
@@ -54,8 +55,13 @@ class ListingContoller extends Controller
     $language = $misc->getLanguage();
     $data = [];
     if ($request->id) {
-      $data['states'] = State::where('country_id', $request->id)->get();
-      $data['cities'] = City::where('country_id', $request->id)->get();
+      $baseCountryId = $this->getBaseCountryId($request->id, $language);
+      $data['states'] = State::where('country_id', $baseCountryId)
+          ->where('language_id', $language->id)
+          ->get();
+      $data['cities'] = City::where('country_id', $baseCountryId)
+          ->where('language_id', $language->id)
+          ->get();
     }
     return $data;
   }
@@ -99,7 +105,10 @@ class ListingContoller extends Controller
     $misc = new MiscellaneousController();
     $language = $misc->getLanguage();
     if ($request->id) {
-      $data = City::where('state_id', $request->id)->get();
+      $baseStateId = $this->getBaseStateId($request->id, $language);
+      $data = City::where('state_id', $baseStateId)
+          ->where('language_id', $language->id)
+          ->get();
     } else {
       $data = City::where('language_id', $language->id)->get();
     }
@@ -2136,5 +2145,41 @@ class ListingContoller extends Controller
 
     session()->flash('success', __('Your claim request has been successfully submitted') . '.');
     return redirect()->back();
+  }
+
+  private function getBaseCountryId($countryId, $language)
+  {
+    $position = Country::where('language_id', $language->id)
+        ->orderBy('id')
+        ->pluck('id')
+        ->search($countryId);
+
+    if ($position === false) {
+      return $countryId;
+    }
+
+    $enLang = Language::where('code', 'en')->first();
+    return Country::where('language_id', $enLang->id)
+        ->orderBy('id')
+        ->skip($position)
+        ->value('id') ?: $countryId;
+  }
+
+  private function getBaseStateId($stateId, $language)
+  {
+    $position = State::where('language_id', $language->id)
+        ->orderBy('id')
+        ->pluck('id')
+        ->search($stateId);
+
+    if ($position === false) {
+      return $stateId;
+    }
+
+    $enLang = Language::where('code', 'en')->first();
+    return State::where('language_id', $enLang->id)
+        ->orderBy('id')
+        ->skip($position)
+        ->value('id') ?: $stateId;
   }
 }
