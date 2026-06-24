@@ -4,6 +4,11 @@
 app/.env
 app/.env.backup
 
+# DB dumps / archives
+*.sql
+*.sql.gz
+*.zip
+
 # Dependencies
 app/vendor/
 app/node_modules/
