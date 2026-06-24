@@ -73,7 +73,8 @@ class MiscellaneousController extends Controller
 
     $request->session()->put('currentLocaleCode', $langCode);
 
-    return redirect()->back();
+    // persist the choice in a cookie (1 year)
+    return redirect()->back()->withCookie(cookie()->forever('user_locale', $langCode));
   }
 
   public function getPageHeading($language)
