@@ -18,7 +18,9 @@ class ListingCategory extends Model
         'serial_number',
         'status',
         'icon',
-        'mobile_image'
+        'mobile_image',
+        'meta_title',
+        'meta_description',
     ];
     public function listing_contents()
     {

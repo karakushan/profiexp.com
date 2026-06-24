@@ -43,6 +43,8 @@ class CategoryController extends Controller
             ],
             'status' => 'required|numeric',
             'serial_number' => 'required|numeric',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
             'mobile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
         ];
 
@@ -86,7 +88,9 @@ class CategoryController extends Controller
                 'max:255',
             ],
             'status' => 'required|numeric',
-            'serial_number' => 'required|numeric'
+            'serial_number' => 'required|numeric',
+            'meta_title' => 'nullable|string|max:255',
+            'meta_description' => 'nullable|string',
         ];
 
         if ($request->hasFile('mobile_image')) {

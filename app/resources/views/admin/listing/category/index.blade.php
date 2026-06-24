@@ -102,7 +102,9 @@
                                                             data-icon="{{ $category->icon }}"
                                                             data-language_id="{{ $category->language_id }}"
                                                             data-mobile_image="{{ $category->mobile_image ? asset('assets/img/listing/category/' . $category->mobile_image) : asset('assets/img/noimage.jpg') }}"
-                                                            data-serial_number="{{ $category->serial_number }}">
+                                                            data-serial_number="{{ $category->serial_number }}"
+                                                            data-meta_title="{{ $category->meta_title }}"
+                                                            data-meta_description="{{ $category->meta_description }}">
                                                             <span class="btn-label">
                                                                 <i class="fas fa-edit"></i>
                                                             </span>

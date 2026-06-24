@@ -68,6 +68,20 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="">{{ __('Meta Title') }}</label>
+                        <input type="text" id="in_meta_title" class="form-control" name="meta_title"
+                            placeholder="{{ __('Enter Meta Title') }}">
+                        <p id="editErr_meta_title" class="mt-2 mb-0 text-danger em"></p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="">{{ __('Meta Description') }}</label>
+                        <textarea id="in_meta_description" class="form-control" name="meta_description" rows="3"
+                            placeholder="{{ __('Enter Meta Description') }}"></textarea>
+                        <p id="editErr_meta_description" class="mt-2 mb-0 text-danger em"></p>
+                    </div>
+
+                    <div class="form-group">
                         <label for="">{{ __('Status') . '*' }}</label>
                         <select name="status" id="in_status" class="form-control">
                             <option disabled>{{ __('Select Category Status') }}</option>

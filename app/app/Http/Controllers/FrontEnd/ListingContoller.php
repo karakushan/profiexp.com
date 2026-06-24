@@ -230,6 +230,7 @@ class ListingContoller extends Controller
 
 
     $category_listingIds = [];
+    $category_content = null;
     if ($request->filled('category_id')) {
       $category = $request->category_id;
       $category_content = ListingCategory::where([['language_id', $language->id], ['slug', $category]])->first();
@@ -663,6 +664,7 @@ class ListingContoller extends Controller
 
     $information['listing_contents'] = $listing_contents;
     $information['featured_contents'] = $featured_contents;
+    $information['categoryInfo'] = $category_content;
 
     if ($view == 0) {
       return view('frontend.listing.listing-map', $information);

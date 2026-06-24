@@ -1153,30 +1153,32 @@ CREATE TABLE `listing_categories` (
   `status` tinyint DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `mobile_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+  `mobile_image` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `meta_title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `meta_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `listing_categories`
 --
 
-INSERT INTO `listing_categories` (`id`, `language_id`, `name`, `icon`, `slug`, `serial_number`, `status`, `created_at`, `updated_at`, `mobile_image`) VALUES
-(1, 20, 'salon', 'fas fa-spa', 'salon', 1, 1, '2024-04-30 23:18:55', '2025-12-07 03:46:35', '69354cfbca52c.png'),
-(2, 21, 'صالون', 'fas fa-spa', 'صالون', 1, 1, '2024-04-30 23:28:04', '2025-12-07 03:48:16', '69354d604cac3.png'),
-(3, 20, 'Hospital', 'fas fa-hospital-alt', 'hospital', 2, 1, '2024-05-01 22:22:03', '2025-12-07 03:46:30', '69354cf60ec37.png'),
-(4, 21, 'مستشفى', 'fas fa-hospital-alt', 'مستشفى', 2, 1, '2024-05-01 22:22:38', '2025-12-07 03:48:09', '69354d596ede6.png'),
-(5, 20, 'Travel', 'fas fa-plane', 'travel', 3, 1, '2024-05-01 23:19:47', '2025-12-07 03:46:21', '69354cedc4ff8.png'),
-(6, 21, 'يسافر', 'fas fa-plane', 'يسافر', 3, 1, '2024-05-01 23:20:22', '2025-12-07 03:48:02', '69354d527a727.png'),
-(7, 20, 'Hotel', 'fas fa-h-square', 'hotel', 4, 1, '2024-05-02 02:20:21', '2025-12-07 03:46:12', '69354ce4a5998.png'),
-(8, 21, 'الفندق', 'fas fa-h-square', 'الفندق', 4, 1, '2024-05-02 02:21:19', '2025-12-07 03:47:53', '69354d495e537.png'),
-(9, 20, 'Restaurant', 'fas fa-utensils', 'restaurant', 5, 1, '2024-05-05 20:43:05', '2025-12-07 03:46:03', '69354cdb52c4a.png'),
-(10, 21, 'مطعم', 'fas fa-utensils', 'مطعم', 5, 1, '2024-05-05 20:43:53', '2025-12-07 03:47:38', '69354d3acdc74.png'),
-(11, 20, 'Car', 'fas fa-car-side', 'car', 6, 1, '2024-05-05 21:32:25', '2025-12-07 03:45:51', '69354ccfc9ff3.png'),
-(12, 21, 'أعمال ال', 'fas fa-car-side', 'أعمال-ال', 6, 1, '2024-05-05 21:33:01', '2025-12-07 03:47:30', '69354d32539c2.png'),
-(13, 20, 'Real Estate', 'fas fa-vr-cardboard', 'real-estate', 7, 1, '2024-05-05 22:45:36', '2025-12-07 03:44:54', '69354c966fb5d.png'),
-(14, 21, 'العقارات', 'fas fa-vr-cardboard', 'العقارات', 7, 1, '2024-05-05 22:46:09', '2025-12-07 03:47:20', '69354d286a937.png'),
-(15, 20, 'Gymnasium', 'fas fa-dumbbell', 'gymnasium', 8, 1, '2024-05-06 02:23:44', '2025-12-07 03:44:44', '69354c8c33a5d.png'),
-(16, 21, 'صالة للألعاب الرياضية', 'fas fa-dumbbell', 'صالة-للألعاب-الرياضية', 8, 1, '2024-05-06 02:24:11', '2025-12-07 03:46:48', '69354d08100c2.png');
+INSERT INTO `listing_categories` (`id`, `language_id`, `name`, `icon`, `slug`, `serial_number`, `status`, `created_at`, `updated_at`, `mobile_image`, `meta_title`, `meta_description`) VALUES
+(1, 20, 'salon', 'fas fa-spa', 'salon', 1, 1, '2024-04-30 23:18:55', '2025-12-07 03:46:35', '69354cfbca52c.png', NULL, NULL),
+(2, 21, 'صالون', 'fas fa-spa', 'صالون', 1, 1, '2024-04-30 23:28:04', '2025-12-07 03:48:16', '69354d604cac3.png', NULL, NULL),
+(3, 20, 'Hospital', 'fas fa-hospital-alt', 'hospital', 2, 1, '2024-05-01 22:22:03', '2025-12-07 03:46:30', '69354cf60ec37.png', NULL, NULL),
+(4, 21, 'مستشفى', 'fas fa-hospital-alt', 'مستشفى', 2, 1, '2024-05-01 22:22:38', '2025-12-07 03:48:09', '69354d596ede6.png', NULL, NULL),
+(5, 20, 'Travel', 'fas fa-plane', 'travel', 3, 1, '2024-05-01 23:19:47', '2025-12-07 03:46:21', '69354cedc4ff8.png', NULL, NULL),
+(6, 21, 'يسافر', 'fas fa-plane', 'يسافر', 3, 1, '2024-05-01 23:20:22', '2025-12-07 03:48:02', '69354d527a727.png', NULL, NULL),
+(7, 20, 'Hotel', 'fas fa-h-square', 'hotel', 4, 1, '2024-05-02 02:20:21', '2025-12-07 03:46:12', '69354ce4a5998.png', NULL, NULL),
+(8, 21, 'الفندق', 'fas fa-h-square', 'الفندق', 4, 1, '2024-05-02 02:21:19', '2025-12-07 03:47:53', '69354d495e537.png', NULL, NULL),
+(9, 20, 'Restaurant', 'fas fa-utensils', 'restaurant', 5, 1, '2024-05-05 20:43:05', '2025-12-07 03:46:03', '69354cdb52c4a.png', NULL, NULL),
+(10, 21, 'مطعم', 'fas fa-utensils', 'مطعم', 5, 1, '2024-05-05 20:43:53', '2025-12-07 03:47:38', '69354d3acdc74.png', NULL, NULL),
+(11, 20, 'Car', 'fas fa-car-side', 'car', 6, 1, '2024-05-05 21:32:25', '2025-12-07 03:45:51', '69354ccfc9ff3.png', NULL, NULL),
+(12, 21, 'أعمال ال', 'fas fa-car-side', 'أعمال-ال', 6, 1, '2024-05-05 21:33:01', '2025-12-07 03:47:30', '69354d32539c2.png', NULL, NULL),
+(13, 20, 'Real Estate', 'fas fa-vr-cardboard', 'real-estate', 7, 1, '2024-05-05 22:45:36', '2025-12-07 03:44:54', '69354c966fb5d.png', NULL, NULL),
+(14, 21, 'العقارات', 'fas fa-vr-cardboard', 'العقارات', 7, 1, '2024-05-05 22:46:09', '2025-12-07 03:47:20', '69354d286a937.png', NULL, NULL),
+(15, 20, 'Gymnasium', 'fas fa-dumbbell', 'gymnasium', 8, 1, '2024-05-06 02:23:44', '2025-12-07 03:44:44', '69354c8c33a5d.png', NULL, NULL),
+(16, 21, 'صالة للألعاب الرياضية', 'fas fa-dumbbell', 'صالة-للألعاب-الرياضية', 8, 1, '2024-05-06 02:24:11', '2025-12-07 03:46:48', '69354d08100c2.png', NULL, NULL);
 
 -- --------------------------------------------------------
 

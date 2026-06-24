@@ -1,20 +1,18 @@
 @extends('frontend.layout')
 @section('pageHeading')
-    @if (!empty($pageHeading))
+    @if (!empty($categoryInfo) && !empty($categoryInfo->meta_title))
+        {{ $categoryInfo->meta_title }}
+    @elseif (!empty($pageHeading))
         {{ $pageHeading->listing_page_title }}
     @else
         {{ __('Pricing') }}
     @endif
 @endsection
 
-@section('metaKeywords')
-    @if (!empty($seoInfo))
-        {{ $seoInfo->meta_keyword_listings }}
-    @endif
-@endsection
-
 @section('metaDescription')
-    @if (!empty($seoInfo))
+    @if (!empty($categoryInfo) && !empty($categoryInfo->meta_description))
+        {{ $categoryInfo->meta_description }}
+    @elseif (!empty($seoInfo))
         {{ $seoInfo->meta_description_listings }}
     @endif
 @endsection
@@ -224,7 +222,7 @@
                                                         </div>
                                                     @endif
 
-                                                    @php 
+                                                    @php
                                                     $claimed =
                                                             !empty($listing_content->has_pending_claim) &&
                                                             $listing_content->has_pending_claim;
