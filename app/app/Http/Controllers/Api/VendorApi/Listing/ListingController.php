@@ -40,6 +40,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use App\Models\Aminite;
 use Carbon\Carbon;
 use Mews\Purifier\Facades\Purifier;
@@ -400,7 +401,7 @@ class ListingController extends Controller
         $listingContent->language_id = $language->id;
         $listingContent->listing_id = $listing->id;
         $listingContent->title = $request[$language->code . '_title'];
-        $listingContent->slug = createSlug($request[$language->code . '_title']);
+        $listingContent->slug = Str::slug($request['en_title'] ?: $request[$language->code . '_title']);
         $listingContent->category_id = $request[$language->code . '_category_id'];
         $listingContent->country_id = $request[$language->code . '_country_id'];
         $listingContent->state_id = $request[$language->code . '_state_id'];

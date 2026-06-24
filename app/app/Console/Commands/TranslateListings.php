@@ -57,11 +57,15 @@ class TranslateListings extends Command
                     ->whereNotNull('title')
                     ->where('title', '!=', '');
             })
-            ->whereHas('listing_content', function ($query) use ($targetLang) {
-                $query->where('language_id', $targetLang->id)
-                    ->where(function ($q) {
-                        $q->whereNull('title')->orWhere('title', '');
-                    });
+            ->where(function ($query) use ($targetLang) {
+                $query->whereDoesntHave('listing_content', function ($q) use ($targetLang) {
+                    $q->where('language_id', $targetLang->id);
+                })->orWhereHas('listing_content', function ($q) use ($targetLang) {
+                    $q->where('language_id', $targetLang->id)
+                        ->where(function ($sq) {
+                            $sq->whereNull('title')->orWhere('title', '');
+                        });
+                });
             })
             ->limit($batchSize)
             ->get();

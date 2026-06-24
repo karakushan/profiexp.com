@@ -13,6 +13,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class TranslateListingJob implements ShouldQueue
 {
@@ -64,7 +65,19 @@ class TranslateListingJob implements ShouldQueue
         }
 
         $targetContent->title = $translated['title'] ?? '';
-        $targetContent->slug = createSlug($translated['title'] ?? '');
+        $slugTitle = $translated['title'] ?? '';
+        if ($this->targetLangCode !== 'en') {
+            $enLanguage = Language::where('code', 'en')->first();
+            if ($enLanguage) {
+                $enContent = ListingContent::where('listing_id', $this->listingId)
+                    ->where('language_id', $enLanguage->id)
+                    ->first();
+                if ($enContent && !empty($enContent->title)) {
+                    $slugTitle = $enContent->title;
+                }
+            }
+        }
+        $targetContent->slug = Str::slug($slugTitle);
         $targetContent->description = $translated['description'] ?? ($sourceContent->description ?? '');
         $targetContent->summary = $translated['summary'] ?? '';
         $targetContent->address = $translated['address'] ?? '';

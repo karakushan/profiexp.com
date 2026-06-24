@@ -128,8 +128,12 @@
                                                         </a>
                                                     </td>
                                                     <td>
-                                                        <a href="{{ route('admin.user_management.user.secret-login', ['id' => optional($claim->user)->id]) }}"
-                                                            target="_blank">{{ optional($claim->user)->name ?? '-' }}</a>
+                                                        @if($claim->user)
+                                                            <a href="{{ route('admin.user_management.user.secret-login', ['id' => $claim->user->id]) }}"
+                                                                target="_blank">{{ $claim->user->name }}</a>
+                                                        @else
+                                                            -
+                                                        @endif
                                                     </td>
                                                     <td>
                                                         <form id="orderStatusForm-{{ $claim->id }}"
