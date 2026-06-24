@@ -34,6 +34,7 @@ class OnlineGatewayController extends Controller
     $gatewayInfo['myfatoorah'] = OnlineGateway::where('keyword', 'myfatoorah')->first();
     $gatewayInfo['xendit'] = OnlineGateway::where('keyword', 'xendit')->first();
     $gatewayInfo['perfect_money'] = OnlineGateway::where('keyword', 'perfect_money')->first();
+    $gatewayInfo['wayforpay'] = OnlineGateway::where('keyword', 'wayforpay')->first();
 
     return view('admin.payment-gateways.online-gateways', $gatewayInfo);
   }
@@ -943,6 +944,60 @@ class OnlineGatewayController extends Controller
   /**
    * update nowpayments info
    */
+  public function updateWayforPayInfo(Request $request)
+  {
+    $rules = [
+      'wayforpay_status' => 'required',
+      'wayforpay_sandbox_status' => 'required',
+      'wayforpay_api_merchant_account' => 'required',
+      'wayforpay_api_secret_key' => 'required'
+    ];
+
+    $validator = Validator::make($request->all(), $rules);
+
+    if ($validator->fails()) {
+      return redirect()->back()->withErrors($validator->errors());
+    }
+
+    $information = [
+      'sandbox_status' => $request->wayforpay_sandbox_status,
+      'api' => [
+        'merchant_account' => $request->wayforpay_api_merchant_account,
+        'secret_key' => $request->wayforpay_api_secret_key
+      ],
+      'p2p_cardtransfer' => [
+        'merchant_account' => $request->wayforpay_p2p_cardtransfer_merchant_account
+      ],
+      'p2p_credit' => [
+        'merchant_account' => $request->wayforpay_p2p_credit_merchant_account
+      ]
+    ];
+
+    $wayforpayInfo = OnlineGateway::where('keyword', 'wayforpay')->first();
+
+    if (isset($request->is_mobile) && $request->is_mobile == 1) {
+      $wayforpayInfo->update([
+        'mobile_information' => json_encode($information),
+        'mobile_status' => $request->wayforpay_status
+      ]);
+    } else {
+      $wayforpayInfo->update([
+        'information' => json_encode($information),
+        'status' => $request->wayforpay_status
+      ]);
+      $array = [
+        'WAYFORPAY_API_MERCHANT' => $request->wayforpay_api_merchant_account,
+        'WAYFORPAY_API_SECRET' => $request->wayforpay_api_secret_key,
+        'WAYFORPAY_SANDBOX' => $request->wayforpay_sandbox_status
+      ];
+      setEnvironmentValue($array);
+      Artisan::call('config:clear');
+    }
+    Session::flash('success', __('WayforPay\'s information updated successfully') . '!');
+
+    return redirect()->back();
+  }
+
   public function updateNowPayments(Request $request)
   {
     $rules = [

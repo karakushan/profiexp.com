@@ -15,6 +15,8 @@ Route::post('/ai/generate/content', 'Vendor\Ai\AiContentController@generateConte
 Route::post('/vendor/ai/generate-slider-images', 'Vendor\Ai\AiImageController@generateSliderImages')
   ->name('vendor.ai.generate.slider.images')->middleware('aiQuotaWarning');
 
+Route::post('/vendor/membership/wayforpay/notify', 'Payment\WayforpayController@notify')->name('membership.wayforpay.notify');
+
 Route::prefix('vendor')->middleware('change.lang')->group(function () {
   Route::get('/signup', 'Vendor\VendorController@signup')->name('vendor.signup');
   Route::post('/signup/submit', 'Vendor\VendorController@create')->name('vendor.signup_submit')->middleware('Demo');

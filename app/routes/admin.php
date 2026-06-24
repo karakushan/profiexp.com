@@ -848,6 +848,7 @@ Route::prefix('/admin')->middleware('auth:admin', 'Demo', 'adminLang')->group(fu
         Route::post('/update-paytabs-info', 'Admin\PaymentGateway\OnlineGatewayController@updatePaytabsInfo')->name('admin.payment_gateways.update_paytabs_info');
         Route::post('/update-perfect_money-info', 'Admin\PaymentGateway\OnlineGatewayController@updatePerfectMoneyInfo')->name('admin.payment_gateways.update_perfect_money_info');
         Route::post('/update-zendit-info', 'Admin\PaymentGateway\OnlineGatewayController@updateXenditInfo')->name('admin.payment_gateways.update_xendit_info');
+        Route::post('/update-wayforpay-info', 'Admin\PaymentGateway\OnlineGatewayController@updateWayforPayInfo')->name('admin.payment_gateways.update_wayforpay_info');
 
 
         Route::post('/monify', 'Admin\PaymentGateway\OnlineGatewayController@updateMonify')->name('admin.payment_gateways.update_monify');

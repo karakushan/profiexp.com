@@ -21,6 +21,7 @@ use App\Http\Controllers\Payment\RazorpayController;
 use App\Http\Controllers\Payment\StripeController;
 use App\Http\Controllers\Payment\ToyyibpayController;
 use App\Http\Controllers\Payment\XenditController;
+use App\Http\Controllers\Payment\WayforpayController;
 use App\Http\Controllers\Payment\YocoController;
 use App\Http\Helpers\VendorPermissionHelper;
 use App\Http\Requests\Checkout\ExtendRequest;
@@ -306,6 +307,12 @@ class VendorCheckoutController extends Controller
 
                 $cancel_url = route('membership.cancel');
                 return $perfect_money->index($request, $amount, $title, $cancel_url);
+            } elseif ($request->payment_method == 'WayforPay') {
+                $amount = $request->price;
+                $wayforpay = new WayforpayController();
+
+                $cancel_url = route('membership.cancel');
+                return $wayforpay->index($request, $amount, $title, $cancel_url);
             } elseif (in_array($request->payment_method, $offline_payment_gateways)) {
                 $request['status'] = "0";
                 $rules = [];
