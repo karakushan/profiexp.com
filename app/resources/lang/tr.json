@@ -312,7 +312,7 @@
   "Instructions": "Talimatlar",
   "Item": "Ürün",
   "Items": "Ürünler",
-  "I’m Looking for": "I’m Looking for",
+  "I’m Looking for": "Arıyorum",
   "Last Name": "Soyad",
   "Lifetime": "Ömür Boyu",
   "Linkedin": "LinkedIn",
@@ -621,5 +621,7 @@
   "seconds": "saniye",
   "years": "yıl",
   "More": "Daha Fazla",
-  "By ": "Tarafından "
+  "By ": "Tarafından ",
+  "Explore All": "Tümünü Keşfet",
+  "Register Now": "Şimdi Kaydol"
 }

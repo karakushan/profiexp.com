@@ -194,66 +194,31 @@
         })
     })
 
-    // Category Slider
-    var categorySlider1 = new Swiper("#category-slider-1", {
-        speed: 400,
-        loop: false,
-        slidesPerView: 6,
-        spaceBetween: 25,
-        pagination: true,
+    // Category Show More
+    $('.category-show-more').on('click', function (e) {
+        e.preventDefault();
+        var $grid = $(this).closest('.category-area').find('.category-grid');
+        var $hiddenItems = $grid.find('.category-grid-item.d-none');
+        var $moreText = $(this).find('.show-more-text');
+        var $lessText = $(this).find('.show-less-text');
 
-        pagination: {
-            el: "#category-slider-1-pagination",
-            clickable: true,
-        },
-
-        breakpoints: {
-            // when window width is >= 320px
-            320: {
-                slidesPerView: 1
-            },
-            // when window width is >= 640px
-            768: {
-                slidesPerView: 3
-            },
-            // when window width is >= 640px
-            992: {
-                slidesPerView: 4
-            },
-            1200: {
-                slidesPerView: 5
-            },
-            1400: {
-                slidesPerView: 6
-            }
+        if ($hiddenItems.length > 0) {
+            $hiddenItems.removeClass('d-none');
+            $moreText.addClass('d-none');
+            $lessText.removeClass('d-none');
+        } else {
+            $grid.find('.category-grid-item').each(function (index) {
+                if (index >= 8) {
+                    $(this).addClass('d-none');
+                }
+            });
+            $moreText.removeClass('d-none');
+            $lessText.addClass('d-none');
+            $('html, body').animate({
+                scrollTop: $grid.offset().top - 100
+            }, 400);
         }
-    })
-    var categorySlider2 = new Swiper("#category-slider-2", {
-        speed: 400,
-        loop: false,
-        slidesPerView: 5,
-        spaceBetween: 25,
-        pagination: true,
-
-        pagination: {
-            el: "#category-slider-2-pagination",
-            clickable: true,
-        },
-
-        breakpoints: {
-            // when window width is >= 320px
-            320: {
-                slidesPerView: 1
-            },
-            // when window width is >= 640px
-            768: {
-                slidesPerView: 3
-            },
-            1400: {
-                slidesPerView: 5
-            }
-        }
-    })
+    });
 
     // City Slider
     var citySlider1 = new Swiper("#city-slider-1", {

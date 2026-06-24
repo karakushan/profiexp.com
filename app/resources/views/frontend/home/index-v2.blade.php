@@ -144,7 +144,7 @@
 
     <!-- Category-area start -->
     @if ($secInfo->category_section_status == 1)
-        <section class="category-area category-2 pt-100">
+        <section class="category-area category-2 pt-100 pb-70 has-grid">
             <div class="container">
                 <div class="row">
                     <div class="col-12">
@@ -158,30 +158,33 @@
                                 <h3 class="mb-0">{{ __('NO CATEGORY FOUND') . '!' }}</h3>
                             </div>
                         @else
-                            <div class="swiper" id="category-slider-1" data-aos="fade-up" data-aos-delay="100">
-                                <div class="swiper-wrapper">
-                                    @foreach ($categories as $category)
-                                        <div class="swiper-slide">
-                                            <a
-                                                href="{{ route('frontend.listings', ['category_id' => $category->slug]) }}">
-                                                <div class="category-item border radius-md text-center">
-                                                    <div class="category-icon">
-                                                        <i class="{{ $category->icon }}"></i>
-                                                    </div>
-                                                    <h3 class="category-title mb-0">{{ $category->name }}</h3>
-                                                    <span
-                                                        class="category-qty">{{ $category->listing_contents_count }}</span>
+                            <div class="row category-grid gy-4" data-aos="fade-up" data-aos-delay="100">
+                                @foreach ($categories as $key => $category)
+                                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 category-grid-item {{ $key >= 8 ? 'd-none' : '' }}">
+                                        <a
+                                            href="{{ route('frontend.listings', ['category_id' => $category->slug]) }}">
+                                            <div class="category-item border radius-md text-center">
+                                                <div class="category-icon">
+                                                    <i class="{{ $category->icon }}"></i>
                                                 </div>
-                                            </a>
-                                        </div>
-                                    @endforeach
-                                </div>
-                                <!-- Slider Pagination -->
-                                <div class="swiper-pagination position-static mt-40" id="category-slider-1-pagination">
-                                </div>
+                                                <h3 class="category-title mb-0">{{ $category->name }}</h3>
+                                                <span
+                                                    class="category-qty">{{ $category->listing_contents_count }}</span>
+                                            </div>
+                                        </a>
+                                    </div>
+                                @endforeach
                             </div>
                         @endif
                     </div>
+                    @if (count($categories) > 8)
+                        <div class="col-12 text-center category-show-more-wrapper" data-aos="fade-up">
+                            <a href="#" class="btn btn-lg btn-primary rounded-pill category-show-more">
+                                <span class="show-more-text">{{ __('Show All Categories') }}</span>
+                                <span class="show-less-text d-none">{{ __('Show Less') }}</span>
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
             <!-- Bg Shape -->

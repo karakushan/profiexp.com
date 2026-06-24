@@ -312,7 +312,7 @@
   "Instructions": "Инструкции",
   "Item": "Товар",
   "Items": "Товары",
-  "I’m Looking for": "I’m Looking for",
+  "I’m Looking for": "Я ищу",
   "Last Name": "Фамилия",
   "Lifetime": "Пожизненно",
   "Linkedin": "LinkedIn",
@@ -621,5 +621,7 @@
   "seconds": "секунд",
   "years": "лет",
   "More": "Ещё",
-  "By ": "От "
+  "By ": "От ",
+  "Explore All": "Все",
+  "Register Now": "Зарегистрироваться"
 }
