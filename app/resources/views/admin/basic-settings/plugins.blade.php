@@ -699,6 +699,47 @@
             </div>
         </div>
 
+        <div class="col-lg-4">
+            <div class="card">
+                <form action="{{ route('admin.basic_settings.update_translate_settings') }}" method="post">
+                    @csrf
+                    <div class="card-header">
+                        <div class="card-title">{{ __('Auto Translate (Gemini)') }}</div>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="form-group">
+                            <label>{{ __('Auto Translate Status') }}</label>
+                            <div class="selectgroup w-100">
+                                <label class="selectgroup-item">
+                                    <input type="radio" name="auto_translate_status" value="1" class="selectgroup-input" {{ ($data->auto_translate_status ?? 0) == 1 ? 'checked' : '' }}>
+                                    <span class="selectgroup-button">{{ __('Active') }}</span>
+                                </label>
+                                <label class="selectgroup-item">
+                                    <input type="radio" name="auto_translate_status" value="0" class="selectgroup-input" {{ ($data->auto_translate_status ?? 0) != 1 ? 'checked' : '' }}>
+                                    <span class="selectgroup-button">{{ __('Deactive') }}</span>
+                                </label>
+                            </div>
+                            @if ($errors->has('auto_translate_status'))
+                                <p class="mt-1 mb-0 text-danger">{{ $errors->first('auto_translate_status') }}</p>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <button type="submit" class="btn btn-success">
+                                    {{ __('Update') }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         {{-- <div class="col-lg-4">
             <div class="card">
                 <form action="{{ route('admin.basic_settings.update_pollinations') }}" method="post">

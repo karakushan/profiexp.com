@@ -377,7 +377,8 @@ class BasicController extends Controller
             'gemini_image_model',
             'pollinations_secret_key',
             'pollinations_text_model',
-            'pollinations_image_model' )
+            'pollinations_image_model',
+            'auto_translate_status' )
             ->first();
 
         return view('admin.basic-settings.plugins', ['data' => $data]);
@@ -697,6 +698,30 @@ class BasicController extends Controller
         Artisan::call('config:clear');
 
         Session::flash('success', __('Gemini info updated successfully') . '!');
+
+        return redirect()->back();
+    }
+
+    public function updateTranslateSettings(Request $request)
+    {
+        $rules = [
+            'auto_translate_status' => 'nullable|integer|in:0,1',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator->errors());
+        }
+
+        DB::table('basic_settings')->updateOrInsert(
+            ['uniqid' => 12345],
+            [
+                'auto_translate_status' => $request->auto_translate_status ?? 0,
+            ]
+        );
+
+        Session::flash('success', __('Auto-translate settings updated successfully') . '!');
 
         return redirect()->back();
     }

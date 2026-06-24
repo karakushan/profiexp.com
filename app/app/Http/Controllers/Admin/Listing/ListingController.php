@@ -529,6 +529,9 @@ class ListingController extends Controller
 
                 $listing = Listing::create($in);
 
+                $listing->translated_languages = '{}';
+                $listing->save();
+
                 $siders = $request->slider_images;
                 if ($siders) {
                     $pis = ListingImage::findOrFail($siders);

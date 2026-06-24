@@ -42,18 +42,5 @@ services:
     volumes:
       - db_data:/var/lib/mysql
 
-  cron:
-    image: alpine:3.20
-    container_name: bulistio-cron
-    depends_on:
-      - web
-    command:
-      - /bin/sh
-      - -lc
-      - |
-        echo '0 0 * * * wget -q -O /dev/null http://web/subcheck' > /etc/crontabs/root
-        exec crond -f -l 2
-    restart: unless-stopped
-
 volumes:
   db_data:

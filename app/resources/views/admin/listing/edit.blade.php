@@ -366,7 +366,7 @@
                                                                 @php
                                                                     $category = App\Models\ListingCategory::where([
                                                                         ['language_id', $language->id],
-                                                                        ['id', $listingContent->category_id],
+                                                                        ['id', $listingContent->category_id ?? 0],
                                                                         ['status', 1],
                                                                     ])
                                                                         ->select('id', 'name')
@@ -389,7 +389,7 @@
                                                         @php
                                                             $country = App\Models\Location\Country::where([
                                                                 ['language_id', $language->id],
-                                                                ['id', $listingContent->country_id],
+                                                                ['id', $listingContent->country_id ?? 0],
                                                             ])
                                                                 ->select('id', 'name')
                                                                 ->first();
@@ -420,8 +420,8 @@
 
                                                             $state = App\Models\Location\State::where([
                                                                 ['language_id', $language->id],
-                                                                ['id', $listingContent->state_id],
-                                                                ['country_id', $listingContent->country_id],
+                                                                ['id', $listingContent->state_id ?? 0],
+                                                                ['country_id', $listingContent->country_id ?? 0],
                                                             ])
                                                                 ->select('id', 'name')
                                                                 ->first();
@@ -442,7 +442,7 @@
                                                         @php
                                                             $city = App\Models\Location\City::where([
                                                                 ['language_id', $language->id],
-                                                                ['id', $listingContent->city_id],
+                                                                ['id', $listingContent->city_id ?? 0],
                                                             ])
                                                                 ->select('id', 'name')
                                                                 ->first();

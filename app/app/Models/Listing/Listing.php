@@ -23,7 +23,8 @@ class Listing extends Model
         'status',
         'max_price',
         'min_price',
-        'visibility'
+        'visibility',
+        'translated_languages'
     ];
 
     public function listing_content()

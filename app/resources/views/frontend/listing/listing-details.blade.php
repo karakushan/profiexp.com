@@ -73,16 +73,18 @@
                                 <ul class="info-list list-unstyled">
                                     <li>
                                         @php
-                                            $categorySlug = App\Models\ListingCategory::findorfail(
-                                                $listing->listing_content->first()->category_id,
+                                            $categorySlug = App\Models\ListingCategory::find(
+                                                $listing->listing_content->first()->category_id ?? 0,
                                             );
                                         @endphp
+                                        @if ($categorySlug)
                                         <a href="{{ route('frontend.listings', ['category_id' => $categorySlug->slug]) }}"
                                             title="Link" class="product-category font-sm icon-start">
                                             <span class="product-category color-primary icon-start">
                                                 <i class="{{ $listing->listing_content->first()->category->icon }}"></i>
                                                 {{ $listing->listing_content->first()->category->name }}
                                             </span></a>
+                                        @endif
                                     </li>
                                     <li>
 
@@ -282,8 +284,9 @@
                                                 )->get();
                                                 $hasaminitie = json_decode(
                                                     $listing->listing_content->first()->aminities,
-                                                );
+                                                ) ?? [];
                                             @endphp
+                                            @if (is_array($hasaminitie))
                                             @foreach ($aminities as $aminitie)
                                                 @if (in_array($aminitie->id, $hasaminitie))
                                                     <li class="icon-start">
@@ -292,6 +295,7 @@
                                                     </li>
                                                 @endif
                                             @endforeach
+                                            @endif
                                         </ul>
                                     </div>
                                 @endif

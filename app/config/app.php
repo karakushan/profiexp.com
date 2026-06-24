@@ -15,6 +15,8 @@ return [
 
   'name' => env('APP_NAME', 'Bulistio'),
 
+  'translate_cron_token' => env('TRANSLATE_CRON_TOKEN', ''),
+
   /*
   |--------------------------------------------------------------------------
   | Application Environment

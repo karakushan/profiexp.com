@@ -15,6 +15,7 @@ Route::post('/push-notification/store-endpoint', 'FrontEnd\PushNotificationContr
 // cron job for sending expiry mail
 
 Route::get('/subcheck', 'CronJobController@expired')->name('cron.expired');
+Route::get('/translate-listings', \App\Http\Controllers\Cron\TranslateListingsController::class);
 
 Route::get('/change-language', 'FrontEnd\MiscellaneousController@changeLanguage')->name('change_language');
 
