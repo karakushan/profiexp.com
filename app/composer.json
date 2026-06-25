@@ -37,7 +37,10 @@
     "php-http/guzzle7-adapter": "^1.0",
     "phpmailer/phpmailer": "^6.4",
     "razorpay/razorpay": "2.*",
-    "spatie/laravel-cookie-consent": "^3.2.2"
+    "spatie/laravel-backup": "^8.0",
+    "spatie/laravel-cookie-consent": "^3.2.2",
+    "spatie/laravel-sitemap": "^6.0",
+    "wnx/laravel-backup-restore": "^1.0"
   },
   "require-dev": {
     "barryvdh/laravel-debugbar": "^3.16",

@@ -215,6 +215,11 @@ Route::prefix('/user')->middleware(['auth:web', 'account.status', 'change.lang']
   Route::get('/logout', 'FrontEnd\UserController@logoutSubmit')->name('user.logout')->withoutMiddleware('change.lang');
 });
 
+// sitemap routes
+Route::get('/sitemap.xml', 'FrontEnd\SitemapController@index');
+Route::get('/sitemap/listings.xml', 'FrontEnd\SitemapController@listings');
+Route::get('/sitemap/categories.xml', 'FrontEnd\SitemapController@categories');
+
 // service unavailable route
 Route::get('/service-unavailable', 'FrontEnd\MiscellaneousController@serviceUnavailable')->name('service_unavailable')->middleware('exists.down');
 
