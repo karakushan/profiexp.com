@@ -33,3 +33,5 @@ codecanyon_tCpDW74g_bulistio_business_listing_directory_website.zip
 # OS / editor junk
 *.swp
 *.swo
+# Dot-directories (like .vscode, .ssh, .cursor, .idea, .ruff_cache, etc.)
+.*/
