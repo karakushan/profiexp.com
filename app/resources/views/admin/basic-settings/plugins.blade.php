@@ -670,13 +670,13 @@
                         <div class="form-group js-model js-gemini-image">
                             <label>{{ __('Gemini Image Model') }}</label>
                             <input type="text" class="form-control" name="gemini_image_model"
-                                value="{{ $data->gemini_image_model ?? 'imagen-4.0-generat-001' }}"
-                                placeholder="imagen-4.0-generat-001">
+                                value="{{ $data->gemini_image_model ?? 'imagen-4.0-generate-001' }}"
+                                placeholder="imagen-4.0-generate-001">
                             @if ($errors->has('gemini_image_model'))
                                 <p class="mt-1 mb-0 text-danger">{{ $errors->first('gemini_image_model') }}</p>
                             @endif
                             <small
-                                class="text-warning">{{ __('Examples') . ': ' . __('imagen-4.0-generat-001, imagen-4.0-fast-generate-001') }}</small>
+                                class="text-warning">{{ __('Examples') . ': ' . __('imagen-4.0-generate-001, imagen-4.0-fast-generate-001') }}</small>
 
                             <br>
 

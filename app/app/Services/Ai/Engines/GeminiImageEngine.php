@@ -2,6 +2,7 @@
 
 namespace App\Services\Ai\Engines;
 
+use App\Services\Ai\AiSettingsResolver;
 use App\Services\Ai\Contracts\AiImageEngineInterface;
 use App\Services\Ai\Engines\Concerns\BuildsImagePrompt;
 use Illuminate\Support\Facades\Http;
@@ -12,14 +13,19 @@ class GeminiImageEngine implements AiImageEngineInterface
 {
   use BuildsImagePrompt;
 
+  public function __construct(private ?AiSettingsResolver $settings = null)
+  {
+    $this->settings ??= app(AiSettingsResolver::class);
+  }
+
   public function generateAndStore(array $data): string
   {
-    $apiKey = (string) config('ai.gemini_api_key', '');
+    $apiKey = (string) $this->settings->value('gemini_api_key', 'ai.gemini_api_key', '');
     if ($apiKey === '') {
       throw new \RuntimeException('GEMINI_API_KEY missing');
     }
 
-    $model = (string) config('ai.gemini_image_model', 'imagen-4.0-generate-001');
+    $model = (string) $this->settings->value('gemini_image_model', 'ai.gemini_image_model', 'imagen-4.0-generate-001');
 
     $prompt = trim((string)($data['prompt'] ?? ''));
     if ($prompt === '') {

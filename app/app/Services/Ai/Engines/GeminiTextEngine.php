@@ -2,11 +2,17 @@
 
 namespace App\Services\Ai\Engines;
 
+use App\Services\Ai\AiSettingsResolver;
 use App\Services\Ai\Contracts\AiTextEngineInterface;
 use Illuminate\Support\Facades\Http;
 
 class GeminiTextEngine implements AiTextEngineInterface
 {
+  public function __construct(private ?AiSettingsResolver $settings = null)
+  {
+    $this->settings ??= app(AiSettingsResolver::class);
+  }
+
   public function key(): string
   {
     return 'gemini';
@@ -20,12 +26,12 @@ class GeminiTextEngine implements AiTextEngineInterface
 
   public function generateWithMeta(string $prompt): array
   {
-    $apiKey = (string) config('ai.gemini_api_key', '');
+    $apiKey = (string) $this->settings->value('gemini_api_key', 'ai.gemini_api_key', '');
     if ($apiKey === '') {
       throw new \RuntimeException('GEMINI_API_KEY missing');
     }
 
-    $model = (string) config('ai.gemini_text_model', 'gemini-2.0-flash');
+    $model = (string) $this->settings->value('gemini_text_model', 'ai.gemini_text_model', 'gemini-2.0-flash');
     $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent";
 
     $resp = Http::timeout((int) config('ai.http_timeout', 90))

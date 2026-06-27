@@ -11,5 +11,5 @@ return [
 
   'gemini_api_key' => env('GEMINI_API_KEY', ''),
   'gemini_text_model' => env('GEMINI_TEXT_MODEL', 'gemini-2.0-flash'),
-  'gemini_image_model' => env('GEMINI_IMAGE_MODEL', 'imagen-4.0-generat-001'),
+  'gemini_image_model' => env('GEMINI_IMAGE_MODEL', 'imagen-4.0-generate-001'),
 ];
