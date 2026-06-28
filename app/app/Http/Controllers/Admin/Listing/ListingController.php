@@ -1456,12 +1456,14 @@ class ListingController extends Controller
     {
         $rules = [
             'tawkto_status' => 'required',
-            'tawkto_direct_chat_link' => 'required'
+            'tawkto_direct_chat_link' => 'required|url|starts_with:https://embed.tawk.to/'
         ];
 
         $messages = [
             'tawkto_status.required' => 'The tawk.to status field is required.',
-            'tawkto_direct_chat_link.required' => 'The tawk.to direct chat link field is required.'
+            'tawkto_direct_chat_link.required' => 'The tawk.to direct chat link field is required.',
+            'tawkto_direct_chat_link.url' => 'The tawk.to direct chat link must be a valid URL.',
+            'tawkto_direct_chat_link.starts_with' => 'The tawk.to direct chat link must start with https://embed.tawk.to/.'
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);

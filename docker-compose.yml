@@ -7,6 +7,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     command:
       - /bin/sh
       - -lc
@@ -41,6 +43,14 @@ services:
     restart: unless-stopped
     volumes:
       - db_data:/var/lib/mysql
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: bulistio-mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    restart: unless-stopped
 
 volumes:
   db_data:

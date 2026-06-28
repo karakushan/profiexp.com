@@ -48,14 +48,14 @@
           </div>
           <div class="form-group mb-30">
             <input type="password" class="form-control" value="{{ old('password') }}" name="password"
-              placeholder="{{ __('Password') }}" required>
+              placeholder="{{ __('Password') }}" autocomplete="new-password" required>
             @error('password')
               <p class="text-danger mt-2">{{ $message }}</p>
             @enderror
           </div>
           <div class="form-group mb-30">
             <input type="password" name="password_confirmation" value="{{ old('password_confirmation') }}"
-              class="form-control" placeholder="{{ __('Confirm Password') }}" required>
+              class="form-control" placeholder="{{ __('Confirm Password') }}" autocomplete="new-password" required>
             @error('password_confirmation')
               <p class="text-danger mt-2">{{ $message }}</p>
             @enderror

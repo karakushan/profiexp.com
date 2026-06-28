@@ -832,9 +832,15 @@
             @endif
         @endif
 
+        @php
+            $tawkToDirectChatLink = $listing->tawkto_direct_chat_link ?? null;
+            $hasValidTawkToLink = filter_var($tawkToDirectChatLink, FILTER_VALIDATE_URL) &&
+                str_starts_with($tawkToDirectChatLink, 'https://embed.tawk.to/');
+        @endphp
+
         <!--Start of Tawk.to Script-->
         @if (is_array($permissions) && in_array('Tawk.To', $permissions))
-            @if ($listing->tawkto_status == 1)
+            @if ($listing->tawkto_status == 1 && $hasValidTawkToLink)
                 <script type="text/javascript">
                     var Tawk_API = Tawk_API || {},
                         Tawk_LoadStart = new Date();
@@ -842,7 +848,7 @@
                         var s1 = document.createElement("script"),
                             s0 = document.getElementsByTagName("script")[0];
                         s1.async = true;
-                        s1.src = "{{ $listing->tawkto_direct_chat_link }}";
+                        s1.src = "{{ $tawkToDirectChatLink }}";
                         s1.charset = 'UTF-8';
                         s1.setAttribute('crossorigin', '*');
                         s0.parentNode.insertBefore(s1, s0);
