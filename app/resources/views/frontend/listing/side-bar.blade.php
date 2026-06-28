@@ -18,19 +18,29 @@
                     <div id="categories" class="collapse show">
                         <div class="accordion-body">
                             <ul class="list-group" id="categoriesList" data-toggle-list="categoriesToggle">
-                                <li class="list-item @if (request()->input('category_id') == null) open @endif">
-                                    <a href="#" class="category-toggle @if (request()->input('category_id') == null)  @endif"
-                                        id="">
+                                <li class="list-item open">
+                                    <a href="#" class="category-toggle open" id="">
                                         {{ __('All') }}
                                     </a>
                                 </li>
                                 @foreach ($categories as $categorie)
-                                    <li class="list-item @if (request()->input('category_id') == $categorie->slug) open @endif">
-                                        <a href="#" class="category-toggle" id="{{ $categorie->slug }}">
-                                            {{ $categorie->name }}
+                                    @php $catSlug = $categorie->getSlug($language->id); @endphp
+                                    <li class="list-item @if (request()->input('category_id') == $catSlug) open @endif">
+                                        <a href="#" class="category-toggle" id="{{ $catSlug }}">
+                                            {{ $categorie->getName($language->id) }}
                                         </a>
                                     </li>
                                 @endforeach
+                                @if ($childCategories->isNotEmpty())
+                                    @foreach ($childCategories as $child)
+                                        @php $childSlug = $child->getSlug($language->id); @endphp
+                                        <li class="list-item @if (request()->input('category_id') == $childSlug) open @endif">
+                                            <a href="#" class="category-toggle" id="{{ $childSlug }}">
+                                                &nbsp;&nbsp;&nbsp;{{ $child->getName($language->id) }}
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                @endif
                             </ul>
                             @if ($hasMore)
                                 <div class="load-more-btn-group">

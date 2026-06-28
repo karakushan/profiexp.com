@@ -113,7 +113,7 @@
                                     <li class="nav-item">
                                         <button class="nav-link btn-md" data-bs-toggle="tab"
                                             data-bs-target="#tab_{{ $category->id }}"
-                                            type="button">{{ $category->name }}</button>
+                                            type="button">{{ $category->getName($language->id) }}</button>
                                     </li>
                                 @endif
                             @endforeach

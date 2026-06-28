@@ -127,7 +127,7 @@
                                                 <div class="category-icon">
                                                     <i class="{{ $category->icon }}"></i>
                                                 </div>
-                                                <h3 class="category-title mb-20">{{ $category->name }}</h3>
+                                                <h3 class="category-title mb-20">{{ $category->getName($language->id) }}</h3>
                                                 <span
                                                     class="category-qty">{{ $category->listing_contents_count }}</span>
                                             </div>

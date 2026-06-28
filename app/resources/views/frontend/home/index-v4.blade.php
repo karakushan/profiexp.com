@@ -171,7 +171,7 @@
                                                 <div class="category-icon radius-lg hover-primary">
                                                     <i class="{{ $category->icon }}"></i>
                                                 </div>
-                                                <h3 class="category-title mb-0">{{ $category->name }}</h3>
+                                                <h3 class="category-title mb-0">{{ $category->getName($language->id) }}</h3>
                                                 <span
                                                     class="category-qty">{{ $category->listing_contents_count }}</span>
                                             </div>

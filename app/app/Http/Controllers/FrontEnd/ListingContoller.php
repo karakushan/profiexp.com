@@ -240,14 +240,27 @@ class ListingContoller extends Controller
 
     $category_listingIds = [];
     $category_content = null;
+    $childCategories = collect();
     if ($request->filled('category_id')) {
       $category = $request->category_id;
       $category_content = ListingCategory::bySlug($language->id, $category)->first();
 
       if (!empty($category_content)) {
         $category_id = $category_content->id;
+
+        $childCategories = $category_content->children()
+          ->where('status', 1)
+          ->with('contents')
+          ->orderBy('serial_number', 'asc')
+          ->get();
+
+        $allCategoryIds = collect([$category_id]);
+        if ($childCategories->isNotEmpty()) {
+          $allCategoryIds = $allCategoryIds->merge($childCategories->pluck('id'));
+        }
+
         $contents = ListingContent::where('language_id', $language->id)
-          ->where('category_id', $category_id)
+          ->whereIn('category_id', $allCategoryIds)
           ->get()
           ->pluck('listing_id');
         foreach ($contents as $content) {
@@ -568,11 +581,17 @@ class ListingContoller extends Controller
     $information['listingbs'] = $bs;
 
 
-    $allCategories = ListingCategory::forLanguage($language->id)->active()
-      ->orderBy('serial_number', 'asc')->get();
+    if ($category_content && $childCategories->isNotEmpty()) {
+      $information['categories'] = $childCategories;
+      $information['hasMore'] = false;
+    } else {
+      $allCategories = ListingCategory::with('contents')->forLanguage($language->id)->active()
+        ->orderBy('serial_number', 'asc')->get();
 
-    $information['categories'] = $allCategories->take(10);
-    $information['hasMore'] = $allCategories->count() > 10;
+      $information['categories'] = $allCategories->take(10);
+      $information['hasMore'] = $allCategories->count() > 10;
+    }
+    $information['childCategories'] = collect();
 
     $information['vendors'] = Vendor::join('memberships', 'vendors.id', '=', 'memberships.vendor_id')
       ->where([
@@ -941,8 +960,20 @@ class ListingContoller extends Controller
 
       if (!empty($category_content)) {
         $category_id = $category_content->id;
+
+        $childCategories = $category_content->children()
+          ->where('status', 1)
+          ->with('contents')
+          ->orderBy('serial_number', 'asc')
+          ->get();
+
+        $allCategoryIds = collect([$category_id]);
+        if ($childCategories->isNotEmpty()) {
+          $allCategoryIds = $allCategoryIds->merge($childCategories->pluck('id'));
+        }
+
         $contents = ListingContent::where('language_id', $language->id)
-          ->where('category_id', $category_id)
+          ->whereIn('category_id', $allCategoryIds)
           ->get()
           ->pluck('listing_id');
         foreach ($contents as $content) {
@@ -1366,12 +1397,16 @@ class ListingContoller extends Controller
     $misc = new MiscellaneousController();
     $language = $misc->getLanguage();
 
-    $categories = ListingCategory::forLanguage($language->id)
+    $categories = ListingCategory::with('contents')->forLanguage($language->id)
       ->where('status', 1)
       ->orderBy('serial_number', 'asc')
       ->skip($offset)
       ->take(50)
-      ->get();
+      ->get()
+      ->map(function ($cat) use ($language) {
+        $cat->translated_name = $cat->getName($language->id);
+        return $cat;
+      });
 
     return response()->json([
       'categories' => $categories,

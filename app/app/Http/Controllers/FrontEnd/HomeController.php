@@ -111,7 +111,7 @@ class HomeController extends Controller
 
     $information['locationSecInfo'] = $language->locationSection()->first();
 
-    $categories = ListingCategory::withCount('listing_contents')->forLanguage($language->id)->active()
+    $categories = ListingCategory::with('contents')->withCount('listing_contents')->forLanguage($language->id)->active()
       ->orderBy('listing_contents_count', 'desc')
       ->get();
 

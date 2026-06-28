@@ -33,6 +33,7 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $langs = Language::all();
+        $defaultLang = Language::where('is_default', 1)->first() ?? Language::first();
 
         $rules = [
             'icon' => 'required',
@@ -43,7 +44,7 @@ class CategoryController extends Controller
         ];
 
         foreach ($langs as $lang) {
-            $rules[$lang->code . '_name'] = 'required|max:255';
+            $rules[$lang->code . '_name'] = ($lang->code === $defaultLang->code ? 'required|max:255' : 'nullable|max:255');
             $rules[$lang->code . '_meta_title'] = 'nullable|string|max:255';
             $rules[$lang->code . '_meta_description'] = 'nullable|string';
         }
@@ -91,6 +92,7 @@ class CategoryController extends Controller
     public function update(Request $request)
     {
         $langs = Language::all();
+        $defaultLang = Language::where('is_default', 1)->first() ?? Language::first();
 
         $rules = [
             'icon' => 'required',
@@ -100,7 +102,7 @@ class CategoryController extends Controller
         ];
 
         foreach ($langs as $lang) {
-            $rules[$lang->code . '_name'] = 'required|max:255';
+            $rules[$lang->code . '_name'] = ($lang->code === $defaultLang->code ? 'required|max:255' : 'nullable|max:255');
             $rules[$lang->code . '_meta_title'] = 'nullable|string|max:255';
             $rules[$lang->code . '_meta_description'] = 'nullable|string';
         }

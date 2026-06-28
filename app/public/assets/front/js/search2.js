@@ -366,7 +366,7 @@ document.querySelectorAll('.loadMoreCategories').forEach(button => {
             data.categories.forEach(category => {
               const li = document.createElement('li');
               li.className = `list-item ${window.location.search.includes(`category_id=${category.slug}`) ? 'open' : ''}`;
-              li.innerHTML = `<a href="#" class="category-toggle" id="${category.slug}">${category.name}</a>`;
+              li.innerHTML = `<a href="#" class="category-toggle" id="${category.slug}">${category.translated_name}</a>`;
               categoriesList.appendChild(li);
             });
 
