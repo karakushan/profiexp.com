@@ -219,6 +219,11 @@ ul {
   right: 0;
 }
 
+.widget-area .widget-categories .list-item.sub-category > a::before {
+  right: 15px;
+  left: unset;
+}
+
 .widget-area .widget-categories .list-item>a::after {
   left: unset;
   right: 2px;

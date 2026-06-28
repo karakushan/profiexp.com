@@ -585,7 +585,8 @@ class ListingContoller extends Controller
       $information['categories'] = $childCategories;
       $information['hasMore'] = false;
     } else {
-      $allCategories = ListingCategory::with('contents')->forLanguage($language->id)->active()
+      $allCategories = ListingCategory::with(['contents', 'children.contents'])->forLanguage($language->id)->active()
+        ->whereNull('parent_id')
         ->orderBy('serial_number', 'asc')->get();
 
       $information['categories'] = $allCategories->take(10);
@@ -1399,6 +1400,7 @@ class ListingContoller extends Controller
 
     $categories = ListingCategory::with('contents')->forLanguage($language->id)
       ->where('status', 1)
+      ->whereNull('parent_id')
       ->orderBy('serial_number', 'asc')
       ->skip($offset)
       ->take(50)

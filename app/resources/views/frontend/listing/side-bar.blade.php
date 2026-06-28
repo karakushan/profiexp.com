@@ -30,17 +30,17 @@
                                             {{ $categorie->getName($language->id) }}
                                         </a>
                                     </li>
+                                    @if ($categorie->children->isNotEmpty())
+                                        @foreach ($categorie->children as $child)
+                                            @php $childSlug = $child->getSlug($language->id); @endphp
+                                            <li class="list-item sub-category @if (request()->input('category_id') == $childSlug) open @endif">
+                                                <a href="#" class="category-toggle" id="{{ $childSlug }}">
+                                                    {{ $child->getName($language->id) }}
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    @endif
                                 @endforeach
-                                @if ($childCategories->isNotEmpty())
-                                    @foreach ($childCategories as $child)
-                                        @php $childSlug = $child->getSlug($language->id); @endphp
-                                        <li class="list-item @if (request()->input('category_id') == $childSlug) open @endif">
-                                            <a href="#" class="category-toggle" id="{{ $childSlug }}">
-                                                &nbsp;&nbsp;&nbsp;{{ $child->getName($language->id) }}
-                                            </a>
-                                        </li>
-                                    @endforeach
-                                @endif
                             </ul>
                             @if ($hasMore)
                                 <div class="load-more-btn-group">

@@ -202,6 +202,16 @@ Sidebar Widget CSS
     font-size: var(--font-sm);
 }
 
+.widget-area .widget-categories .list-item.sub-category > a {
+    padding-left: 30px;
+    -webkit-padding-start: 30px;
+    padding-inline-start: 30px;
+}
+
+.widget-area .widget-categories .list-item.sub-category > a::before {
+    left: 15px;
+}
+
 .widget-area .widget-categories .list-item>a::before {
     position: absolute;
     content: "";
