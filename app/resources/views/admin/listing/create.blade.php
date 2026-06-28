@@ -296,28 +296,49 @@
                                             </select>
                                         </div>
                                     </div>
-                                    @if ($settings->google_map_api_key_status == 0)
-                                        <div class="col-lg-3">
-                                            <div class="form-group">
-                                                <label>{{ __('Latitude') . '*' }} </label>
-                                                <input type="text" class="form-control" name="latitude"
-                                                    placeholder="{{ __('Enter Latitude') }}">
-                                                <p class="text-warning">
-                                                    {{ __('The Latitude must be between -90 and 90. Ex:49.43453') }}</p>
+                                    <div class="col-12">
+                                        <div class="card border mb-3">
+                                            <div class="card-header bg-light">
+                                                <h5 class="mb-0">{{ __('Location') }}</h5>
                                             </div>
-                                        </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    @if ($settings->google_map_api_key_status == 1)
+                                                        <div class="col-lg-12">
+                                                            <div class="form-group">
+                                                                <a href="" class="btn btn-secondary btn-sm"
+                                                                    data-toggle="modal" data-target="#GoogleMapModal">
+                                                                    <i class="fas fa-eye"></i>
+                                                                    {{ __('Show Map') }}
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    @endif
 
-                                        <div class="col-lg-3">
-                                            <div class="form-group">
-                                                <label>{{ __('Longitude') . '*' }} </label>
-                                                <input type="text" class="form-control" name="longitude"
-                                                    placeholder="{{ __('Enter Longitude') }}">
-                                                <p class="text-warning">
-                                                    {{ __('The Longitude must be between -180 and 180. Ex:149.91553') }}
-                                                </p>
+                                                    <div class="col-lg-6">
+                                                        <div class="form-group">
+                                                            <label>{{ __('Latitude') . '*' }} </label>
+                                                            <input type="text" class="form-control" name="latitude"
+                                                                placeholder="{{ __('Enter Latitude') }}">
+                                                            <p class="text-warning mb-0">
+                                                                {{ __('The Latitude must be between -90 and 90. Ex:49.43453') }}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-lg-6">
+                                                        <div class="form-group">
+                                                            <label>{{ __('Longitude') . '*' }} </label>
+                                                            <input type="text" class="form-control" name="longitude"
+                                                                placeholder="{{ __('Enter Longitude') }}">
+                                                            <p class="text-warning mb-0">
+                                                                {{ __('The Longitude must be between -180 and 180. Ex:149.91553') }}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                    @endif
+                                    </div>
                                     <div class="col-lg-3">
                                         <div class="form-group">
                                             <label>{{ __('Min Price') }}({{ $settings->base_currency_text }})</label>
@@ -336,6 +357,21 @@
                                     <input type="hidden" name="can_listing_add" id="can_listing_add" value="1">
                                     <input type="hidden" name="vendor_id" id="vendor_id" value="{{ $vendor_id }}">
 
+                                </div>
+
+                                @php
+                                    $defaultLang = $languages->firstWhere('is_default', 1);
+                                @endphp
+
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="form-group">
+                                            <label>{{ __('Category') . '*' }} </label>
+                                            <select name="category_id" data-code="{{ $defaultLang->code }}"
+                                                class="form-control js-example-basic-single2">
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div id="accordion" class="mt-3 ">
@@ -359,21 +395,12 @@
                                                 <div
                                                     class="version-body {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
                                                     <div class="row">
-                                                        <div class="col-lg-6">
+                                                        <div class="col-lg-12">
                                                             <div class="form-group">
                                                                 <label>{{ __('Title') . '*' }} </label>
                                                                 <input type="text" class="form-control"
                                                                     name="{{ $language->code }}_title"
                                                                     placeholder="{{ __('Enter Title') }}">
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-lg-6">
-                                                            <div class="form-group">
-                                                                <label>{{ __('Category') . '*' }} </label>
-                                                                <select name="{{ $language->code }}_category_id"
-                                                                    data-code="{{ $language->code }}"
-                                                                    class="form-control js-example-basic-single2">
-                                                                </select>
                                                             </div>
                                                         </div>
 
@@ -415,47 +442,13 @@
 
                                                         <div class="col-lg-12">
                                                             <div class="form-group">
-                                                                <label>{{ __('Address') . '*' }}</label>
+                                                                <label>{{ __('Address displayed in the listing') . '*' }}</label>
                                                                 <input type="text" class="form-control"
                                                                     value="{{ old($language->code . '_address') }}"
                                                                     name="{{ $language->code }}_address"
-                                                                    placeholder="{{ __('Enter Address') }}"
-                                                                    id="search-address">
-                                                                @if ($language->is_default == 1 && $settings->google_map_api_key_status == 1)
-                                                                    <a href=""
-                                                                        class="btn btn-secondary mt-2 btn-sm"
-                                                                        data-toggle="modal" data-target="#GoogleMapModal">
-                                                                        <i class="fas fa-eye"></i> {{ __('Show Map') }}
-                                                                    </a>
-                                                                @endif
+                                                                    placeholder="{{ __('Enter Address') }}">
                                                             </div>
                                                         </div>
-
-                                                        @if ($language->is_default == 1 && $settings->google_map_api_key_status == 1)
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label>{{ __('Latitude' . '*') }}</label>
-                                                                    <input type="text" class="form-control"
-                                                                        id="latitude" name="latitude"
-                                                                        placeholder="{{ __('Enter Latitude') }}">
-                                                                </div>
-                                                                <p class="text-warning pl-10">
-                                                                    {{ __('The Latitude must be between -90 to 90. Ex:49.43453') }}
-                                                                </p>
-                                                            </div>
-
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label>{{ __('Longitude' . '*') }}</label>
-                                                                    <input type="text" id="longitude"
-                                                                        class="form-control" name="longitude"
-                                                                        placeholder="{{ __('Enter Longitude') }}">
-                                                                </div>
-                                                                <p class="text-warning pl-10">
-                                                                    {{ __('The Longitude must be between -180 to 180. Ex:149.91553') }}
-                                                                </p>
-                                                            </div>
-                                                        @endif
 
                                                         @if (is_array($permissions) && in_array('Amenities', $permissions))
                                                             <div class="col-lg-12">

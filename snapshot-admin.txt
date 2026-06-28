@@ -1,0 +1,8 @@
+uid=1_0 RootWebArea "Admin Login | Bulistio" url="http://localhost:8080/admin"
+  uid=1_1 image "logo" url="http://localhost:8080/assets/img/65b9bb8f98dd7.png"
+  uid=1_2 form
+    uid=1_3 textbox "Enter Username"
+    uid=1_4 textbox "Enter Password"
+    uid=1_5 button "LOGIN"
+  uid=1_6 link "Forget Password or Username?" url="http://localhost:8080/admin/forget-password"
+    uid=1_7 StaticText "Forget Password or Username?"

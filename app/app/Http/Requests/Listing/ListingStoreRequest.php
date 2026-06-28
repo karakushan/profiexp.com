@@ -112,13 +112,14 @@ class ListingStoreRequest extends FormRequest
 
                 $rules[$language->code . '_title'] = $titleRule;
                 $rules[$language->code . '_address'] = $requiredOrNullable;
-                $rules[$language->code . '_category_id'] = $requiredOrNullable;
                 $rules[$language->code . '_state_id'] = $stateRule;
                 $rules[$language->code . '_country_id'] = $countryRule;
                 $rules[$language->code . '_city_id'] = $requiredOrNullable;
                 $rules[$language->code . '_description'] = $descriptionRule;
                 $rules[$language->code . '_aminities'] = $requiredOrNullable;
             }
+
+            $rules['category_id'] = 'required|exists:listing_categories,id';
 
             return $rules;
         } else {
@@ -199,7 +200,6 @@ class ListingStoreRequest extends FormRequest
 
                     $rules[$language->code . '_title'] = $titleRule;
                     $rules[$language->code . '_address'] = $requiredOrNullable;
-                    $rules[$language->code . '_category_id'] = $requiredOrNullable;
                     $rules[$language->code . '_city_id'] = $requiredOrNullable;
                     $rules[$language->code . '_state_id'] = $stateRule;
                     $rules[$language->code . '_country_id'] = $countryRule;
@@ -207,6 +207,8 @@ class ListingStoreRequest extends FormRequest
                     $rules[$language->code . '_aminities'] = $Amenities ? ($isDefault ? 'required' : 'nullable') . '|array|max:' . $aminitiesLimit : '';
                     $rules[$language->code . '_feature_heading'] = 'sometimes|array|max:' . $additionalFeatureLimit;
                 }
+
+                $rules['category_id'] = 'required|exists:listing_categories,id';
 
                 return $rules;
             }
@@ -218,6 +220,8 @@ class ListingStoreRequest extends FormRequest
         $messageArray = [];
 
         $messageArray['slider_images.required'] = __('The gallery images field is required.');
+        $messageArray['category_id.required'] = __('The category field is required.');
+        $messageArray['category_id.exists'] = __('The selected category is invalid.');
 
         $languages = Language::all();
 
@@ -227,7 +231,6 @@ class ListingStoreRequest extends FormRequest
             $messageArray[$code . '_title.required'] = __('The title field is required for') . ' ' . $language->name . ' ' . __('language') . '.';
             $messageArray[$code . '_title.max'] = __('The title field cannot contain more than 255 characters for') . ' ' . $language->name . ' ' . __('language') . '.';
             $messageArray[$code . '_address.required'] = __('The address field is required for') . ' ' . $language->name . ' ' . __('language') . '.';
-            $messageArray[$code . '_category_id.required'] = __('The category field is required for') . ' ' . $language->name . ' ' . __('language') . '.';
             $messageArray[$code . '_city_id.required'] = __('The city field is required for') . ' ' . $language->name . ' ' . __('language') . '.';
             $messageArray[$code . '_state_id.required'] = __('The state field is required for') . ' ' . $language->name . ' ' . __('language') . '.';
             $messageArray[$code . '_country_id.required'] = __('The Country field is required for') . ' ' . $language->name . ' ' . __('language') . '.';
