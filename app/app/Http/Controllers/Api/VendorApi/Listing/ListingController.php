@@ -87,12 +87,9 @@ class ListingController extends Controller
         ->all();
     }
 
-    // Category filter: collect matching listing IDs by category slug
     $categoryFilterIds = null;
     if ($request->filled('category') && strtolower($request->category) !== 'all') {
-      $cat = ListingCategory::forLanguage($languageId)
-        ->where('slug', $request->category)
-        ->first();
+      $cat = ListingCategory::find(intval($request->category));
 
       $categoryFilterIds = $cat
         ? ListingContent::where('language_id', $languageId)

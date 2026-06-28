@@ -41,7 +41,7 @@
     <td>{{ $category->serial_number }}</td>
     <td>
         @if ($defaultContent)
-            <a class="btn btn-primary btn-sm mr-1 mt-1" href="{{ route('frontend.listings', ['category_id' => $defaultContent->slug]) }}" target="_blank" title="{{ __('View') }}">
+            <a class="btn btn-primary btn-sm mr-1 mt-1" href="{{ route('frontend.listings', ['category_id' => $category->id]) }}" target="_blank" title="{{ __('View') }}">
                 <span class="btn-label">
                     <i class="fas fa-eye"></i>
                 </span>

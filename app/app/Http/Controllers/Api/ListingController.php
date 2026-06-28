@@ -158,13 +158,11 @@ class ListingController extends Controller
 
         $category_listingIds = [];
         if ($request->filled('category_id')) {
-            $category = $request->category_id;
-            $category_content = ListingCategory::bySlug($language->id, $category)->first();
+            $category_content = ListingCategory::find(intval($request->category_id));
 
             if (!empty($category_content)) {
-                $category_id = $category_content->id;
                 $contents = ListingContent::where('language_id', $language->id)
-                    ->where('category_id', $category_id)
+                    ->where('category_id', $category_content->id)
                     ->get()
                     ->pluck('listing_id');
                 foreach ($contents as $content) {

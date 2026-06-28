@@ -162,7 +162,7 @@
                                 @foreach ($categories as $key => $category)
                                     <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 category-grid-item {{ $key >= 8 ? 'd-none' : '' }}">
                                         <a
-                                            href="{{ route('frontend.listings', ['category_id' => $category->slug]) }}">
+                                            href="{{ route('frontend.listings', ['category_id' => $category->id]) }}">
                                             <div class="category-item border radius-md text-center">
                                                 <div class="category-icon">
                                                     <i class="{{ $category->icon }}"></i>
@@ -291,12 +291,10 @@
                                                             </a>
                                                         </div>
                                                         @php
-                                                            $categorySlug = App\Models\ListingCategory::findorfail(
-                                                                $listing_content->category_id,
-                                                            )->getSlug($language->id);
+                                                            $listing_content->category_id
                                                         @endphp
 
-                                                        <a href="{{ route('frontend.listings', ['category_id' => $categorySlug]) }}"
+                                                        <a href="{{ route('frontend.listings', ['category_id' => $listing_content->category_id]) }}"
                                                             title="Link" class="product-category font-sm icon-start">
                                                             <i
                                                                 class="{{ $listing_content->icon }}"></i>{{ $listing_content->category_name }}
@@ -507,13 +505,7 @@
                                                                     </span>
                                                                 </a>
                                                             </div>
-                                                            @php
-                                                                $categorySlug = App\Models\ListingCategory::findorfail(
-                                                                    $listing_content->category_id,
-                                                                );
-                                                            @endphp
-
-                                                            <a href="{{ route('frontend.listings', ['category_id' => $categorySlug]) }}"
+                                                            <a href="{{ route('frontend.listings', ['category_id' => $listing_content->category_id]) }}"
                                                                 title="Link"
                                                                 class="product-category font-sm icon-start">
                                                                 <i

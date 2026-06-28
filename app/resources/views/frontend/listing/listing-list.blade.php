@@ -91,13 +91,11 @@
                                             </figure>
                                             <div class="product-details col-sm-5 col-xs-12 border-end">
                                                 @php
-$categorySlug = App\Models\ListingCategory::findorfail(
-                                                    $listing_content->category_id,
-                                                )->getSlug($language->id);
+$listing_content->category_id
                                                 @endphp
 
                                                 <a
-                                                    href="{{ route('frontend.listings', ['category_id' => $categorySlug]) }}">
+                                                    href="{{ route('frontend.listings', ['category_id' => $listing_content->category_id]) }}">
                                                     <span class="product-category color-primary font-sm icon-start"><i
                                                             class="{{ $listing_content->icon }}"></i>
                                                         {{ $listing_content->category_name }}</span>
@@ -273,13 +271,11 @@ $categorySlug = App\Models\ListingCategory::findorfail(
                                             </figure>
                                             <div class="product-details col-sm-5 col-xs-12 border-end">
                                                 @php
-$categorySlug = App\Models\ListingCategory::findorfail(
-                                                    $listing_content->category_id,
-                                                )->getSlug($language->id);
+$listing_content->category_id
                                                 @endphp
 
                                                 <a
-                                                    href="{{ route('frontend.listings', ['category_id' => $categorySlug]) }}">
+                                                    href="{{ route('frontend.listings', ['category_id' => $listing_content->category_id]) }}">
                                                     <span class="product-category color-primary font-sm icon-start"><i
                                                             class="{{ $listing_content->icon }}"></i>
                                                         {{ $listing_content->category_name }}</span>

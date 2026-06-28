@@ -215,17 +215,10 @@
                           @endif
                           <td>
                             @if (!empty($listing_content))
-                              @php
-                                $categoryObj = App\Models\ListingCategory::where(
-                                    'id',
-                                    $listing_content->category_id,
-                                )->first();
-                              @endphp
-
-                              <a href="{{ route('frontend.listings', ['category_id' => $categoryObj ? $categoryObj->getSlug($language->id) : null]) }}"
+                              <a href="{{ route('frontend.listings', ['category_id' => $listing_content->category_id]) }}"
                                 target="_blank">
 
-                                {{ $categoryObj ? $categoryObj->getName($language->id) : null }}
+                                {{ $listing_content->category->name ?? null }}
                               </a>
                             @else
                               --

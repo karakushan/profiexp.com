@@ -24,17 +24,15 @@
                                     </a>
                                 </li>
                                 @foreach ($categories as $categorie)
-                                    @php $catSlug = $categorie->getSlug($language->id); @endphp
-                                    <li class="list-item @if (request()->input('category_id') == $catSlug) open @endif">
-                                        <a href="#" class="category-toggle" id="{{ $catSlug }}">
+                                    <li class="list-item @if (intval(request()->input('category_id')) == $categorie->id) open @endif">
+                                        <a href="#" class="category-toggle" id="{{ $categorie->id }}">
                                             {{ $categorie->getName($language->id) }}
                                         </a>
                                     </li>
                                     @if ($categorie->children->isNotEmpty())
                                         @foreach ($categorie->children as $child)
-                                            @php $childSlug = $child->getSlug($language->id); @endphp
-                                            <li class="list-item sub-category @if (request()->input('category_id') == $childSlug) open @endif">
-                                                <a href="#" class="category-toggle" id="{{ $childSlug }}">
+                                            <li class="list-item sub-category @if (intval(request()->input('category_id')) == $child->id) open @endif">
+                                                <a href="#" class="category-toggle" id="{{ $child->id }}">
                                                     {{ $child->getName($language->id) }}
                                                 </a>
                                             </li>

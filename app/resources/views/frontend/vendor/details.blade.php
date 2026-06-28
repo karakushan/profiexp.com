@@ -173,15 +173,10 @@
                                                     </figure>
 
                                                     <div class="product-details">
-@php
-                                                                $categorySlug = App\Models\ListingCategory::findorfail(
-                                                                    $listing_content->category_id,
-                                                                );
-                                                            @endphp
-                                                            <a href="{{ route('frontend.listings', ['category_id' => $categorySlug->getSlug($language->id)]) }}"
+                                                            <a href="{{ route('frontend.listings', ['category_id' => $listing_content->category_id]) }}"
                                                                 title="Link" class="product-category font-sm icon-start">
                                                                 <i
-                                                                    class="{{ $categorySlug->icon }}"></i>{{ $categorySlug->getName($language->id) }}
+                                                                    class="{{ $listing_content->icon }}"></i>{{ $listing_content->category_name }}
                                                         </a>
 
                                                         <h5 class="product-title mb-10 mt-1">
@@ -337,16 +332,11 @@
                                                         </figure>
 
                                                         <div class="product-details">
-                                                            @php
-                                                                $categorySlug = App\Models\ListingCategory::findorfail(
-                                                                    $listing_content->category_id,
-                                                                );
-                                                            @endphp
-                                                            <a href="{{ route('frontend.listings', ['category_id' => $categorySlug->getSlug($language->id)]) }}"
+                                                            <a href="{{ route('frontend.listings', ['category_id' => $listing_content->category_id]) }}"
                                                                 title="Link"
                                                                 class="product-category font-sm icon-start">
                                                                 <i
-                                                                    class="{{ $categorySlug->icon }}"></i>{{ $categorySlug->getName($language->id) }}
+                                                                    class="{{ $listing_content->icon }}"></i>{{ $listing_content->category_name }}
                                                             </a>
 
                                                             <h5 class="product-title mb-10 mt-1">

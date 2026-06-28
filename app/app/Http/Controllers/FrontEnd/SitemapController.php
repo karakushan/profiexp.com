@@ -67,7 +67,7 @@ class SitemapController extends Controller
         foreach ($categories as $category) {
             $sitemap->add(
                 Url::create(route('frontend.listings', [
-                    'category_id' => $category->slug,
+                    'category_id' => $category->id,
                 ]))
                     ->setLastModificationDate($category->updated_at)
                     ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)

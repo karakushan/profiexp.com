@@ -47,7 +47,7 @@ $(document).ready(function () {
           results: data.results.map(function (item) {
             return {
               text: item.name,
-              id: item.slug
+              id: item.id
             };
           }),
           pagination: {
