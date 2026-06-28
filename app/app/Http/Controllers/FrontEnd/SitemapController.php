@@ -59,9 +59,7 @@ class SitemapController extends Controller
     {
         $defaultLang = Language::where('is_default', 1)->firstOrFail();
 
-        $categories = ListingCategory::query()
-            ->where('language_id', $defaultLang->id)
-            ->where('status', 1)
+        $categories = ListingCategory::forLanguage($defaultLang->id)->active()
             ->get();
 
         $sitemap = Sitemap::create();

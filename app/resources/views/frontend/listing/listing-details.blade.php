@@ -73,12 +73,10 @@
                                 <ul class="info-list list-unstyled">
                                     <li>
                                         @php
-                                            $categorySlug = App\Models\ListingCategory::find(
-                                                $listing->listing_content->first()->category_id ?? 0,
-                                            );
+                                            $categorySlug = $listing->listing_content->first()->category_id ? App\Models\ListingCategory::find($listing->listing_content->first()->category_id)->getSlug($language->id) : null;
                                         @endphp
                                         @if ($categorySlug)
-                                        <a href="{{ route('frontend.listings', ['category_id' => $categorySlug->slug]) }}"
+                                        <a href="{{ route('frontend.listings', ['category_id' => $categorySlug]) }}"
                                             title="Link" class="product-category font-sm icon-start">
                                             <span class="product-category color-primary icon-start">
                                                 <i class="{{ $listing->listing_content->first()->category->icon }}"></i>

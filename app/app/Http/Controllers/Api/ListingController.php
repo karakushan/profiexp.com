@@ -159,7 +159,7 @@ class ListingController extends Controller
         $category_listingIds = [];
         if ($request->filled('category_id')) {
             $category = $request->category_id;
-            $category_content = ListingCategory::where([['language_id', $language->id], ['slug', $category]])->first();
+            $category_content = ListingCategory::bySlug($language->id, $category)->first();
 
             if (!empty($category_content)) {
                 $category_id = $category_content->id;
@@ -486,7 +486,7 @@ class ListingController extends Controller
         $information['listingbs'] = $bs;
 
 
-        $allCategories = ListingCategory::where('language_id', $language->id)->where('status', 1)
+        $allCategories = ListingCategory::forLanguage($language->id)->active()
             ->orderBy('serial_number', 'asc')->paginate(10);
 
         $information['categories'] = $allCategories;

@@ -194,7 +194,7 @@ class Language extends Model
 
   public function listingCategory()
   {
-    return $this->hasMany(ListingCategory::class);
+    return $this->hasMany(ListingCategoryContent::class);
   }
 
   public function CategorySection()

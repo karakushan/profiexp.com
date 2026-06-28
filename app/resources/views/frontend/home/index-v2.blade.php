@@ -293,10 +293,10 @@
                                                         @php
                                                             $categorySlug = App\Models\ListingCategory::findorfail(
                                                                 $listing_content->category_id,
-                                                            );
+                                                            )->getSlug($language->id);
                                                         @endphp
 
-                                                        <a href="{{ route('frontend.listings', ['category_id' => $categorySlug->slug]) }}"
+                                                        <a href="{{ route('frontend.listings', ['category_id' => $categorySlug]) }}"
                                                             title="Link" class="product-category font-sm icon-start">
                                                             <i
                                                                 class="{{ $listing_content->icon }}"></i>{{ $listing_content->category_name }}
@@ -513,7 +513,7 @@
                                                                 );
                                                             @endphp
 
-                                                            <a href="{{ route('frontend.listings', ['category_id' => $categorySlug->slug]) }}"
+                                                            <a href="{{ route('frontend.listings', ['category_id' => $categorySlug]) }}"
                                                                 title="Link"
                                                                 class="product-category font-sm icon-start">
                                                                 <i

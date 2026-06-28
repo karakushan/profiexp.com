@@ -133,7 +133,7 @@ class VendorController extends Controller
         $information['vendor'] = $vendor;
         $information['vendor_id'] = $vendor_id;
 
-        $information['categories'] = ListingCategory::where([['language_id', $language->id], ['status', 1]])->get();
+        $information['categories'] = ListingCategory::forLanguage($language->id)->active()->get();
 
         $information['listings'] = Listing::where([['listings.vendor_id', $vendor_id], ['listings.status', '=', '1'], ['listings.visibility', '=', '1']])
             ->orderBy('id', 'desc')

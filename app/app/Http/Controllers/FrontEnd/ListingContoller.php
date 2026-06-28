@@ -242,7 +242,7 @@ class ListingContoller extends Controller
     $category_content = null;
     if ($request->filled('category_id')) {
       $category = $request->category_id;
-      $category_content = ListingCategory::where([['language_id', $language->id], ['slug', $category]])->first();
+      $category_content = ListingCategory::bySlug($language->id, $category)->first();
 
       if (!empty($category_content)) {
         $category_id = $category_content->id;
@@ -568,7 +568,7 @@ class ListingContoller extends Controller
     $information['listingbs'] = $bs;
 
 
-    $allCategories = ListingCategory::where('language_id', $language->id)->where('status', 1)
+    $allCategories = ListingCategory::forLanguage($language->id)->active()
       ->orderBy('serial_number', 'asc')->get();
 
     $information['categories'] = $allCategories->take(10);
@@ -937,7 +937,7 @@ class ListingContoller extends Controller
     $category_listingIds = [];
     if ($request->filled('category_id')) {
       $category = $request->category_id;
-      $category_content = ListingCategory::where([['language_id', $language->id], ['slug', $category]])->first();
+      $category_content = ListingCategory::bySlug($language->id, $category)->first();
 
       if (!empty($category_content)) {
         $category_id = $category_content->id;
@@ -1366,7 +1366,7 @@ class ListingContoller extends Controller
     $misc = new MiscellaneousController();
     $language = $misc->getLanguage();
 
-    $categories = ListingCategory::where('language_id', $language->id)
+    $categories = ListingCategory::forLanguage($language->id)
       ->where('status', 1)
       ->orderBy('serial_number', 'asc')
       ->skip($offset)
@@ -1389,7 +1389,7 @@ class ListingContoller extends Controller
     $language = $misc->getLanguage();
 
 
-    $query = ListingCategory::where('language_id', $language->id);
+    $query = ListingCategory::forLanguage($language->id);
 
     if ($search) {
       $query->where('name', 'like', "%{$search}%")

@@ -1,6 +1,6 @@
 <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
     aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLongTitle">{{ __('Edit Listing Category') }}</h5>
@@ -10,19 +10,68 @@
             </div>
 
             <div class="modal-body">
-                <form id="ajaxEditForm" class="modal-form {{ $language->direction == 1 ? 'rtl text-right' : '' }}"
+                <form id="ajaxEditForm" class="modal-form"
                     action="{{ route('admin.listing_specification.update_category') }}" method="post"
                     enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" id="in_id" name="id">
-                    <input type="hidden" id="in_language_id" name="language_id">
 
                     <div class="form-group">
-                        <label for="">{{ __('Name') . '*' }}</label>
-                        <input type="text" id="in_name" class="form-control" name="name"
-                            placeholder="{{ __('Enter Category Name') }}">
-                        <p id="editErr_name" class="mt-2 mb-0 text-danger em"></p>
+                        <label for="">{{ __('Parent Category') }}</label>
+                        <select name="parent_id" id="in_parent_id" class="form-control">
+                            <option value="">{{ __('None (Root Category)') }}</option>
+                            @foreach (\App\Models\ListingCategory::root()->with('allChildren')->orderBy('serial_number')->get() as $parentCat)
+                                @include('admin.listing.category._parent_option', ['category' => $parentCat, 'level' => 0, 'excludeId' => null])
+                            @endforeach
+                        </select>
+                        <p id="editErr_parent_id" class="mt-2 mb-0 text-danger em"></p>
                     </div>
+
+                    <div id="editAccordion" class="mt-3">
+                        @foreach ($langs as $language)
+                            <div class="version">
+                                <div class="version-header" id="edit-heading{{ $language->id }}">
+                                    <h5 class="mb-0">
+                                        <button type="button" class="btn btn-link" data-toggle="collapse"
+                                            data-target="#edit-collapse{{ $language->id }}"
+                                            aria-expanded="{{ $language->is_default == 1 ? 'true' : 'false' }}"
+                                            aria-controls="edit-collapse{{ $language->id }}">
+                                            {{ $language->name }}
+                                            {{ $language->is_default == 1 ? __('(Default)') : '' }}
+                                        </button>
+                                    </h5>
+                                </div>
+                                <div id="edit-collapse{{ $language->id }}"
+                                    class="collapse {{ $language->is_default == 1 ? 'show' : '' }}"
+                                    aria-labelledby="edit-heading{{ $language->id }}" data-parent="#editAccordion">
+                                    <div class="version-body {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
+                                        <div class="form-group">
+                                            <label>{{ __('Name') . '*' }}</label>
+                                            <input type="text" id="in_{{ $language->code }}_name" class="form-control"
+                                                name="{{ $language->code }}_name"
+                                                placeholder="{{ __('Enter Category Name') }}">
+                                            <p id="editErr_{{ $language->code }}_name" class="mt-2 mb-0 text-danger em"></p>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>{{ __('Meta Title') }}</label>
+                                            <input type="text" id="in_{{ $language->code }}_meta_title" class="form-control"
+                                                name="{{ $language->code }}_meta_title"
+                                                placeholder="{{ __('Enter Meta Title') }}">
+                                            <p id="editErr_{{ $language->code }}_meta_title" class="mt-2 mb-0 text-danger em"></p>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>{{ __('Meta Description') }}</label>
+                                            <textarea id="in_{{ $language->code }}_meta_description" class="form-control"
+                                                name="{{ $language->code }}_meta_description" rows="3"
+                                                placeholder="{{ __('Enter Meta Description') }}"></textarea>
+                                            <p id="editErr_{{ $language->code }}_meta_description" class="mt-2 mb-0 text-danger em"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
                     <div class="form-group">
                         <label for="">{{ __('Icon') . '*' }}</label>
                         <div class="btn-group d-block">
@@ -46,7 +95,7 @@
                     <div class="form-group">
                         <label>{{ __('Featured Image') . '*' }} <span
                                 class="text-muted">({{ __('For mobile app display') }})</span></label>
-                        <br> 
+                        <br>
                         <div class="thumb-preview">
                             <img src="" alt="..." class="uploaded-img in_mobile_image">
                         </div>
@@ -68,20 +117,6 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="">{{ __('Meta Title') }}</label>
-                        <input type="text" id="in_meta_title" class="form-control" name="meta_title"
-                            placeholder="{{ __('Enter Meta Title') }}">
-                        <p id="editErr_meta_title" class="mt-2 mb-0 text-danger em"></p>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="">{{ __('Meta Description') }}</label>
-                        <textarea id="in_meta_description" class="form-control" name="meta_description" rows="3"
-                            placeholder="{{ __('Enter Meta Description') }}"></textarea>
-                        <p id="editErr_meta_description" class="mt-2 mb-0 text-danger em"></p>
-                    </div>
-
-                    <div class="form-group">
                         <label for="">{{ __('Status') . '*' }}</label>
                         <select name="status" id="in_status" class="form-control">
                             <option disabled>{{ __('Select Category Status') }}</option>
@@ -97,7 +132,7 @@
                             placeholder="{{ __('Enter Category Serial Number') }}">
                         <p id="editErr_serial_number" class="mt-2 mb-0 text-danger em"></p>
                         <p class="text-warning mt-2 mb-0">
-                            <small>{{ __('The higher the serial number is, the later the category will be shown'), '.' }}</small>
+                            <small>{{ __('The higher the serial number is, the later the category will be shown') . '.' }}</small>
                         </p>
                     </div>
                 </form>

@@ -1,6 +1,5 @@
 @extends('admin.layout')
 
-{{-- this style will be applied when the direction of language is right-to-left --}}
 @includeIf('admin.partials.rtl-style')
 
 @section('content')
@@ -36,7 +35,6 @@
                             <div class="card-title d-inline-block">{{ __('Categories') }}</div>
                         </div>
 
-
                         <div class="col-lg-4 offset-lg-1 mt-2 mt-lg-0">
                             <a href="#" data-toggle="modal" data-target="#createModal"
                                 class="btn btn-primary btn-sm float-lg-right float-left"><i class="fas fa-plus"></i>
@@ -53,7 +51,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-lg-12">
-                            @if (count($categories) == 0)
+                            @if (count($rootCategories) == 0)
                                 <h3 class="text-center mt-2">{{ __('NO CATEGORY FOUND') . '!' }}</h3>
                             @else
                                 <div class="table-responsive">
@@ -71,57 +69,8 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach ($categories as $category)
-                                                <tr>
-                                                    <td>
-                                                        <input type="checkbox" class="bulk-check"
-                                                            data-val="{{ $category->id }}">
-                                                    </td>
-                                                    <td>
-                                                        {{ strlen($category->name) > 50 ? mb_substr($category->name, 0, 50, 'UTF-8') . '...' : $category->name }}
-                                                    </td>
-                                                    <td><i class="{{ $category->icon }}"></i></td>
-                                                    <td>
-                                                        @if ($category->status == 1)
-                                                            <h2 class="d-inline-block"><span
-                                                                    class="badge badge-success">{{ __('Active') }}</span>
-                                                            </h2>
-                                                        @else
-                                                            <h2 class="d-inline-block"><span
-                                                                    class="badge badge-danger">{{ __('Deactive') }}</span>
-                                                            </h2>
-                                                        @endif
-                                                    </td>
-                                                    <td>{{ $category->serial_number }}</td>
-                                                    <td>
-                                                        <a class="btn btn-secondary btn-sm mr-1  mt-1 editBtn"
-                                                            href="#" data-toggle="modal" data-target="#editModal"
-                                                            data-id="{{ $category->id }}"
-                                                            data-name="{{ $category->name }}"
-                                                            data-status="{{ $category->status }}"
-                                                            data-icon="{{ $category->icon }}"
-                                                            data-language_id="{{ $category->language_id }}"
-                                                            data-mobile_image="{{ $category->mobile_image ? asset('assets/img/listing/category/' . $category->mobile_image) : asset('assets/img/noimage.jpg') }}"
-                                                            data-serial_number="{{ $category->serial_number }}"
-                                                            data-meta_title="{{ $category->meta_title }}"
-                                                            data-meta_description="{{ $category->meta_description }}">
-                                                            <span class="btn-label">
-                                                                <i class="fas fa-edit"></i>
-                                                            </span>
-                                                        </a>
-                                                        <form class="deleteForm d-inline-block"
-                                                            action="{{ route('admin.listing_specification.delete_category', ['id' => $category->id]) }}"
-                                                            method="post">
-                                                            @csrf
-                                                            <button type="submit"
-                                                                class="btn btn-danger  mt-1 btn-sm deleteBtn">
-                                                                <span class="btn-label">
-                                                                    <i class="fas fa-trash"></i>
-                                                                </span>
-                                                            </button>
-                                                        </form>
-                                                    </td>
-                                                </tr>
+                                            @foreach ($rootCategories as $category)
+                                                @include('admin.listing.category._category_row', ['category' => $category, 'level' => 0])
                                             @endforeach
                                         </tbody>
                                     </table>
@@ -132,7 +81,7 @@
                 </div>
                 <div class="card-footer">
                     <div class="center">
-                        {{ $categories->appends([
+                        {{ $rootCategories->appends([
                                 'vendor_id' => request()->input('vendor_id'),
                                 'title' => request()->input('title'),
                                 'status' => request()->input('status'),
@@ -146,9 +95,6 @@
         </div>
     </div>
 
-    {{-- create modal --}}
     @include('admin.listing.category.create')
-
-    {{-- edit modal --}}
     @include('admin.listing.category.edit')
 @endsection

@@ -16,6 +16,7 @@ Route::post('/push-notification/store-endpoint', 'FrontEnd\PushNotificationContr
 
 Route::get('/subcheck', 'CronJobController@expired')->name('cron.expired');
 Route::get('/translate-listings', \App\Http\Controllers\Cron\TranslateListingsController::class);
+Route::get('/translate-categories', \App\Http\Controllers\Cron\TranslateCategoriesController::class);
 
 Route::get('/change-language', 'FrontEnd\MiscellaneousController@changeLanguage')->name('change_language');
 

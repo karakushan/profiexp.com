@@ -90,7 +90,7 @@ class ListingController extends Controller
     // Category filter: collect matching listing IDs by category slug
     $categoryFilterIds = null;
     if ($request->filled('category') && strtolower($request->category) !== 'all') {
-      $cat = ListingCategory::where('language_id', $languageId)
+      $cat = ListingCategory::forLanguage($languageId)
         ->where('slug', $request->category)
         ->first();
 
@@ -163,7 +163,7 @@ class ListingController extends Controller
       ];
     });
 
-    $categories = ListingCategory::where('language_id', $languageId)
+    $categories = ListingCategory::forLanguage($languageId)
       ->select('id', 'name', 'slug')
       ->get();
 
@@ -724,7 +724,7 @@ Thank you for your attention to this matter.";
     // Categories per language
     $categories = [];
     foreach ($languages as $language) {
-      $categories[$language->code] = ListingCategory::where('language_id', $language->id)
+      $categories[$language->code] = ListingCategory::forLanguage($language->id)
         ->select('id', 'name', 'slug')
         ->get();
     }
@@ -1665,7 +1665,7 @@ Thank you for your attention to this matter.";
     $language = Language::where('code', $request->lang)->first();
 
 
-    $query = ListingCategory::where('language_id', $language->id);
+    $query = ListingCategory::forLanguage($language->id);
 
     if ($search) {
       $query->where('name', 'like', "%{$search}%")
@@ -1756,7 +1756,7 @@ Thank you for your attention to this matter.";
     $categories = [];
     $aminitiesAvailable = [];
     foreach ($languages as $language) {
-      $categories[$language->code] = ListingCategory::where('language_id', $language->id)
+      $categories[$language->code] = ListingCategory::forLanguage($language->id)
         ->select('id', 'name', 'slug')
         ->get();
       $aminitiesAvailable[$language->code] = Aminite::where('language_id', $language->id)

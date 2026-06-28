@@ -365,11 +365,9 @@
                                                                 class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
                                                                 @php
                                                                     $category = App\Models\ListingCategory::where([
-                                                                        ['language_id', $language->id],
                                                                         ['id', $listingContent->category_id ?? 0],
                                                                         ['status', 1],
                                                                     ])
-                                                                        ->select('id', 'name')
                                                                         ->first();
                                                                 @endphp
 
@@ -379,7 +377,7 @@
                                                                     data-code="{{ $language->code }}">
                                                                     @if($category)
                                                                     <option selected value="{{ $category->id }}">
-                                                                        {{ $category->name }}</option>
+                                                                        {{ $category->getName($language->id) }}</option>
                                                                     @endif
                                                                 </select>
                                                             </div>

@@ -72,9 +72,9 @@
                                 </a>
                             </div>
                             @php
-                                $categorySlug = App\Models\ListingCategory::findorfail($listing_content->category_id);
+                                $categorySlug = App\Models\ListingCategory::findorfail($listing_content->category_id)->getSlug($language->id);
                             @endphp
-                            <a href="{{ route('frontend.listings', ['category_id' => $categorySlug->slug]) }}"
+                            <a href="{{ route('frontend.listings', ['category_id' => $categorySlug]) }}"
                                 title="Link" class="product-category font-sm icon-start">
                                 <i class="{{ $listing_content->icon }}"></i>{{ $listing_content->category_name }}
                             </a>
@@ -232,14 +232,24 @@
                                     </span>
                                 </a>
                             </div>
-                            @php
-                                $categorySlug = App\Models\ListingCategory::findorfail($listing_content->category_id);
+@php
+                                $categorySlug = App\Models\ListingCategory::findorfail($listing_content->category_id)->getSlug($language->id);
                             @endphp
-                            <a href="{{ route('frontend.listings', ['category_id' => $categorySlug->slug]) }}"
+                            <a href="{{ route('frontend.listings', ['category_id' => $categorySlug]) }}"
                                 title="Link" class="product-category font-sm icon-start">
                                 <i class="{{ $listing_content->icon }}"></i>{{ $listing_content->category_name }}
                             </a>
                         </div>
+                        <h6 class="product-title mb-10"><a
+                                href="{{ route('frontend.listing.details', ['slug' => $listing_content->slug, 'id' => $listing_content->id]) }}">{{ optional($listing_content)->title }}</a>
+                        </h6>
+                        <div class="product-ratings mb-10">
+                            <div class="ratings">
+                                <div class="rate" style="background-image: url('{{ asset($rateStar) }}')">
+                                    <div class="rating-icon"
+                                        style="background-image: url('{{ asset($rateStar) }}'); width: {{ $listing_content->average_rating * 20 . '%;' }}">
+
+                                    </div>
                         <h6 class="product-title mb-10"><a
                                 href="{{ route('frontend.listing.details', ['slug' => $listing_content->slug, 'id' => $listing_content->id]) }}">{{ optional($listing_content)->title }}</a>
                         </h6>

@@ -24,10 +24,8 @@ class HomeController extends Controller
         $language = HelperController::getLanguage($request);
         $information['categories'] = ListingCategory::withCount('listing_contents')
             ->has('listing_contents')
-            ->where([
-                ['language_id', $language->id],
-                ['status', 1]
-            ])
+            ->forLanguage($language->id)
+            ->active()
             ->orderBy('listing_contents_count', 'desc')
             ->take(10)
             ->get()
@@ -209,8 +207,8 @@ class HomeController extends Controller
             $name = null;
         }
 
-        $categories = ListingCategory::where('language_id', $language->id)
-            ->where('status', 1)
+        $categories = ListingCategory::forLanguage($language->id)
+            ->active()
             ->when($name, function ($query) use ($name) {
                 return $query->where('name', 'like', '%' . $name . '%');
             })

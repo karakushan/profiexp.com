@@ -66,7 +66,7 @@ class ListingController extends Controller
         $category_listingIds = [];
         if ($request->filled('category') && $request->input('category') !== "All") {
             $category = $request->input('category');
-            $category_content = ListingCategory::where([['language_id', $language->id], ['slug', $category]])->first();
+            $category_content = ListingCategory::bySlug($language->id, $category)->first();
 
             if (!is_null($category_content)) {
                 $category = $category_content->id;
@@ -1351,7 +1351,7 @@ Thank you for your attention to this matter.";
         $language = Language::where('code', $request->lang)->first();
 
 
-        $query = ListingCategory::where('language_id', $language->id);
+        $query = ListingCategory::forLanguage($language->id);
 
         if ($search) {
             $query->where('name', 'like', "%{$search}%")

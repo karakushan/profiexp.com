@@ -288,18 +288,16 @@
                               <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
                                 @php
                                   $category = App\Models\ListingCategory::where([
-                                      ['language_id', $language->id],
                                       ['id', $listingContent->category_id],
                                       ['status', 1],
                                   ])
-                                      ->select('id', 'name')
                                       ->first();
                                 @endphp
 
                                 <label>{{ __('Category') . '*' }} </label>
                                 <select name="{{ $language->code }}_category_id"
                                   class="form-control js-example-basic-single2" data-code="{{ $language->code }}">
-                                  <option selected value="{{ $category->id }}">{{ $category->name }}</option>
+                                  <option selected value="{{ $category->id }}">{{ $category->getName($language->id) }}</option>
                                 </select>
                               </div>
                             </div>

@@ -283,12 +283,12 @@
                                                                 </a>
                                                             </div>
                                                             @php
-                                                                $categorySlug = App\Models\ListingCategory::findorfail(
-                                                                    $listing_content->category_id,
-                                                                );
-                                                            @endphp
+$categorySlug = App\Models\ListingCategory::findorfail(
+                                                                        $listing_content->category_id,
+                                                                    )->getSlug($language->id);
+                                                                @endphp
 
-                                                            <a href="{{ route('frontend.listings', ['category_id' => $categorySlug->slug]) }}"
+                                                                <a href="{{ route('frontend.listings', ['category_id' => $categorySlug]) }}"
                                                                 title="Link"
                                                                 class="product-category font-sm icon-start">
                                                                 <i
