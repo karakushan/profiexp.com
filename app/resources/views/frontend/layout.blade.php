@@ -80,42 +80,6 @@
         </script>
     @endif
 
-    @if ($basicInfo->shop_status == 1)
-        <!-- Floating Cart Button -->
-        <div id="cartIconWrapper" class="cartIconWrapper">
-            @php
-                $position = $basicInfo->base_currency_symbol_position;
-                $symbol = $basicInfo->base_currency_symbol;
-                $totalPrice = 0;
-                if (session()->has('productCart')) {
-                    $productCarts = session()->get('productCart');
-                    foreach ($productCarts as $key => $product) {
-                        $totalPrice += $product['price'];
-                    }
-                }
-                $totalPrice = number_format($totalPrice);
-                $productCartQuantity = 0;
-                if (session()->has('productCart')) {
-                    foreach (session()->get('productCart') as $value) {
-                        $productCartQuantity = $productCartQuantity + $value['quantity'];
-                    }
-                }
-            @endphp
-            <a href="{{ route('shop.cart') }} " class="d-block" id="cartIcon">
-                <div class="cart-length">
-                    <i class="fal fa-shopping-bag"></i>
-                    <span class="length totalItems">
-                        {{ $productCartQuantity }} {{ __('Items') }}
-                    </span>
-                </div>
-                <div class="cart-total">
-                    {{ $position == 'left' ? $symbol : '' }}<span
-                        class="totalPrice">{{ $totalPrice }}</span>{{ $position == 'right' ? $symbol : '' }}
-                </div>
-            </a>
-        </div>
-        <!-- Floating Cart Button End-->
-    @endif
 
     @include('frontend.partials.scripts')
 </body>

@@ -242,16 +242,6 @@
                                 <div class="rate" style="background-image: url('{{ asset($rateStar) }}')">
                                     <div class="rating-icon"
                                         style="background-image: url('{{ asset($rateStar) }}'); width: {{ $listing_content->average_rating * 20 . '%;' }}">
-
-                                    </div>
-                        <h6 class="product-title mb-10"><a
-                                href="{{ route('frontend.listing.details', ['slug' => $listing_content->slug, 'id' => $listing_content->id]) }}">{{ optional($listing_content)->title }}</a>
-                        </h6>
-                        <div class="product-ratings mb-10">
-                            <div class="ratings">
-                                <div class="rate" style="background-image: url('{{ asset($rateStar) }}')">
-                                    <div class="rating-icon"
-                                        style="background-image: url('{{ asset($rateStar) }}'); width: {{ $listing_content->average_rating * 20 . '%;' }}">
                                     </div>
                                 </div>
                                 <span
