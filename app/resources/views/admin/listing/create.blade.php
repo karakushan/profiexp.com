@@ -303,17 +303,14 @@
                                             </div>
                                             <div class="card-body">
                                                 <div class="row">
-                                                    @if ($settings->google_map_api_key_status == 1)
-                                                        <div class="col-lg-12">
-                                                            <div class="form-group">
-                                                                <a href="" class="btn btn-secondary btn-sm"
-                                                                    data-toggle="modal" data-target="#GoogleMapModal">
-                                                                    <i class="fas fa-eye"></i>
-                                                                    {{ __('Show Map') }}
-                                                                </a>
-                                                            </div>
+                                                    <div class="col-lg-12">
+                                                        <div class="form-group">
+                                                            <label>{{ __('Search address on map') }}</label>
+                                                            <input type="text" class="form-control"
+                                                                id="search-address"
+                                                                placeholder="{{ __('Enter address to search on map') }}">
                                                         </div>
-                                                    @endif
+                                                    </div>
 
                                                     <div class="col-lg-6">
                                                         <div class="form-group">
@@ -335,6 +332,18 @@
                                                             </p>
                                                         </div>
                                                     </div>
+
+                                                    @if ($settings->google_map_api_key_status == 1)
+                                                        <div class="col-lg-12">
+                                                            <div class="form-group mb-0">
+                                                                <a href="" class="btn btn-secondary btn-sm"
+                                                                    data-toggle="modal" data-target="#GoogleMapModal">
+                                                                    <i class="fas fa-eye"></i>
+                                                                    {{ __('Show Map') }}
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </div>
