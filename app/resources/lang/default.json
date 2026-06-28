@@ -153,7 +153,7 @@
   "AZIM": "AZIM",
   "0": "404",
   "1 star and higher": "1 star and higher",
-  "1 stars and above": "1 star and above",
+  "1 star and above": "1 star and above",
   "2 stars and above": "2 stars and above",
   "2 stars and higher": "2 stars and higher",
   "3 stars and above": "3 stars and above",
@@ -626,5 +626,7 @@
   "You have not bought this product yet!": "You have not bought this product yet!",
   "You have not bought anything yet!": "You have not bought anything yet!",
   "Added to your wishlist successfully.": "Added to your wishlist successfully.",
-  "Show All Categories": "Show All Categories"
+  "Show All Categories": "Show All Categories",
+  "LISTINGS": "Listings",
+  "More": "More"
 }

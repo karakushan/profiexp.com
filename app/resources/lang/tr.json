@@ -153,7 +153,7 @@
   "AZIM": "AZIM",
   "0": "404",
   "1 star and higher": "1 yıldız ve üzeri",
-  "1 stars and above": "1 yıldız ve üzeri",
+  "1 star and above": "1 yıldız ve üzeri",
   "2 stars and above": "2 yıldız ve üzeri",
   "2 stars and higher": "2 yıldız ve üzeri",
   "3 stars and above": "3 yıldız ve üzeri",
@@ -612,7 +612,7 @@
   "AI Engine": "AI Motoru",
   "OpenAI": "OpenAI",
   "Gemini": "Gemini",
-  "NO CATEGORY FOUND!": "KATEGORİ BULUNAMADI!",
+  "NO CATEGORY FOUND": "KATEGORİ BULUNAMADI!",
   "Browse Moreee": "Daha Fazla",
   "months": "ay",
   "days": "gün",
@@ -638,5 +638,6 @@
   "You have not bought this product yet!": "Bu ürünü henüz satın almadınız!",
   "You have not bought anything yet!": "Henüz hiçbir şey satın almadınız!",
   "Added to your wishlist successfully.": "İstek listenize başarıyla eklendi.",
-  "Show All Categories": "Tüm Kategorileri Göster"
+  "Show All Categories": "Tüm Kategorileri Göster",
+  "LISTINGS": "İlanlar"
 }

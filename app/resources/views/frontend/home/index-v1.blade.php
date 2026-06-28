@@ -167,7 +167,7 @@
                     <div class="col-12">
                         <div class="section-title title-inline mb-30" data-aos="fade-up">
                             <h2 class="title mb-20"><span
-                                    class="line">{{ $listingSecInfo ? $listingSecInfo->title : 'LISTINGS' }}
+                                    class="line">{{ $listingSecInfo ? $listingSecInfo->title : __('LISTINGS') }}
                                 </span></h2>
                         </div>
                     </div>
@@ -337,7 +337,7 @@
                         @if (count($total_listing_contents) > count($listing_contents))
                             <div class="text-center mt-20 mb-25">
                                 <a href="{{ route('frontend.listings') }}"
-                                    class="btn btn-lg btn-primary">{{ $listingSecInfo ? $listingSecInfo->button_text : 'More' }}</a>
+                                    class="btn btn-lg btn-primary">{{ $listingSecInfo ? $listingSecInfo->button_text : __('More') }}</a>
                             </div>
                         @endif
                     </div>
@@ -593,7 +593,7 @@
                             </h2>
                             @if (count($blog_count) > count($blogs))
                                 <a href="{{ route('blog') }}" class="btn btn-lg btn-primary mb-20">
-                                    {{ $blogSecInfo ? $blogSecInfo->button_text : 'More' }} </a>
+                                    {{ $blogSecInfo ? $blogSecInfo->button_text : __('More') }} </a>
                             @endif
                         </div>
                     </div>

@@ -203,13 +203,13 @@
                 <div class="row align-items-center">
                     <div class="col-lg-3">
                         <div class="content-title mb-40" data-aos="fade-up">
-                            <h2 class="title mb-15">{{ $listingSecInfo ? $listingSecInfo->title : 'LISTINGS' }}</h2>
+                            <h2 class="title mb-15">{{ $listingSecInfo ? $listingSecInfo->title : __('LISTINGS') }}</h2>
                             <p class="text mb-20">
                                 {{ @$listingSecInfo->subtitle }}
                             </p>
                             @if (count($total_listing_contents) > count($listing_contents))
                                 <a href="{{ route('frontend.listings') }}"
-                                    class="btn btn-lg btn-primary rounded-pill">{{ $listingSecInfo ? $listingSecInfo->button_text : 'More' }}</a>
+                                    class="btn btn-lg btn-primary rounded-pill">{{ $listingSecInfo ? $listingSecInfo->button_text : __('More') }}</a>
                             @endif
                         </div>
                     </div>
@@ -427,7 +427,7 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="section-title title-center" data-aos="fade-up">
-                            <h2 class="title mb-30">{{ $featuredSecInfo ? $featuredSecInfo->title : 'LISTINGS' }} </h2>
+                            <h2 class="title mb-30">{{ $featuredSecInfo ? $featuredSecInfo->title : __('LISTINGS') }} </h2>
                         </div>
                     </div>
                     <div class="col-12">
@@ -592,7 +592,7 @@
                         @if (count($latest_listing_content_total) > count($listing_contents))
                             <div class="text-center mt-20">
                                 <a href="{{ route('frontend.listings') }}"
-                                    class="btn btn-lg btn-primary rounded-pill">{{ $featuredSecInfo ? $featuredSecInfo->button_text : 'More' }}</a>
+                                    class="btn btn-lg btn-primary rounded-pill">{{ $featuredSecInfo ? $featuredSecInfo->button_text : __('More') }}</a>
                             </div>
                         @endif
                     </div>
@@ -818,7 +818,7 @@
                             </h2>
                             @if (count($blog_count) > count($blogs))
                                 <a href="{{ route('blog') }}" class="btn btn-lg btn-primary mb-20">
-                                    {{ $blogSecInfo ? $blogSecInfo->button_text : 'More' }}</a>
+                                    {{ $blogSecInfo ? $blogSecInfo->button_text : __('More') }}</a>
                             @endif
                         </div>
                     </div>
