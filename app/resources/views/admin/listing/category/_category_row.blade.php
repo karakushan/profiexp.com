@@ -58,6 +58,7 @@
             data-{{ $content->language->code }}_name="{{ $content->name }}"
             data-{{ $content->language->code }}_meta_title="{{ $content->meta_title }}"
             data-{{ $content->language->code }}_meta_description="{{ $content->meta_description }}"
+            data-{{ $content->language->code }}_seo_text="{{ $content->seo_text }}"
             @endforeach>
             <span class="btn-label">
                 <i class="fas fa-edit"></i>

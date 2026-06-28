@@ -73,6 +73,7 @@ class TranslateCategoryJob implements ShouldQueue
             'slug' => $slug,
             'meta_title' => $translated['meta_title'] ?? '',
             'meta_description' => $translated['meta_description'] ?? '',
+            'seo_text' => $translated['seo_text'] ?? '',
         ]);
     }
 

@@ -47,6 +47,7 @@ class CategoryController extends Controller
             $rules[$lang->code . '_name'] = ($lang->code === $defaultLang->code ? 'required|max:255' : 'nullable|max:255');
             $rules[$lang->code . '_meta_title'] = 'nullable|string|max:255';
             $rules[$lang->code . '_meta_description'] = 'nullable|string';
+            $rules[$lang->code . '_seo_text'] = 'nullable|string';
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -81,6 +82,7 @@ class CategoryController extends Controller
                 'slug' => createSlug($name),
                 'meta_title' => $request->{$lang->code . '_meta_title'},
                 'meta_description' => $request->{$lang->code . '_meta_description'},
+                'seo_text' => $request->{$lang->code . '_seo_text'},
             ]);
         }
 
@@ -105,6 +107,7 @@ class CategoryController extends Controller
             $rules[$lang->code . '_name'] = ($lang->code === $defaultLang->code ? 'required|max:255' : 'nullable|max:255');
             $rules[$lang->code . '_meta_title'] = 'nullable|string|max:255';
             $rules[$lang->code . '_meta_description'] = 'nullable|string';
+            $rules[$lang->code . '_seo_text'] = 'nullable|string';
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -147,6 +150,7 @@ class CategoryController extends Controller
                     'slug' => createSlug($name),
                     'meta_title' => $request->{$lang->code . '_meta_title'},
                     'meta_description' => $request->{$lang->code . '_meta_description'},
+                    'seo_text' => $request->{$lang->code . '_seo_text'},
                 ]
             );
         }

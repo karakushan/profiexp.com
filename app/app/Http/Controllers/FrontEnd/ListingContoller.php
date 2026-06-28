@@ -27,6 +27,7 @@ use App\Models\Listing\ListingReview;
 use App\Models\Listing\ListingSocialMedia;
 use App\Models\Listing\ProductMessage;
 use App\Models\ListingCategory;
+use App\Models\ListingCategoryContent;
 use App\Models\Location\City;
 use App\Models\Location\Country;
 use App\Models\Location\State;
@@ -244,6 +245,13 @@ class ListingContoller extends Controller
     if ($request->filled('category_id')) {
       $category = $request->category_id;
       $category_content = ListingCategory::bySlug($language->id, $category)->first();
+
+      if (empty($category_content)) {
+        $anyContent = ListingCategoryContent::where('slug', $category)->first();
+        if ($anyContent) {
+          $category_content = $anyContent->category;
+        }
+      }
 
       if (!empty($category_content)) {
         $category_id = $category_content->id;
@@ -694,6 +702,7 @@ class ListingContoller extends Controller
     $information['listing_contents'] = $listing_contents;
     $information['featured_contents'] = $featured_contents;
     $information['categoryInfo'] = $category_content;
+    $information['categoryContent'] = $category_content ? $category_content->getTranslation($language->id) : null;
 
     if ($view == 0) {
       return view('frontend.listing.listing-map', $information);

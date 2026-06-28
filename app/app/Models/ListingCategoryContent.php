@@ -17,6 +17,7 @@ class ListingCategoryContent extends Model
         'slug',
         'meta_title',
         'meta_description',
+        'seo_text',
     ];
 
     public function category(): BelongsTo

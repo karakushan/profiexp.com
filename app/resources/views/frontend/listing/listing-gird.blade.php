@@ -434,6 +434,20 @@ $categorySlug = App\Models\ListingCategory::findorfail(
     </div>
     <!-- Listing-map-area end -->
 
+    @if (!empty($categoryContent) && !empty($categoryContent->seo_text))
+        <section class="category-seo-text pt-30 pb-40">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xl-9 offset-xl-3">
+                        <div class="seo-text-content">
+                            {!! $categoryContent->seo_text !!}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
+
     <form action="{{ route('frontend.listings') }}" id="searchForm" method="GET">
         <input type="hidden" name="title" id="title" value="{{ request()->input('title') }}">
         <input type="hidden" name="location_val" id="location_val" value="{{ request()->input('location') }}">

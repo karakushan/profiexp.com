@@ -27,6 +27,7 @@ class CategoryTranslationService
             'slug' => $source->slug ?? '',
             'meta_title' => $source->meta_title ?? '',
             'meta_description' => $source->meta_description ?? '',
+            'seo_text' => $source->seo_text ?? '',
         ];
 
         $json = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);

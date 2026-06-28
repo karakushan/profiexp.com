@@ -66,6 +66,13 @@
                                                 placeholder="{{ __('Enter Meta Description') }}"></textarea>
                                             <p id="editErr_{{ $language->code }}_meta_description" class="mt-2 mb-0 text-danger em"></p>
                                         </div>
+                                        <div class="form-group">
+                                            <label>{{ __('SEO Text') }}</label>
+                                            <textarea id="in_{{ $language->code }}_seo_text" class="form-control"
+                                                name="{{ $language->code }}_seo_text" rows="4"
+                                                placeholder="{{ __('Enter SEO Text') }}"></textarea>
+                                            <p id="editErr_{{ $language->code }}_seo_text" class="mt-2 mb-0 text-danger em"></p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
