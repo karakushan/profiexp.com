@@ -241,12 +241,6 @@
                                             data-bs-target="#features" type="button">{{ __('Features') }}</button>
                                     </li>
                                 @endif
-                                @if (is_array($permissions) && in_array('Products', $permissions))
-                                    <li class="nav-item">
-                                        <button class="nav-link hover-effect radius-sm" data-bs-toggle="tab"
-                                            data-bs-target="#products" type="button">{{ __('Products') }}</button>
-                                    </li>
-                                @endif
                                 <li class="nav-item">
                                     <button class="nav-link hover-effect radius-sm" data-bs-toggle="tab"
                                         data-bs-target="#reviews" type="button">{{ __('Reviews') }}</button>
@@ -355,10 +349,10 @@
                                 </div>
                             @endif
 
+                            @if (false)
                             <div class="tab-pane slide" id="products">
                                 <div class="products mb-40">
                                     <div class="swiper products-slider">
-
                                         @if (count($product_contents) == 0)
                                             <h3 class="text-center">{{ __('NO PRODUCT FOUND') . '!' }}</h3>
                                         @else
@@ -367,56 +361,42 @@
                                                     <div class="swiper-slide">
                                                         <div class="product-default border radius-md">
                                                             <figure class="product-img">
-                                                                <a href="{{ route('shop.product_details', ['slug' => $product->slug]) }}"
-                                                                    class="lazy-container ratio ratio-2-3">
-
+                                                                <a href="{{ route('shop.product_details', ['slug' => $product->slug]) }}" class="lazy-container ratio ratio-2-3">
                                                                     <img class="lazyload"
                                                                         data-src="{{ asset('assets/img/products/featured-images/' . $product->featured_image) }}"
                                                                         alt="{{ $product->title }}">
                                                                 </a>
                                                             </figure>
                                                             <div class="product-details">
-                                                                <a
-                                                                    href="{{ route('shop.product_details', ['slug' => $product->slug]) }}">
-                                                                    <h5 class="product-title">
-                                                                        {{ $product->title }}
-                                                                    </h5>
+                                                                <a href="{{ route('shop.product_details', ['slug' => $product->slug]) }}">
+                                                                    <h5 class="product-title">{{ $product->title }}</h5>
                                                                 </a>
                                                                 <div class="product-bottom mt-10">
                                                                     <div class="product-price">
-                                                                        <span
-                                                                            class="color-medium me-2">{{ __('Price') }}</span>
+                                                                        <span class="color-medium me-2">{{ __('Price') }}</span>
                                                                         <h6 class="price mb-0 lh-1">
                                                                             {{ symbolPrice($product->current_price) }}
                                                                             @if ($product->previous_price)
-                                                                                <span class="prev-price">
-                                                                                    {{ symbolPrice($product->previous_price) }}
-                                                                                </span>
+                                                                                <span class="prev-price">{{ symbolPrice($product->previous_price) }}</span>
                                                                             @endif
                                                                         </h6>
                                                                     </div>
-
-                                                                    <a href="{{ route('shop.product_details', ['slug' => $product->slug]) }}"
-                                                                        class="btn-text color-primary">{{ __('View Details') }}</a>
+                                                                    <a href="{{ route('shop.product_details', ['slug' => $product->slug]) }}" class="btn-text color-primary">{{ __('View Details') }}</a>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 @endforeach
-
                                             </div>
                                         @endif
-                                        <!-- Slider Pagination -->
-                                        <div class="swiper-pagination position-static mt-20"
-                                            id="products-slider-pagination"></div>
+                                        <div class="swiper-pagination position-static mt-20" id="products-slider-pagination"></div>
                                     </div>
                                 </div>
                                 @if (!empty(showAd(3)))
-                                    <div class="text-center mt-40">
-                                        {!! showAd(3) !!}
-                                    </div>
+                                    <div class="text-center mt-40">{!! showAd(3) !!}</div>
                                 @endif
                             </div>
+                            @endif
 
                             <div class="tab-pane slide" id="reviews">
                                 @if ($numOfReview > 0)
