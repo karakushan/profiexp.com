@@ -623,5 +623,19 @@
   "More": "Ещё",
   "By ": "От ",
   "Explore All": "Все",
-  "Register Now": "Зарегистрироваться"
+  "Register Now": "Зарегистрироваться",
+  "Summary": "Сводка",
+  "Write your review": "Напишите отзыв",
+  "The rating field is required for product review.": "Поле рейтинга обязательно для отзыва.",
+  "New listing review": "Новый отзыв на объявление",
+  "You received a new review on one of your listings.": "Вы получили новый отзыв на одно из ваших объявлений.",
+  "You have to Login First!": "Сначала нужно войти!",
+  "No listing information found for": "Информация об объявлении не найдена для",
+  "Something went wrong.": "Что-то пошло не так.",
+  "Sending email failed.": "Не удалось отправить письмо.",
+  "New product review": "Новый отзыв о товаре",
+  "You received a new review on one of your products.": "Вы получили новый отзыв на один из ваших товаров.",
+  "You have not bought this product yet!": "Вы ещё не купили этот товар!",
+  "You have not bought anything yet!": "Вы ещё ничего не купили!",
+  "Added to your wishlist successfully.": "Успешно добавлено в избранное."
 }

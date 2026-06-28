@@ -611,5 +611,19 @@
   "AI Content & Image Generator": "AI Content & Image Generator",
   "AI Engine": "AI Engine",
   "OpenAI": "OpenAI",
-  "Gemini": "Gemini"
+  "Gemini": "Gemini",
+  "Summary": "Summary",
+  "Write your review": "Write your review",
+  "The rating field is required for product review.": "The rating field is required for product review.",
+  "New listing review": "New listing review",
+  "You received a new review on one of your listings.": "You received a new review on one of your listings.",
+  "You have to Login First!": "You have to Login First!",
+  "No listing information found for": "No listing information found for",
+  "Something went wrong.": "Something went wrong.",
+  "Sending email failed.": "Sending email failed.",
+  "New product review": "New product review",
+  "You received a new review on one of your products.": "You received a new review on one of your products.",
+  "You have not bought this product yet!": "You have not bought this product yet!",
+  "You have not bought anything yet!": "You have not bought anything yet!",
+  "Added to your wishlist successfully.": "Added to your wishlist successfully."
 }

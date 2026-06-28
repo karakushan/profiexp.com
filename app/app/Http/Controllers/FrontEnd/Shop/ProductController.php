@@ -610,7 +610,7 @@ class ProductController extends Controller
 
         if ($validator->fails()) {
             return redirect()->back()
-                ->with('error', 'The rating field is required for product review.')
+                ->with('error', __('The rating field is required for product review.'))
                 ->withInput();
         }
 
@@ -648,8 +648,8 @@ class ProductController extends Controller
                     VendorNotificationService::send(
                         $vendor,
                         'vendor_product_review_received',
-                        'New product review',
-                        'You received a new review on one of your products.',
+                        __('New product review'),
+                        __('You received a new review on one of your products.'),
                         [
                             'product_id' => $id,
                             'review_id' => $review->id,
@@ -675,10 +675,10 @@ class ProductController extends Controller
 
                 Session::flash('success', __('Your review submitted successfully') . '!');
             } else {
-                Session::flash('error', 'You have not bought this product yet!');
+                Session::flash('error', __('You have not bought this product yet!'));
             }
         } else {
-            Session::flash('error', 'You have not bought anything yet!');
+            Session::flash('error', __('You have not bought anything yet!'));
         }
 
         return redirect()->back();

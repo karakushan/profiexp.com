@@ -623,5 +623,19 @@
   "More": "Daha Fazla",
   "By ": "Tarafından ",
   "Explore All": "Tümünü Keşfet",
-  "Register Now": "Şimdi Kaydol"
+  "Register Now": "Şimdi Kaydol",
+  "Summary": "Özet",
+  "Write your review": "Yorumunuzu yazın",
+  "The rating field is required for product review.": "Ürün değerlendirmesi için puan alanı zorunludur.",
+  "New listing review": "Yeni ilan değerlendirmesi",
+  "You received a new review on one of your listings.": "İlanlarınızdan birine yeni bir değerlendirme aldınız.",
+  "You have to Login First!": "Önce giriş yapmalısınız!",
+  "No listing information found for": "İlan bilgisi bulunamadı",
+  "Something went wrong.": "Bir şeyler yanlış gitti.",
+  "Sending email failed.": "E-posta gönderilemedi.",
+  "New product review": "Yeni ürün değerlendirmesi",
+  "You received a new review on one of your products.": "Ürünlerinizden birine yeni bir değerlendirme aldınız.",
+  "You have not bought this product yet!": "Bu ürünü henüz satın almadınız!",
+  "You have not bought anything yet!": "Henüz hiçbir şey satın almadınız!",
+  "Added to your wishlist successfully.": "İstek listenize başarıyla eklendi."
 }

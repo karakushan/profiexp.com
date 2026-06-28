@@ -482,7 +482,7 @@
                                                 <div class="col-12">
                                                     <div class="form-group mb-20">
                                                         <textarea class="form-control" name="review" id="review" cols="30" rows="9"
-                                                            placeholder="Write your review"></textarea>
+                                                            placeholder="{{ __('Write your review') }}"></textarea>
                                                     </div>
                                                 </div>
                                             </div>
@@ -626,7 +626,7 @@
                                             target="_self">
                                             <h6 class="mb-1">{{ $vendor->username }}</h6>
                                         </a>
-                                        @if ($listing->vendor_id != 0)
+                                        @if ($listing->vendor_id != 0 && $vendorInfo)
                                             <h6 class="mb-1">{{ $vendorInfo->name }}</h6>
                                         @endif
                                         @if ($vendor->show_phone_number == 1)

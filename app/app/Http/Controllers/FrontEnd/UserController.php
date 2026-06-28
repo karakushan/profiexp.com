@@ -631,7 +631,7 @@ class UserController extends Controller
       $check = Wishlist::where('listing_id', $id)->where('user_id', $user_id)->first();
 
       if (!empty($check)) {
-        return back()->with('error', 'Added to your wishlist successfully.');
+        return back()->with('error', __('Added to your wishlist successfully.'));
       } else {
         $add = new Wishlist;
         $add->listing_id = $id;
@@ -652,7 +652,7 @@ class UserController extends Controller
         $remove->delete();
         return back()->with('success', __('Removed From wishlist successfully') . '!');
       } else {
-        return back()->with('warning', 'Something went wrong.');
+        return back()->with('warning', __('Something went wrong.'));
       }
     } else {
       return redirect()->route('user.login', ['redirectPath' => 'wishlist']);

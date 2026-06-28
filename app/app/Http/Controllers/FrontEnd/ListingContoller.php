@@ -1451,7 +1451,7 @@ class ListingContoller extends Controller
     $information['socialLinks'] = ListingSocialMedia::where('listing_id', $id)->get();
 
     if (is_null($listing_content)) {
-      Session::flash('error', 'No Listing information found for ' . $language->name . ' language');
+      Session::flash('error', __('No listing information found for') . ' ' . $language->name);
       return redirect()->route('index');
     }
     $information['language'] = $language;
@@ -1639,7 +1639,7 @@ class ListingContoller extends Controller
         Session::flash('success', __('Message sent successfully') . '!');
         return back();
       } catch (Exception $e) {
-        Session::flash('error', 'Something went wrong.');
+        Session::flash('error', __('Something went wrong.'));
         return back();
       }
     }
@@ -1883,11 +1883,11 @@ class ListingContoller extends Controller
         });
 
         Session::flash('success', __('Message sent successfully'));
-        return response()->json(['message' => 'Message sent successfully'], 200);
+        return response()->json(['message' => __('Message sent successfully')], 200);
       } catch (\Exception $e) {
 
-        Session::flash('error', 'Sending email failed.');
-        return response()->json(['message' => 'Sending email failed.'], 400);
+        Session::flash('error', __('Sending email failed.'));
+        return response()->json(['message' => __('Sending email failed.')], 400);
       }
     }
 
@@ -1902,7 +1902,7 @@ class ListingContoller extends Controller
 
     if ($validator->fails()) {
       return redirect()->back()
-        ->with('error', 'The rating field is required for product review.')
+        ->with('error', __('The rating field is required for product review.'))
         ->withInput();
     }
 
@@ -1918,8 +1918,8 @@ class ListingContoller extends Controller
           VendorNotificationService::send(
             $listing?->vendor,
             'vendor_listing_review_received',
-            'New listing review',
-            'You received a new review on one of your listings.',
+            __('New listing review'),
+            __('You received a new review on one of your listings.'),
             [
               'listing_id' => $id,
               'review_id' => $review->id,
@@ -1945,7 +1945,7 @@ class ListingContoller extends Controller
 
       Session::flash('success', __('Your review submitted successfully') . '.');
     } else {
-      Session::flash('error', 'You have to Login First!');
+      Session::flash('error', __('You have to Login First!'));
     }
     return redirect()->back();
   }

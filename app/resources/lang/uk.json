@@ -623,5 +623,19 @@
   "More": "Ще",
   "By ": "Від ",
   "Explore All": "Всі",
-  "Register Now": "Зареєструватися зараз"
+  "Register Now": "Зареєструватися зараз",
+  "Summary": "Підсумок",
+  "Write your review": "Напишіть відгук",
+  "The rating field is required for product review.": "Поле рейтингу обов'язкове для відгуку.",
+  "New listing review": "Новий відгук на оголошення",
+  "You received a new review on one of your listings.": "Ви отримали новий відгук на одне з ваших оголошень.",
+  "You have to Login First!": "Спочатку потрібно увійти!",
+  "No listing information found for": "Інформацію про оголошення не знайдено для",
+  "Something went wrong.": "Щось пішло не так.",
+  "Sending email failed.": "Не вдалося надіслати лист.",
+  "New product review": "Новий відгук про товар",
+  "You received a new review on one of your products.": "Ви отримали новий відгук на один із ваших товарів.",
+  "You have not bought this product yet!": "Ви ще не купили цей товар!",
+  "You have not bought anything yet!": "Ви ще нічого не купили!",
+  "Added to your wishlist successfully.": "Успішно додано до списку бажань."
 }
