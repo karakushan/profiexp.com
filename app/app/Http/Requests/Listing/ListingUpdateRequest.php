@@ -7,8 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Language;
 use App\Models\Listing\Listing;
 use App\Models\Listing\ListingImage;
-use App\Models\Location\Country;
-use App\Models\Location\State;
 use App\Rules\ImageMimeTypeRule;
 use Illuminate\Http\Request;
 
@@ -60,49 +58,22 @@ class ListingUpdateRequest extends FormRequest
                 'min_price' => 'nullable|numeric|required_with:max_price|lt:max_price',
                 'latitude' => ['required', 'numeric', 'between:-90,90'],
                 'longitude' => ['required', 'numeric', 'between:-180,180'],
+
+                'country_id' => 'required',
+                'state_id' => 'nullable',
+                'city_id' => 'required',
             ];
 
             $languages = Language::all();
 
             foreach ($languages as $language) {
-
-                $property = $language->code . '_country_id';
-
-                if ($request->$property) {
-                    $Statess = State::where('country_id', $property)->count();
-                    if ($Statess != 0) {
-                        $State = true;
-                    } else {
-                        $State = false;
-                    }
-                } else {
-                    $States = State::where('language_id', $language->id)->count();
-                    if ($States != 0) {
-                        $State = true;
-                    } else {
-                        $State = false;
-                    }
-                }
-
-                $countries = Country::where('language_id', $language->id)->count();
-                if ($countries != 0) {
-                    $country = true;
-                } else {
-                    $country = false;
-                }
-
                 $isDefault = $language->is_default == 1;
                 $titleRule = $isDefault ? 'required|max:255' : 'nullable|max:255';
                 $requiredOrNullable = $isDefault ? 'required' : 'nullable';
                 $descriptionRule = $isDefault ? 'required|min:15' : 'nullable|min:15';
-                $stateRule = $State ? $requiredOrNullable : '';
-                $countryRule = $country ? $requiredOrNullable : '';
 
                 $rules[$language->code . '_title'] = $titleRule;
                 $rules[$language->code . '_address'] = $requiredOrNullable;
-                $rules[$language->code . '_city_id'] = $requiredOrNullable;
-                $rules[$language->code . '_state_id'] = $stateRule;
-                $rules[$language->code . '_country_id'] = $countryRule;
                 $rules[$language->code . '_description'] = $descriptionRule;
                 $rules[$language->code . '_aminities'] = $requiredOrNullable;
             }
@@ -162,48 +133,21 @@ class ListingUpdateRequest extends FormRequest
                 'latitude' => ['required', 'numeric', 'between:-90,90'],
                 'longitude' => ['required', 'numeric', 'between:-180,180'],
 
+                'country_id' => 'required',
+                'state_id' => 'nullable',
+                'city_id' => 'required',
             ];
 
             $languages = Language::all();
 
             foreach ($languages as $language) {
-                $property = $language->code . '_country_id';
-
-                if ($request->$property) {
-                    $Statess = State::where('country_id', $property)->count();
-                    if ($Statess != 0) {
-                        $State = true;
-                    } else {
-                        $State = false;
-                    }
-                } else {
-                    $States = State::where('language_id', $language->id)->count();
-                    if ($States != 0) {
-                        $State = true;
-                    } else {
-                        $State = false;
-                    }
-                }
-
-                $countries = Country::where('language_id', $language->id)->count();
-                if ($countries != 0) {
-                    $country = true;
-                } else {
-                    $country = false;
-                }
-
                 $isDefault = $language->is_default == 1;
                 $titleRule = $isDefault ? 'required|max:255' : 'nullable|max:255';
                 $requiredOrNullable = $isDefault ? 'required' : 'nullable';
                 $descriptionRule = $isDefault ? 'required|min:15' : 'nullable|min:15';
-                $stateRule = $State ? $requiredOrNullable : '';
-                $countryRule = $country ? $requiredOrNullable : '';
 
                 $rules[$language->code . '_title'] = $titleRule;
                 $rules[$language->code . '_address'] = $requiredOrNullable;
-                $rules[$language->code . '_state_id'] = $stateRule;
-                $rules[$language->code . '_country_id'] = $countryRule;
-                $rules[$language->code . '_city_id'] = $requiredOrNullable;
                 $rules[$language->code . '_description'] = $descriptionRule;
                 $rules[$language->code . '_aminities'] = $Amenities ? ($isDefault ? 'required' : 'nullable') . '|array|max:' . $aminitiesLimit : '';
                 $rules[$language->code . '_feature_heading'] = 'sometimes|array|max:' . $additionalFeatureLimit;
@@ -221,6 +165,8 @@ class ListingUpdateRequest extends FormRequest
         $messageArray['slider_images.required'] = __('The gallery images field is required.');
         $messageArray['category_id.required'] = __('The category field is required.');
         $messageArray['category_id.exists'] = __('The selected category is invalid.');
+        $messageArray['country_id.required'] = __('The country field is required.');
+        $messageArray['city_id.required'] = __('The city field is required.');
 
         $languages = Language::all();
 
@@ -230,9 +176,6 @@ class ListingUpdateRequest extends FormRequest
             $messageArray[$code . '_title.required'] = __('The title field is required for') . ' ' . $language->name . ' ' . __('language') . '.';
             $messageArray[$code . '_title.max'] = __('The title field cannot contain more than 255 characters for') . ' ' . $language->name . ' ' . __('language') . '.';
             $messageArray[$code . '_address.required'] = __('The address field is required for') . ' ' . $language->name . ' ' . __('language') . '.';
-            $messageArray[$code . '_city_id.required'] = __('The city field is required for') . ' ' . $language->name . ' ' . __('language') . '.';
-            $messageArray[$code . '_state_id.required'] = __('The state field is required for') . ' ' . $language->name . ' ' . __('language') . '.';
-            $messageArray[$code . '_country_id.required'] = __('The Country field is required for') . ' ' . $language->name . ' ' . __('language') . '.';
             $messageArray[$code . '_description.required'] = __('The description field is required for') . ' ' . $language->name . ' ' . __('language') . '.';
             $messageArray[$code . '_description.min'] = __('The description field must have at least 15 characters for') . ' ' . $language->name . ' ' . __('language') . '.';
             $messageArray[$code . '_aminities.required'] = __('The Amenities field is required for') . ' ' . $language->name . ' ' . __('language') . '.';

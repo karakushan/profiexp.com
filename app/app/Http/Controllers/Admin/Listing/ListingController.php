@@ -57,20 +57,25 @@ class ListingController extends Controller
 
         $language = Language::where('code', $request->lang)->first();
 
-        $query = City::where('language_id', $language->id);
+        $query = City::whereHas('contents', fn($q) => $q->where('language_id', $language->id));
 
         if ($search) {
-            $query->where('name', 'like', "%{$search}%");
+            $query->whereHas('contents', fn($q) => $q->where('language_id', $language->id)->where('name', 'like', "%{$search}%"));
         }
 
-        // Add pagination
         $cities = $query->skip(($page - 1) * $pageSize)
             ->take($pageSize + 1)
-            ->get(['id', 'name']);
+            ->get();
 
-        // Check if there's more data
         $hasMore = count($cities) > $pageSize;
         $results = $hasMore ? $cities->slice(0, $pageSize) : $cities;
+
+        $results = $results->map(function ($city) use ($language) {
+            return [
+                'id' => $city->id,
+                'name' => $city->getName($language->id),
+            ];
+        });
 
         return response()->json([
             'results' => $results,
@@ -127,30 +132,34 @@ class ListingController extends Controller
         $page = $request->input('page', 1);
         $pageSize = 10;
 
-
         $language = Language::where('code', $request->lang)->first();
 
-        $query = State::where('language_id', $language->id);
+        $query = State::whereHas('contents', fn($q) => $q->where('language_id', $language->id));
 
         if ($search) {
-            $query->where('name', 'like', "%{$search}%");
+            $query->whereHas('contents', fn($q) => $q->where('language_id', $language->id)->where('name', 'like', "%{$search}%"));
         }
 
-        // Add pagination
-        $cities = $query->skip(($page - 1) * $pageSize)
+        $states = $query->skip(($page - 1) * $pageSize)
             ->take($pageSize + 1)
-            ->get(['id', 'name']);
+            ->get();
 
-        // Check if there's more data
-        $hasMore = count($cities) > $pageSize;
-        $results = $hasMore ? $cities->slice(0, $pageSize) : $cities;
+        $hasMore = count($states) > $pageSize;
+        $results = $hasMore ? $states->slice(0, $pageSize) : $states;
+
+        $results = $results->map(function ($state) use ($language) {
+            return [
+                'id' => $state->id,
+                'name' => $state->getName($language->id),
+            ];
+        });
 
         return response()->json([
             'results' => $results,
             'more' => $hasMore
         ]);
     }
-    //search country
+
     public function getCountry(Request $request)
     {
         $search = $request->input('search');
@@ -158,21 +167,26 @@ class ListingController extends Controller
         $pageSize = 10;
 
         $language = Language::where('code', $request->lang)->first();
-        $query = Country::where('language_id', $language->id);
+
+        $query = Country::whereHas('contents', fn($q) => $q->where('language_id', $language->id));
 
         if ($search) {
-            $query->where('name', 'like', "%{$search}%");
+            $query->whereHas('contents', fn($q) => $q->where('language_id', $language->id)->where('name', 'like', "%{$search}%"));
         }
 
-        // Add pagination
         $countries = $query->skip(($page - 1) * $pageSize)
             ->take($pageSize + 1)
-            ->get(['id', 'name']);
+            ->get();
 
-
-        // Check if there's more data
         $hasMore = count($countries) > $pageSize;
         $results = $hasMore ? $countries->slice(0, $pageSize) : $countries;
+
+        $results = $results->map(function ($country) use ($language) {
+            return [
+                'id' => $country->id,
+                'name' => $country->getName($language->id),
+            ];
+        });
 
         return response()->json([
             'results' => $results,
@@ -473,14 +487,33 @@ class ListingController extends Controller
     public function getState(Request $request)
     {
         $language = Language::where('code', $request->lang)->first();
-        $baseCountryId = $this->getBaseCountryId($request->id, $language);
 
-        $data['states'] = State::where('country_id', $baseCountryId)
-            ->where('language_id', $language->id)
-            ->get();
-        $data['cities'] = City::where('country_id', $baseCountryId)
-            ->where('language_id', $language->id)
-            ->get();
+        if ($language) {
+            $states = State::forLanguage($language->id)
+                ->where('country_id', $request->id)
+                ->get();
+            $cities = City::forLanguage($language->id)
+                ->where('country_id', $request->id)
+                ->get();
+
+            $data['states'] = $states->map(function ($state) use ($language) {
+                return [
+                    'id' => $state->id,
+                    'name' => $state->getName($language->id),
+                ];
+            });
+
+            $data['cities'] = $cities->map(function ($city) use ($language) {
+                return [
+                    'id' => $city->id,
+                    'name' => $city->getName($language->id),
+                ];
+            });
+        } else {
+            $data['states'] = [];
+            $data['cities'] = [];
+        }
+
         return $data;
     }
     public function getVideo(Request $request)
@@ -491,11 +524,21 @@ class ListingController extends Controller
     public function getCity(Request $request)
     {
         $language = Language::where('code', $request->lang)->first();
-        $baseStateId = $this->getBaseStateId($request->id, $language);
 
-        $data = City::where('state_id', $baseStateId)
-            ->where('language_id', $language->id)
-            ->get();
+        if ($language) {
+            $data = City::forLanguage($language->id)
+                ->where('state_id', $request->id)
+                ->get()
+                ->map(function ($city) use ($language) {
+                    return [
+                        'id' => $city->id,
+                        'name' => $city->getName($language->id),
+                    ];
+                });
+        } else {
+            $data = [];
+        }
+
         return $data;
     }
 
@@ -577,9 +620,9 @@ class ListingController extends Controller
                     $listingContent->title = $title;
                     $listingContent->slug = Str::slug($request['en_title'] ?: $title);
                     $listingContent->category_id = $request->category_id;
-                    $listingContent->country_id = $request[$language->code . '_country_id'];
-                    $listingContent->state_id = $request[$language->code . '_state_id'];
-                    $listingContent->city_id = $request[$language->code . '_city_id'];
+                    $listingContent->country_id = $request->country_id;
+                    $listingContent->state_id = $request->state_id;
+                    $listingContent->city_id = $request->city_id;
                     $listingContent->address = $request[$language->code . '_address'];
 
                     $aminities = $request->input($language->code . '_aminities', []);
@@ -888,9 +931,9 @@ class ListingController extends Controller
             $listingContent->title = $title;
             $listingContent->slug = Str::slug($request['en_title'] ?: $title);
             $listingContent->category_id = $request->category_id;
-            $listingContent->country_id = $request[$language->code . '_country_id'];
-            $listingContent->state_id = $request[$language->code . '_state_id'];
-            $listingContent->city_id = $request[$language->code . '_city_id'];
+            $listingContent->country_id = $request->country_id;
+            $listingContent->state_id = $request->state_id;
+            $listingContent->city_id = $request->city_id;
             $listingContent->address = $request[$language->code . '_address'];
             $aminities = $request->input($language->code . '_aminities', []);
                     $listingContent->aminities = json_encode($aminities);
@@ -918,41 +961,5 @@ class ListingController extends Controller
         }
         Session::flash('success', __('Business Hours Updated successfully') . '!');
         return back();
-    }
-
-    private function getBaseCountryId($countryId, $language)
-    {
-        $position = Country::where('language_id', $language->id)
-            ->orderBy('id')
-            ->pluck('id')
-            ->search($countryId);
-
-        if ($position === false) {
-            return $countryId;
-        }
-
-        $enLang = Language::where('code', 'en')->first();
-        return Country::where('language_id', $enLang->id)
-            ->orderBy('id')
-            ->skip($position)
-            ->value('id') ?: $countryId;
-    }
-
-    private function getBaseStateId($stateId, $language)
-    {
-        $position = State::where('language_id', $language->id)
-            ->orderBy('id')
-            ->pluck('id')
-            ->search($stateId);
-
-        if ($position === false) {
-            return $stateId;
-        }
-
-        $enLang = Language::where('code', 'en')->first();
-        return State::where('language_id', $enLang->id)
-            ->orderBy('id')
-            ->skip($position)
-            ->value('id') ?: $stateId;
     }
 }

@@ -81,20 +81,34 @@
                             <input type="checkbox" class="bulk-check" data-val="{{ $state->id }}">
                           </td>
                           <td>
-                            {{ strlen($state->name) > 20 ? mb_substr($state->name, 0, 20, 'UTF-8') . '...' : $state->name }}
+                            @php
+                              $stateName = $state->getName($language->id);
+                            @endphp
+                            {{ strlen($stateName) > 20 ? mb_substr($stateName, 0, 20, 'UTF-8') . '...' : $stateName }}
+                            @if ($state->contents->count() > 0)
+                              <div class="mt-1">
+                                @foreach ($state->contents as $content)
+                                  <span class="badge badge-secondary mr-1" title="{{ $content->language->name ?? '' }}">
+                                    {{ strtoupper($content->language->code ?? '—') }}
+                                  </span>
+                                @endforeach
+                              </div>
+                            @endif
                           </td>
                           <td>
                             @if ($state->country_id)
-                              {{ $state->country->name }}
+                              {{ $state->country?->getName($language->id) }}
                             @else
                               --
                             @endif
                           </td>
                           <td>
-                            <a class="btn btn-secondary btn-sm mr-1  mt-1 editBtn" href="#" data-toggle="modal"
+                            <a class="btn btn-secondary btn-sm mr-1 mt-1 editBtn" href="#" data-toggle="modal"
                               data-target="#editModal"
                               data-id="{{ $state->id }}"data-country_id="{{ $state->country_id }}"
-                              data-name="{{ $state->name }}">
+                              @foreach ($state->contents as $content)
+                              data-{{ $content->language->code }}_name="{{ $content->name }}"
+                              @endforeach>
                               <span class="btn-label">
                                 <i class="fas fa-edit"></i>
                               </span>
@@ -104,7 +118,7 @@
                               action="{{ route('admin.listing_specification.location.delete_state', ['id' => $state->id]) }}"
                               method="post">
                               @csrf
-                              <button type="submit" class="btn btn-danger btn-sm  mt-1 deleteBtn">
+                              <button type="submit" class="btn btn-danger btn-sm mt-1 deleteBtn">
                                 <span class="btn-label">
                                   <i class="fas fa-trash"></i>
                                 </span>

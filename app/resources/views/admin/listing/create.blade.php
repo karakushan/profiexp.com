@@ -383,6 +383,33 @@
                                     </div>
                                 </div>
 
+                                <div class="row mt-3">
+                                    <div class="col-lg-4">
+                                        <div class="form-group">
+                                            <label>{{ __('Country') . '*' }}</label>
+                                            <select name="country_id" class="form-control js-example-basic-single2-country" id="listing_country_id">
+                                                <option value="">{{ __('Select a Country') }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 d-none" id="listing_state_wrapper">
+                                        <div class="form-group">
+                                            <label>{{ __('State') . '*' }}</label>
+                                            <select name="state_id" class="form-control" id="listing_state_id">
+                                                <option value="">{{ __('Select a State') }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 d-none" id="listing_city_wrapper">
+                                        <div class="form-group">
+                                            <label>{{ __('City') . '*' }}</label>
+                                            <select name="city_id" class="form-control" id="listing_city_id">
+                                                <option value="">{{ __('Select a City') }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div id="accordion" class="mt-3 ">
                                     @foreach ($languages as $language)
                                         <div class="version">
@@ -413,41 +440,6 @@
                                                             </div>
                                                         </div>
 
-
-                                                        <div class="col-lg-4">
-                                                            <div
-                                                                class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                                                <label>{{ __('Country') . '*' }}</label>
-                                                                <select name="{{ $language->code }}_country_id"
-                                                                    class="form-control js-country-basic"
-                                                                    data-code="{{ $language->code }}">
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
-
-                                                        <div class="col-lg-4 {{ $language->code }}_hide_state">
-                                                            <div
-                                                                class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                                                <label>{{ __('State') . '*' }} </label>
-                                                                <select name="{{ $language->code }}_state_id"
-                                                                    class="form-control js-state-basic stateDropDown {{ $language->code }}_country_state_id"
-                                                                    data-code="{{ $language->code }}">
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
-
-                                                        <div class="col-lg-4">
-                                                            <div
-                                                                class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                                                <label>{{ __('City') . '*' }} </label>
-                                                                <select name="{{ $language->code }}_city_id"
-                                                                    class="form-control  js-select-city-ajax {{ $language->code }}_state_city_id"
-                                                                    data-code="{{ $language->code }}">
-                                                                </select>
-                                                            </div>
-                                                        </div>
 
                                                         <div class="col-lg-12">
                                                             <div class="form-group">
@@ -615,6 +607,93 @@
         var getCityUrl = "{{ route('admin.listing_management.get-city') }}";
         var galleryImages = {{ $numberoffImages }};
         const baseURL = "{{ url('/') }}";
+        var defaultLangCode = '{{ $defaultLang->code }}';
+    </script>
+
+    <script>
+        'use strict';
+        $(document).ready(function () {
+            $('#listing_country_id').select2({
+                placeholder: '{{ __("Select a Country") }}',
+                allowClear: true,
+                minimumInputLength: 0,
+                ajax: {
+                    url: countryUrl,
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term || '',
+                            page: params.page || 1,
+                            lang: defaultLangCode
+                        };
+                    },
+                    processResults: function (data, params) {
+                        return {
+                            results: data.results.map(function (item) {
+                                return { text: item.name, id: item.id };
+                            }),
+                            pagination: { more: data.more }
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            $('#listing_country_id').on('change', function () {
+                var countryId = $(this).val();
+                $('#listing_state_id').empty().append('<option value="">{{ __("Select a State") }}</option>');
+                $('#listing_city_id').empty().append('<option value="">{{ __("Select a City") }}</option>');
+                $('#listing_city_wrapper').addClass('d-none');
+
+                if (countryId) {
+                    $.ajax({
+                        url: getStateUrl,
+                        type: 'POST',
+                        data: { id: countryId, lang: defaultLangCode },
+                        success: function (response) {
+                            if (response.states && response.states.length > 0) {
+                                $('#listing_state_wrapper').removeClass('d-none');
+                                $.each(response.states, function (i, state) {
+                                    $('#listing_state_id').append('<option value="' + state.id + '">' + state.name + '</option>');
+                                });
+                            } else {
+                                $('#listing_state_wrapper').addClass('d-none');
+                                if (response.cities && response.cities.length > 0) {
+                                    $('#listing_city_wrapper').removeClass('d-none');
+                                    $.each(response.cities, function (i, city) {
+                                        $('#listing_city_id').append('<option value="' + city.id + '">' + city.name + '</option>');
+                                    });
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    $('#listing_state_wrapper').addClass('d-none');
+                }
+            });
+
+            $('#listing_state_id').on('change', function () {
+                var stateId = $(this).val();
+                $('#listing_city_id').empty().append('<option value="">{{ __("Select a City") }}</option>');
+
+                if (stateId) {
+                    $.ajax({
+                        url: getCityUrl,
+                        type: 'POST',
+                        data: { id: stateId, lang: defaultLangCode },
+                        success: function (response) {
+                            $('#listing_city_wrapper').removeClass('d-none');
+                            $.each(response, function (i, city) {
+                                $('#listing_city_id').append('<option value="' + city.id + '">' + city.name + '</option>');
+                            });
+                        }
+                    });
+                } else {
+                    $('#listing_city_wrapper').addClass('d-none');
+                }
+            });
+        });
     </script>
 
     <script type="text/javascript" src="{{ asset('assets/admin/js/admin-listing.js') }}"></script>

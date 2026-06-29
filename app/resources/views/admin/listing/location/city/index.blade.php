@@ -80,18 +80,30 @@
                             <input type="checkbox" class="bulk-check" data-val="{{ $city->id }}">
                           </td>
                           <td>
-                            {{ strlen($city->name) > 20 ? mb_substr($city->name, 0, 20, 'UTF-8') . '...' : $city->name }}
+                            @php
+                              $cityName = $city->getName($language->id);
+                            @endphp
+                            {{ strlen($cityName) > 20 ? mb_substr($cityName, 0, 20, 'UTF-8') . '...' : $cityName }}
+                            @if ($city->contents->count() > 0)
+                              <div class="mt-1">
+                                @foreach ($city->contents as $content)
+                                  <span class="badge badge-secondary mr-1" title="{{ $content->language->name ?? '' }}">
+                                    {{ strtoupper($content->language->code ?? '—') }}
+                                  </span>
+                                @endforeach
+                              </div>
+                            @endif
                           </td>
                           <td>
                             @if ($city->state_id)
-                              {{ $city->state->name }}
+                              {{ $city->state?->getName($language->id) }}
                             @else
                               --
                             @endif
                           </td>
                           <td>
                             @if ($city->country_id)
-                              {{ $city->country->name }}
+                              {{ $city->country?->getName($language->id) }}
                             @else
                               --
                             @endif
@@ -99,19 +111,20 @@
 
                           <td>
                             @php
-                              $x = App\Models\Location\State::Where([
-                                  ['language_id', $city->language_id],
-                                  ['country_id', $city->country_id],
-                              ])->count();
+                              $x = App\Models\Location\State::forLanguage($language->id)
+                                  ->where('country_id', $city->country_id)
+                                  ->count();
                               $okValue = $x != 0 ? 'OK' : null;
                             @endphp
-                            <a class="btn btn-secondary btn-sm mr-1  mt-1 editBtn" href="#" data-toggle="modal"
+                            <a class="btn btn-secondary btn-sm mr-1 mt-1 editBtn" href="#" data-toggle="modal"
                               data-target="#editModal" data-id="{{ $city->id }}"
                               data-country_id="{{ $city->country_id }}" data-state_id="{{ $city->state_id }}"
                               data-ok="{{ $okValue }}"
                               data-cie="{{ is_null($city->feature_image) ? null : $city->id }}"
-                              data-language_id="{{ $city->language_id }}" data-name="{{ $city->name }}"
-                              data-image="{{ is_null($city->feature_image) ? asset('assets/img/noimage.jpg') : asset('assets/img/location/city/' . $city->feature_image) }}">
+                              data-image="{{ is_null($city->feature_image) ? asset('assets/img/noimage.jpg') : asset('assets/img/location/city/' . $city->feature_image) }}"
+                              @foreach ($city->contents as $content)
+                              data-{{ $content->language->code }}_name="{{ $content->name }}"
+                              @endforeach>
                               <span class="btn-label">
                                 <i class="fas fa-edit"></i>
                               </span>
@@ -121,7 +134,7 @@
                               action="{{ route('admin.listing_specification.location.delete_city', ['id' => $city->id]) }}"
                               method="post">
                               @csrf
-                              <button type="submit" class="btn btn-danger btn-sm  mt-1 deleteBtn">
+                              <button type="submit" class="btn btn-danger btn-sm mt-1 deleteBtn">
                                 <span class="btn-label">
                                   <i class="fas fa-trash"></i>
                                 </span>

@@ -307,23 +307,21 @@ class ListingController extends Controller
   public function getState(Request $request)
   {
     $language = Language::where('code', $request->lang)->first();
-    $baseCountryId = $this->getBaseCountryId($request->id, $language);
 
-    $data['states'] = State::where('country_id', $baseCountryId)
-        ->where('language_id', $language->id)
+    $data['states'] = State::forLanguage($language->id)
+        ->where('country_id', $request->id)
         ->get();
-    $data['cities'] = City::where('country_id', $baseCountryId)
-        ->where('language_id', $language->id)
+    $data['cities'] = City::forLanguage($language->id)
+        ->where('country_id', $request->id)
         ->get();
     return $data;
   }
   public function getCity(Request $request)
   {
     $language = Language::where('code', $request->lang)->first();
-    $baseStateId = $this->getBaseStateId($request->id, $language);
 
-    $data = City::where('state_id', $baseStateId)
-        ->where('language_id', $language->id)
+    $data = City::forLanguage($language->id)
+        ->where('state_id', $request->id)
         ->get();
     return $data;
   }
@@ -702,7 +700,13 @@ Thank you for your attention to this matter.";
     }
 
 // Countries list
-        $countries = Country::select('id', 'name')->get();
+        $defaultLang = Language::where('is_default', 1)->first();
+        $defaultLangId = $defaultLang->id;
+
+        $countries = Country::join('country_contents', 'countries.id', '=', 'country_contents.country_id')
+            ->where('country_contents.language_id', $defaultLangId)
+            ->select('countries.id', 'country_contents.name')
+            ->get();
 
         // Collect all country_ids and state_ids used across any language content
         $allCountryIds = collect($contents)->pluck('country_id')->filter()->unique()->values();
@@ -710,12 +714,20 @@ Thank you for your attention to this matter.";
 
         // States for all countries used by any language content
         $states = $allCountryIds->isNotEmpty()
-            ? State::whereIn('country_id', $allCountryIds)->select('id', 'name', 'country_id')->get()
+            ? State::join('state_contents', 'states.id', '=', 'state_contents.state_id')
+                ->whereIn('states.country_id', $allCountryIds)
+                ->where('state_contents.language_id', $defaultLangId)
+                ->select('states.id', 'state_contents.name', 'states.country_id')
+                ->get()
             : collect();
 
         // Cities for all states used by any language content
         $cities = $allStateIds->isNotEmpty()
-            ? City::whereIn('state_id', $allStateIds)->select('id', 'name', 'state_id')->get()
+            ? City::join('city_contents', 'cities.id', '=', 'city_contents.city_id')
+                ->whereIn('cities.state_id', $allStateIds)
+                ->where('city_contents.language_id', $defaultLangId)
+                ->select('cities.id', 'city_contents.name', 'cities.state_id')
+                ->get()
       : collect();
 
     // Categories per language
@@ -1632,16 +1644,17 @@ Thank you for your attention to this matter.";
 
     $language = Language::where('code', $request->lang)->first();
 
-    $query = City::where('language_id', $language->id);
+    $query = City::join('city_contents', 'cities.id', '=', 'city_contents.city_id')
+      ->where('city_contents.language_id', $language->id);
 
     if ($search) {
-      $query->where('name', 'like', "%{$search}%");
+      $query->where('city_contents.name', 'like', "%{$search}%");
     }
 
     // Add pagination
     $cities = $query->skip(($page - 1) * $pageSize)
       ->take($pageSize + 1)
-      ->get(['id', 'name']);
+      ->get(['cities.id', 'city_contents.name']);
 
     // Check if there's more data
     $hasMore = count($cities) > $pageSize;
@@ -1694,16 +1707,17 @@ Thank you for your attention to this matter.";
 
     $language = Language::where('code', $request->lang)->first();
 
-    $query = State::where('language_id', $language->id);
+    $query = State::join('state_contents', 'states.id', '=', 'state_contents.state_id')
+      ->where('state_contents.language_id', $language->id);
 
     if ($search) {
-      $query->where('name', 'like', "%{$search}%");
+      $query->where('state_contents.name', 'like', "%{$search}%");
     }
 
     // Add pagination
     $cities = $query->skip(($page - 1) * $pageSize)
       ->take($pageSize + 1)
-      ->get(['id', 'name']);
+      ->get(['states.id', 'state_contents.name']);
 
     // Check if there's more data
     $hasMore = count($cities) > $pageSize;
@@ -1722,16 +1736,17 @@ Thank you for your attention to this matter.";
     $pageSize = 10;
 
     $language = Language::where('code', $request->lang)->first();
-    $query = Country::where('language_id', $language->id);
+    $query = Country::join('country_contents', 'countries.id', '=', 'country_contents.country_id')
+      ->where('country_contents.language_id', $language->id);
 
     if ($search) {
-      $query->where('name', 'like', "%{$search}%");
+      $query->where('country_contents.name', 'like', "%{$search}%");
     }
 
     // Add pagination
     $countries = $query->skip(($page - 1) * $pageSize)
       ->take($pageSize + 1)
-      ->get(['id', 'name']);
+      ->get(['countries.id', 'country_contents.name']);
 
 
     // Check if there's more data
@@ -2621,39 +2636,5 @@ Thank you for your attention to this matter.";
     ]);
   }
 
-  private function getBaseCountryId($countryId, $language)
-  {
-    $position = Country::where('language_id', $language->id)
-        ->orderBy('id')
-        ->pluck('id')
-        ->search($countryId);
 
-    if ($position === false) {
-      return $countryId;
-    }
-
-    $enLang = Language::where('code', 'en')->first();
-    return Country::where('language_id', $enLang->id)
-        ->orderBy('id')
-        ->skip($position)
-        ->value('id') ?: $countryId;
-  }
-
-  private function getBaseStateId($stateId, $language)
-  {
-    $position = State::where('language_id', $language->id)
-        ->orderBy('id')
-        ->pluck('id')
-        ->search($stateId);
-
-    if ($position === false) {
-      return $stateId;
-    }
-
-    $enLang = Language::where('code', 'en')->first();
-    return State::where('language_id', $enLang->id)
-        ->orderBy('id')
-        ->skip($position)
-        ->value('id') ?: $stateId;
-  }
 }

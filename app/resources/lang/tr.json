@@ -639,5 +639,10 @@
   "You have not bought anything yet!": "Henüz hiçbir şey satın almadınız!",
   "Added to your wishlist successfully.": "İstek listenize başarıyla eklendi.",
   "Show All Categories": "Tüm Kategorileri Göster",
-  "LISTINGS": "İlanlar"
+  "LISTINGS": "İlanlar",
+  ":count BEST :label in :city - Updated :year": ":count EN İYİ :label :city şehrinde — :year Güncellendi",
+  ":count BEST :label - Updated :year": ":count EN İYİ :label — :year Güncellendi",
+  "Top :count Best :label in :city - Last Updated :month :year - :site": "En İyi :count :label :city şehrinde — Son Güncelleme :month :year — :site",
+  "Top :count Best :label - Last Updated :month :year - :site": "En İyi :count :label — Son Güncelleme :month :year — :site",
+  "Page :num": "Sayfa :num"
 }

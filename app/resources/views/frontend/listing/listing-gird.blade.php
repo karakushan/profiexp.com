@@ -1,6 +1,8 @@
 @extends('frontend.layout')
 @section('pageHeading')
-    @if (!empty($categoryInfo) && !empty($categoryInfo->meta_title))
+    @if (!empty($cityMetaTitle))
+        {{ $cityMetaTitle }}
+    @elseif (!empty($categoryInfo) && !empty($categoryInfo->meta_title))
         {{ $categoryInfo->meta_title }}
     @elseif (!empty($pageHeading))
         {{ $pageHeading->listing_page_title }}
@@ -10,7 +12,9 @@
 @endsection
 
 @section('metaDescription')
-    @if (!empty($categoryInfo) && !empty($categoryInfo->meta_description))
+    @if (!empty($cityMetaDescription))
+        {{ $cityMetaDescription }}
+    @elseif (!empty($categoryInfo) && !empty($categoryInfo->meta_description))
         {{ $categoryInfo->meta_description }}
     @elseif (!empty($seoInfo))
         {{ $seoInfo->meta_description_listings }}

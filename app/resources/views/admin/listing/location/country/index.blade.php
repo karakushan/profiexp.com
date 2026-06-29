@@ -79,12 +79,26 @@
                             <input type="checkbox" class="bulk-check" data-val="{{ $country->id }}">
                           </td>
                           <td>
-                            {{ strlen($country->name) > 20 ? mb_substr($country->name, 0, 20, 'UTF-8') . '...' : $country->name }}
+                            @php
+                              $countryName = $country->getName($language->id);
+                            @endphp
+                            {{ strlen($countryName) > 20 ? mb_substr($countryName, 0, 20, 'UTF-8') . '...' : $countryName }}
+                            @if ($country->contents->count() > 0)
+                              <div class="mt-1">
+                                @foreach ($country->contents as $content)
+                                  <span class="badge badge-secondary mr-1" title="{{ $content->language->name ?? '' }}">
+                                    {{ strtoupper($content->language->code ?? '—') }}
+                                  </span>
+                                @endforeach
+                              </div>
+                            @endif
                           </td>
                           <td>
-                            <a class="btn btn-secondary btn-sm mr-1  mt-1 editBtn" href="#" data-toggle="modal"
+                            <a class="btn btn-secondary btn-sm mr-1 mt-1 editBtn" href="#" data-toggle="modal"
                               data-target="#editModal" data-id="{{ $country->id }}"
-                              data-language_id="{{ $country->language_id }}" data-name="{{ $country->name }}">
+                              @foreach ($country->contents as $content)
+                              data-{{ $content->language->code }}_name="{{ $content->name }}"
+                              @endforeach>
                               <span class="btn-label">
                                 <i class="fas fa-edit"></i>
                               </span>
@@ -94,7 +108,7 @@
                               action="{{ route('admin.listing_specification.location.delete_country', ['id' => $country->id]) }}"
                               method="post">
                               @csrf
-                              <button type="submit" class="btn btn-danger btn-sm  mt-1 deleteBtn">
+                              <button type="submit" class="btn btn-danger btn-sm mt-1 deleteBtn">
                                 <span class="btn-label">
                                   <i class="fas fa-trash"></i>
                                 </span>

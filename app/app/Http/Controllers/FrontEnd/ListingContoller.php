@@ -56,12 +56,11 @@ class ListingContoller extends Controller
     $language = $misc->getLanguage();
     $data = [];
     if ($request->id) {
-      $baseCountryId = $this->getBaseCountryId($request->id, $language);
-      $data['states'] = State::where('country_id', $baseCountryId)
-          ->where('language_id', $language->id)
+      $data['states'] = State::forLanguage($language->id)
+          ->where('country_id', $request->id)
           ->get();
-      $data['cities'] = City::where('country_id', $baseCountryId)
-          ->where('language_id', $language->id)
+      $data['cities'] = City::forLanguage($language->id)
+          ->where('country_id', $request->id)
           ->get();
     }
     return $data;
@@ -69,17 +68,16 @@ class ListingContoller extends Controller
 
   public function getAddress(Request $request)
   {
+    $misc = new MiscellaneousController();
+    $language = $misc->getLanguage();
     if ($request->country_id) {
-      $country = Country::Where('id', $request->country_id)->first()
-        ->name;
+      $country = Country::find($request->country_id)?->getName($language->id);
     }
     if ($request->state_id) {
-      $state = State::Where('id', $request->state_id)->first()
-        ->name;
+      $state = State::find($request->state_id)?->getName($language->id);
     }
     if ($request->city_id) {
-      $city = City::Where('id', $request->city_id)->first()
-        ->name;
+      $city = City::find($request->city_id)?->getName($language->id);
     }
     $address = '';
     if ($request->city_id) {
@@ -106,12 +104,11 @@ class ListingContoller extends Controller
     $misc = new MiscellaneousController();
     $language = $misc->getLanguage();
     if ($request->id) {
-      $baseStateId = $this->getBaseStateId($request->id, $language);
-      $data = City::where('state_id', $baseStateId)
-          ->where('language_id', $language->id)
+      $data = City::forLanguage($language->id)
+          ->where('state_id', $request->id)
           ->get();
     } else {
-      $data = City::where('language_id', $language->id)->get();
+      $data = City::forLanguage($language->id)->get();
     }
     return $data;
   }
@@ -151,7 +148,7 @@ class ListingContoller extends Controller
     $cityIds = [];
     if ($request->filled('city')) {
       $city = $request->city;
-      $city_content = City::where([['language_id', $language->id], ['id', $city]])->first();
+      $city_content = City::forLanguage($language->id)->where('id', $city)->first();
 
       if (!empty($city_content)) {
         $city_id = $city_content->id;
@@ -606,18 +603,169 @@ class ListingContoller extends Controller
     $information['aminites'] = Aminite::where('language_id', $language->id)
       ->orderBy('updated_at', 'asc')->get();
 
-    $information['countries'] = Country::where('language_id', $language->id)
+    $information['countries'] = Country::forLanguage($language->id)
       ->orderBy('id', 'asc')->get();
 
-    $information['states'] = State::where('language_id', $language->id)
+    $information['states'] = State::forLanguage($language->id)
       ->orderBy('id', 'asc')->get();
+
+    $information['searchCity'] = null;
+    $metaCityName = null;
+    $metaStateName = null;
+    $metaCountryName = null;
 
     if ($request->city) {
-      $searchCity = City::where([['language_id', $language->id], ['id', $request->city]]);
+      $cityModel = City::with('country', 'state')->forLanguage($language->id)->where('id', $request->city)->first();
 
-      if ($searchCity->exists()) {
-        $information['searchCity'] = $searchCity->first()->name;
+      if ($cityModel) {
+        $metaCityName = $cityModel->getName($language->id);
+        $information['searchCity'] = $metaCityName;
+        $metaStateName = $cityModel->state?->getName($language->id);
+        $metaCountryName = $cityModel->country?->getName($language->id);
       }
+    } elseif ($request->filled('title') && !empty($listingIds)) {
+      $cityId = ListingContent::where('language_id', $language->id)
+        ->whereIn('listing_id', $listingIds)
+        ->whereNotNull('city_id')
+        ->groupBy('city_id')
+        ->orderByRaw('COUNT(*) DESC')
+        ->value('city_id');
+
+      if ($cityId) {
+        $cityModel = City::with('country', 'state')->forLanguage($language->id)->where('id', $cityId)->first();
+        if ($cityModel) {
+          $metaCityName = $cityModel->getName($language->id);
+          $metaStateName = $cityModel->state?->getName($language->id);
+          $metaCountryName = $cityModel->country?->getName($language->id);
+        }
+      }
+    }
+
+    $categoryName = null;
+    if (!empty($category_content)) {
+      $categoryTranslation = $category_content->getTranslation($language->id);
+      $categoryName = $categoryTranslation?->name;
+    }
+
+    $siteTitle = Basic::value('website_title');
+
+    if ($metaCityName || $request->filled('title')) {
+      $searchTerm = $request->filled('title') ? $request->title : '';
+
+      $metaListingsQuery = ListingContent::join('listings', 'listings.id', '=', 'listing_contents.listing_id')
+        ->where('listing_contents.language_id', $language->id)
+        ->where('listings.status', 1)
+        ->where('listings.visibility', 1);
+
+      if ($categoryName) {
+        $metaListingsQuery->where('listing_contents.category_id', $category_content->id);
+      } elseif ($searchTerm) {
+        $metaListingsQuery->where('listing_contents.title', 'like', "%$searchTerm%");
+      }
+
+      // Fix: filter by city when selected
+      if ($request->city) {
+        $metaListingsQuery->where('listing_contents.city_id', $request->city);
+      } elseif (!empty($listingIds)) {
+        $metaListingsQuery->whereIn('listing_contents.listing_id', $listingIds);
+      }
+
+      $listingCount = $metaListingsQuery->count();
+
+      $categoryNames = ListingCategory::root()->active()
+        ->forLanguage($language->id)
+        ->with(['contents' => fn ($q) => $q->where('language_id', $language->id)])
+        ->orderBy('serial_number')
+        ->get()
+        ->map(fn ($c) => $c->getName($language->id))
+        ->filter()
+        ->values()
+        ->toArray();
+
+      $month = now()->translatedFormat('F');
+      $year = date('Y');
+      $siteName = $siteTitle ?? '';
+
+      // Always show at least 10 in meta (Yelp-style)
+      $metaCount = max($listingCount, 10);
+
+      $labelBase = $categoryName ? $categoryName : __('Services');
+
+      // Russian pluralization for the meta label
+      $labelForTitle = $labelBase;
+      $labelForDesc = $labelBase;
+      if ($language->code === 'ru') {
+        $lowerLabel = mb_strtolower($labelBase);
+        $pluralForms = [
+          'услуги' => ['Услуга', 'Услуги', 'Услуг'],
+          'Услуги' => ['Услуга', 'Услуги', 'Услуг'],
+        ];
+        if (isset($pluralForms[$labelBase]) || isset($pluralForms[$lowerLabel])) {
+          $forms = $pluralForms[$lowerLabel] ?? $pluralForms[$labelBase];
+          $mod10 = $metaCount % 10;
+          $mod100 = $metaCount % 100;
+          if ($mod10 == 1 && $mod100 != 11) {
+            $labelForTitle = $forms[0];
+            $labelForDesc = mb_strtolower($forms[0]);
+          } elseif (in_array($mod10, [2, 3, 4]) && !in_array($mod100, [12, 13, 14])) {
+            $labelForTitle = $forms[1];
+            $labelForDesc = mb_strtolower($forms[1]);
+          } else {
+            $labelForTitle = $forms[2];
+            $labelForDesc = mb_strtolower($forms[2]);
+          }
+        }
+      }
+
+      if ($metaCityName) {
+        $cityPart = $metaCityName;
+        if ($metaStateName) {
+          $cityPart .= ", $metaStateName";
+        }
+        if ($metaCountryName) {
+          $cityPart .= ", $metaCountryName";
+        }
+        $information['cityMetaTitle'] = trans_choice(':count BEST :label in :city - Updated :year', $metaCount, [
+          'count' => $metaCount,
+          'label' => mb_strtoupper($labelForTitle),
+          'city' => $cityPart,
+          'year' => $year,
+        ]);
+        $desc = trans_choice('Top :count Best :label in :city - Last Updated :month :year - :site', $metaCount, [
+          'count' => $metaCount,
+          'label' => $labelForDesc,
+          'city' => $cityPart,
+          'month' => $month,
+          'year' => $year,
+          'site' => $siteName,
+        ]);
+      } else {
+        $information['cityMetaTitle'] = trans_choice(':count BEST :label - Updated :year', $metaCount, [
+          'count' => $metaCount,
+          'label' => mb_strtoupper($labelForTitle),
+          'year' => $year,
+        ]);
+        $desc = trans_choice('Top :count Best :label - Last Updated :month :year - :site', $metaCount, [
+          'count' => $metaCount,
+          'label' => $labelForDesc,
+          'month' => $month,
+          'year' => $year,
+          'site' => $siteName,
+        ]);
+      }
+
+      // Append page number to meta data when not on first page
+      if ((int) $page > 1) {
+        $pageLabel = ' — ' . __('Page :num', ['num' => $page]);
+        $information['cityMetaTitle'] .= $pageLabel;
+        $desc .= $pageLabel;
+      }
+
+      if (!empty($categoryNames)) {
+        $desc .= ' — ' . implode(', ', $categoryNames);
+      }
+
+      $information['cityMetaDescription'] = $desc;
     }
 
     $information['min'] = Listing::where([
@@ -716,16 +864,17 @@ class ListingContoller extends Controller
 
     $misc = new MiscellaneousController();
     $language = $misc->getLanguage();
-    $query = Country::where('language_id', $language->id);
+    $query = Country::join('country_contents', 'countries.id', '=', 'country_contents.country_id')
+      ->where('country_contents.language_id', $language->id);
 
     if ($search) {
-      $query->where('name', 'like', "%{$search}%");
+      $query->where('country_contents.name', 'like', "%{$search}%");
     }
 
     // Add pagination
     $countries = $query->skip(($page - 1) * $pageSize)
       ->take($pageSize + 1)
-      ->get(['id', 'name']);
+      ->get(['countries.id', 'country_contents.name']);
 
 
     // Check if there's more data
@@ -747,16 +896,17 @@ class ListingContoller extends Controller
     $misc = new MiscellaneousController();
     $language = $misc->getLanguage();
 
-    $query = City::where('language_id', $language->id);
+    $query = City::join('city_contents', 'cities.id', '=', 'city_contents.city_id')
+      ->where('city_contents.language_id', $language->id);
 
     if ($search) {
-      $query->where('name', 'like', "%{$search}%");
+      $query->where('city_contents.name', 'like', "%{$search}%");
     }
 
     // Add pagination
     $cities = $query->skip(($page - 1) * $pageSize)
       ->take($pageSize + 1)
-      ->get(['id', 'name']);
+      ->get(['cities.id', 'city_contents.name']);
 
     // Check if there's more data
     $hasMore = count($cities) > $pageSize;
@@ -777,16 +927,17 @@ class ListingContoller extends Controller
     $misc = new MiscellaneousController();
     $language = $misc->getLanguage();
 
-    $query = State::where('language_id', $language->id);
+    $query = State::join('state_contents', 'states.id', '=', 'state_contents.state_id')
+      ->where('state_contents.language_id', $language->id);
 
     if ($search) {
-      $query->where('name', 'like', "%{$search}%");
+      $query->where('state_contents.name', 'like', "%{$search}%");
     }
 
     // Add pagination
     $cities = $query->skip(($page - 1) * $pageSize)
       ->take($pageSize + 1)
-      ->get(['id', 'name']);
+      ->get(['states.id', 'state_contents.name']);
 
     // Check if there's more data
     $hasMore = count($cities) > $pageSize;
@@ -855,7 +1006,7 @@ class ListingContoller extends Controller
     $cityIds = [];
     if ($request->filled('city')) {
       $city = $request->city;
-      $city_content = City::where([['language_id', $language->id], ['id', $city]])->first();
+      $city_content = City::forLanguage($language->id)->where('id', $city)->first();
 
       if (!empty($city_content)) {
         $city_id = $city_content->id;
@@ -2184,39 +2335,4 @@ class ListingContoller extends Controller
     return redirect()->back();
   }
 
-  private function getBaseCountryId($countryId, $language)
-  {
-    $position = Country::where('language_id', $language->id)
-        ->orderBy('id')
-        ->pluck('id')
-        ->search($countryId);
-
-    if ($position === false) {
-      return $countryId;
-    }
-
-    $enLang = Language::where('code', 'en')->first();
-    return Country::where('language_id', $enLang->id)
-        ->orderBy('id')
-        ->skip($position)
-        ->value('id') ?: $countryId;
-  }
-
-  private function getBaseStateId($stateId, $language)
-  {
-    $position = State::where('language_id', $language->id)
-        ->orderBy('id')
-        ->pluck('id')
-        ->search($stateId);
-
-    if ($position === false) {
-      return $stateId;
-    }
-
-    $enLang = Language::where('code', 'en')->first();
-    return State::where('language_id', $enLang->id)
-        ->orderBy('id')
-        ->skip($position)
-        ->value('id') ?: $stateId;
-  }
 }

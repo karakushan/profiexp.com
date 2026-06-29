@@ -639,5 +639,10 @@
   "You have not bought anything yet!": "Вы ещё ничего не купили!",
   "Added to your wishlist successfully.": "Успешно добавлено в избранное.",
   "Show All Categories": "Показать все категории",
-  "LISTINGS": "Объявления"
+  "LISTINGS": "Объявления",
+  ":count BEST :label in :city - Updated :year": "{1} :count ЛУЧШАЯ :label в :city — Обновлено :year|[2,*] :count ЛУЧШИХ :label в :city — Обновлено :year",
+  ":count BEST :label - Updated :year": "{1} :count ЛУЧШАЯ :label — Обновлено :year|[2,*] :count ЛУЧШИХ :label — Обновлено :year",
+  "Top :count Best :label in :city - Last Updated :month :year - :site": "{1} Топ :count :label в :city — Последнее обновление :month :year — :site|[2,*] Топ :count :label в :city — Последнее обновление :month :year — :site",
+  "Top :count Best :label - Last Updated :month :year - :site": "{1} Топ :count :label — Последнее обновление :month :year — :site|[2,*] Топ :count :label — Последнее обновление :month :year — :site",
+  "Page :num": "Страница :num"
 }

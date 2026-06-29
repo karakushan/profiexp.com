@@ -110,13 +110,18 @@
                                     </div>
                                 @endif
 
-                                @if (request()->input('city'))
+                                @if (request()->input('city') && !empty($searchCity))
                                     <div class="form-group">
                                         <select class="form-control js-select-city-ajax cityDropdown" id="cityDropdown">
                                             <option selected value="{{ $searchCity }}">
                                                 {{ $searchCity }}
                                             </option>
                                         </select>
+                                    </div>
+                                @elseif (request()->input('city'))
+                                    <div class="form-group">
+                                        <select class="form-control cityDropdown js-select-city-ajax"
+                                            id="cityDropdown"></select>
                                     </div>
                                 @else
                                     <div class="form-group">

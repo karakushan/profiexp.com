@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
   {
     $schedule->command('listings:translate')->everyMinute();
     $schedule->command('categories:translate')->everyMinute();
+    $schedule->command('locations:translate')->everyMinute();
 
     $schedule->call(function () {
       Artisan::call('subcheck:expired');

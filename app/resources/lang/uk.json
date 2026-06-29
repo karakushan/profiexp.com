@@ -639,5 +639,10 @@
   "You have not bought anything yet!": "Ви ще нічого не купили!",
   "Added to your wishlist successfully.": "Успішно додано до списку бажань.",
   "Show All Categories": "Показати всі категорії",
-  "LISTINGS": "Оголошення"
+  "LISTINGS": "Оголошення",
+  ":count BEST :label in :city - Updated :year": "{1} :count НАЙКРАЩА :label в :city — Оновлено :year|[2,*] :count НАЙКРАЩИХ :label в :city — Оновлено :year",
+  ":count BEST :label - Updated :year": "{1} :count НАЙКРАЩА :label — Оновлено :year|[2,*] :count НАЙКРАЩИХ :label — Оновлено :year",
+  "Top :count Best :label in :city - Last Updated :month :year - :site": "{1} Топ :count :label в :city — Останнє оновлення :month :year — :site|[2,*] Топ :count :label в :city — Останнє оновлення :month :year — :site",
+  "Top :count Best :label - Last Updated :month :year - :site": "{1} Топ :count :label — Останнє оновлення :month :year — :site|[2,*] Топ :count :label — Останнє оновлення :month :year — :site",
+  "Page :num": "Сторінка :num"
 }

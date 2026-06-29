@@ -3,24 +3,27 @@
 namespace App\Http\Controllers\Admin\Listing\Location;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Language;
 use App\Models\Listing\ListingContent;
 use App\Models\Location\City;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Validator;
 use App\Models\Location\Country;
+use App\Models\Location\CountryContent;
 use App\Models\Location\State;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class CountryController extends Controller
 {
     public function index(Request $request)
     {
-
-        $language = Language::query()->where('code', '=', $request->language)->firstOrFail();
-        $information['countries'] = $language->countryInfo()->orderByDesc('id')->get();
+        $language = Language::where('code', $request->language)->firstOrFail();
+        $information['countries'] = Country::forLanguage($language->id)
+            ->with(['contents' => fn($q) => $q->where('language_id', $language->id)])
+            ->orderByDesc('id')
+            ->get();
         $information['langs'] = Language::all();
         $information['language'] = $language;
 
@@ -29,131 +32,127 @@ class CountryController extends Controller
 
     public function store(Request $request)
     {
-        $rules = [
-            'language_id' => 'required',
-            'name' => [
-                'required',
-                Rule::unique('countries')->where(function ($query) use ($request) {
-                    return $query->where('language_id', $request->input('language_id'));
-                }),
-                'max:255',
-            ],
+        $langs = Language::all();
+        $defaultLang = Language::where('is_default', 1)->first() ?? Language::first();
+
+        $rules = [];
+        foreach ($langs as $lang) {
+            $rules[$lang->code . '_name'] = ($lang->code === $defaultLang->code ? 'required|max:255' : 'nullable|max:255');
+        }
+
+        $messages = [
+            $defaultLang->code . '_name.required' => __('The name field is required for default language.'),
         ];
 
-        $message = [
-            'language_id.required' => __('The language field is required.'),
-            'name.required' => __('The name field is required.')
-        ];
-
-        $validator = Validator::make($request->all(), $rules, $message);
+        $validator = Validator::make($request->all(), $rules, $messages);
 
         if ($validator->fails()) {
-            return Response::json([
-                'errors' => $validator->getMessageBag()
-            ], 400);
+            return Response::json(['errors' => $validator->getMessageBag()], 400);
         }
-        Country::query()->create($request->except('language'));
+
+        $country = Country::create();
+
+        foreach ($langs as $lang) {
+            $name = $request->{$lang->code . '_name'};
+            if (empty($name)) continue;
+
+            CountryContent::create([
+                'country_id' => $country->id,
+                'language_id' => $lang->id,
+                'name' => $name,
+            ]);
+        }
 
         Session::flash('success', __('Country stored successfully') . '!');
-
         return Response::json(['status' => 'success'], 200);
     }
 
     public function update(Request $request)
     {
-        $rules = [
-            'name' => [
-                'required',
-                Rule::unique('countries')->where(function ($query) use ($request) {
-                    return $query->where('language_id', $request->input('language_id'));
-                })->ignore($request->id, 'id'),
-                'max:255',
-            ],
-        ];
+        $langs = Language::all();
+        $defaultLang = Language::where('is_default', 1)->first() ?? Language::first();
+
+        $rules = [];
+        foreach ($langs as $lang) {
+            $rules[$lang->code . '_name'] = ($lang->code === $defaultLang->code ? 'required|max:255' : 'nullable|max:255');
+        }
 
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
-            return Response::json([
-                'errors' => $validator->getMessageBag()
-            ], 400);
+            return Response::json(['errors' => $validator->getMessageBag()], 400);
         }
 
-        $aminiteInfo = Country::query()->find($request->id);
+        $country = Country::findOrFail($request->id);
 
-        $aminiteInfo->update($request->except('language'));
+        foreach ($langs as $lang) {
+            $name = $request->{$lang->code . '_name'};
+            if (empty($name)) continue;
+
+            CountryContent::updateOrCreate(
+                ['country_id' => $country->id, 'language_id' => $lang->id],
+                ['name' => $name]
+            );
+        }
 
         Session::flash('success', __('Country updated successfully') . '!');
-
         return Response::json(['status' => 'success'], 200);
     }
 
     public function destroy($id)
     {
+        $country = Country::findOrFail($id);
 
-        $country = Country::query()->find($id);
-        $city = City::Where('country_id', $id)->get();
-        $state = State::Where('country_id', $id)->get();
-        $listing_content = ListingContent::Where('country_id', $id)->get();
-
-        if (count($city) > 0) {
+        if (City::where('country_id', $id)->exists()) {
             return redirect()->back()->with('warning', __('First delete all the city of this Country') . '!');
-        } else {
-            if (count($state) > 0) {
-                return redirect()->back()->with('warning', __('First delete all the State of this Country') . '!');
-            } else {
-                if (count($listing_content) > 0) {
-                    return redirect()->back()->with('warning', __('First delete all the listing of this Country') . '!');
-                } else {
-
-                    $country->delete();
-                    return redirect()->back()->with('success', __('Country deleted successfully') . '!');
-                }
-            }
         }
+
+        if (State::where('country_id', $id)->exists()) {
+            return redirect()->back()->with('warning', __('First delete all the State of this Country') . '!');
+        }
+
+        if (ListingContent::where('country_id', $id)->exists()) {
+            return redirect()->back()->with('warning', __('First delete all the listing of this Country') . '!');
+        }
+
+        $country->contents()->delete();
+        $country->delete();
+
+        return redirect()->back()->with('success', __('Country deleted successfully') . '!');
     }
 
     public function bulkDestroy(Request $request)
     {
         $ids = $request['ids'];
+        $errorMessages = [];
 
-        $errorOccurred = false;
-        $errorOccurred2 = false;
-        $errorOccurred3 = false;
         foreach ($ids as $id) {
-            $country = Country::query()->find($id);
-            $city = City::Where('country_id', $id)->get();
-            $state = State::Where('country_id', $id)->get();
-            $listing_content = ListingContent::Where('country_id', $id)->get();
+            $country = Country::find($id);
+            if (!$country) continue;
 
-
-            if (count($city) > 0) {
-
-                $errorOccurred = true;
-                break;
-            } else {
-                if (count($state) > 0) {
-                    $errorOccurred2 = true;
-                    break;
-                } else {
-                    if (count($listing_content) > 0) {
-                        $errorOccurred3 = true;
-                        break;
-                    } else {
-                        $country->delete();
-                    }
-                }
+            if (City::where('country_id', $id)->exists()) {
+                $errorMessages[] = __('First delete all cities of country') . ' #' . $id;
+                continue;
             }
+
+            if (State::where('country_id', $id)->exists()) {
+                $errorMessages[] = __('First delete all states of country') . ' #' . $id;
+                continue;
+            }
+
+            if (ListingContent::where('country_id', $id)->exists()) {
+                $errorMessages[] = __('First delete all listings of country') . ' #' . $id;
+                continue;
+            }
+
+            $country->contents()->delete();
+            $country->delete();
         }
 
-        if ($errorOccurred == true) {
-            Session::flash('success', __('First delete all the city of these Country') . '!');
-        } elseif ($errorOccurred2 == true) {
-            Session::flash('warning', __('First delete all the State of these Country') . '!');
-        } elseif ($errorOccurred3 == true) {
-            Session::flash('warning', __('First delete all the listing of these Country') . '!');
+        if (!empty($errorMessages)) {
+            Session::flash('warning', implode(' | ', $errorMessages));
         } else {
-            Session::flash('success', __('Selected Informations deleted successfully') . '!');
+            Session::flash('success', __('Selected countries deleted successfully') . '!');
         }
 
         return Response::json(['status' => 'success'], 200);

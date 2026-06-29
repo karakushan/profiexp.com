@@ -21,6 +21,7 @@ use App\Models\HomePage\PackageSection;
 use App\Models\Listing\ListingContent;
 use App\Models\ListingCategory;
 use App\Models\Location\City;
+use App\Models\Location\CityContent;
 use Illuminate\Support\Facades\DB;
 use App\Models\Package;
 use Illuminate\Support\Facades\Session;
@@ -121,7 +122,12 @@ class HomeController extends Controller
 
       $cities = City::withCount('listing_city')
         ->has('listing_city')
-        ->where('language_id', $language->id)
+        ->forLanguage($language->id)
+        ->addSelect(['name' => CityContent::select('name')
+            ->whereColumn('city_id', 'cities.id')
+            ->where('language_id', $language->id)
+            ->limit(1)
+        ])
         ->orderBy('listing_city_count', 'desc')
         ->take(10)
         ->get();

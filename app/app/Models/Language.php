@@ -38,8 +38,11 @@ use App\Models\HomePage\VideoSection;
 use App\Models\Listing\ListingContent;
 use App\Models\Listing\ListingFaq;
 use App\Models\Location\City;
+use App\Models\Location\CityContent;
 use App\Models\Location\Country;
+use App\Models\Location\CountryContent;
 use App\Models\Location\State;
+use App\Models\Location\StateContent;
 
 class Language extends Model
 {
@@ -123,15 +126,15 @@ class Language extends Model
   }
   public function countryInfo()
   {
-    return $this->hasMany(Country::class, 'language_id', 'id');
+    return $this->hasMany(CountryContent::class, 'language_id', 'id');
   }
   public function stateInfo()
   {
-    return $this->hasMany(State::class, 'language_id', 'id');
+    return $this->hasMany(StateContent::class, 'language_id', 'id');
   }
   public function cityInfo()
   {
-    return $this->hasMany(City::class, 'language_id', 'id');
+    return $this->hasMany(CityContent::class, 'language_id', 'id');
   }
   public function counterSection()
   {

@@ -3,183 +3,179 @@
 namespace App\Http\Controllers\Admin\Listing\Location;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Language;
 use App\Models\Listing\ListingContent;
-use Illuminate\Support\Facades\Response;
-use Illuminate\Support\Facades\Validator;
+use App\Models\Location\City;
+use App\Models\Location\CityContent;
 use App\Models\Location\Country;
 use App\Models\Location\State;
-use Illuminate\Validation\Rule;
-use App\Models\Location\City;
 use App\Rules\ImageMimeTypeRule;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class CityController extends Controller
 {
     public function index(Request $request)
     {
-        $language = Language::query()->where('code', '=', $request->language)->firstOrFail();
-        $information['countries'] = $language->countryInfo()->orderByDesc('id')->get();
-        $information['states'] = $language->stateInfo()->orderByDesc('id')->get();
-        $information['stateCount'] = $language->stateInfo()->orderByDesc('id')->count();
-        $information['cities'] = $language->cityInfo()->orderByDesc('id')->get();
+        $language = Language::where('code', $request->language)->firstOrFail();
+
+        $information['countries'] = Country::forLanguage($language->id)
+            ->with(['contents' => fn($q) => $q->where('language_id', $language->id)])
+            ->orderByDesc('id')
+            ->get();
+
+        $information['stateCount'] = State::forLanguage($language->id)->count();
+
+        $information['cities'] = City::forLanguage($language->id)
+            ->with([
+                'contents' => fn($q) => $q->where('language_id', $language->id),
+                'country.contents' => fn($q) => $q->where('language_id', $language->id),
+                'state.contents' => fn($q) => $q->where('language_id', $language->id),
+            ])
+            ->orderByDesc('id')
+            ->get();
+
+        $information['states'] = State::forLanguage($language->id)
+            ->with(['contents' => fn($q) => $q->where('language_id', $language->id)])
+            ->get();
+
         $information['langs'] = Language::all();
         $information['language'] = $language;
 
         return view('admin.listing.location.city.index', $information);
     }
+
     public function getCountry($language_id)
     {
-        $countries = Country::where('language_id', $language_id)->get();
-        $states = State::where('language_id', $language_id)->get();
+        $countries = Country::forLanguage($language_id)
+            ->with(['contents' => fn($q) => $q->where('language_id', $language_id)])
+            ->get()
+            ->map(fn($c) => ['id' => $c->id, 'name' => $c->getName($language_id)]);
+
+        $states = State::forLanguage($language_id)
+            ->with(['contents' => fn($q) => $q->where('language_id', $language_id)])
+            ->get()
+            ->map(fn($s) => ['id' => $s->id, 'name' => $s->getName($language_id)]);
 
         return response()->json([
             'status' => 'success',
             'countries' => $countries,
-            'states' => $states
+            'states' => $states,
         ], 200);
     }
 
     public function getState($country)
     {
-        $states = State::where('country_id', $country)->get();
+        $language = request('language_id') ? Language::find(request('language_id')) : null;
+
+        $states = State::where('country_id', $country)->get()->map(function ($s) use ($language) {
+            return [
+                'id' => $s->id,
+                'name' => $language ? $s->getName($language->id) : ($s->contents()->first()?->name ?? ''),
+            ];
+        });
+
         return response()->json(['status' => 'success', 'states' => $states], 200);
     }
 
     public function store(Request $request)
     {
-        $totalCountry = Country::Where('language_id', $request->m_language_id)->count();
-        if ($totalCountry > 0) {
-            $country = true;
-            $totalState = State::Where('country_id', $request->country_id)->count();
-            if ($totalState > 0) {
-                $state = true;
-            } else {
-                $state = false;
-            }
-        } else {
-            $country = false;
-            $totalState = State::Where('language_id', $request->m_language_id)->count();
-            if ($totalState > 0) {
-                $state = true;
-            } else {
-                $state = false;
-            }
-        }
+        $langs = Language::all();
+        $defaultLang = Language::where('is_default', 1)->first() ?? Language::first();
+
         $rules = [
-            'm_language_id' => 'required',
-            'feature_image' => [
-                'sometimes',
-                new ImageMimeTypeRule()
-            ],
-            'name' => [
-                'required',
-                Rule::unique('cities')->where(function ($query) use ($request) {
-                    return $query->where('language_id', $request->input('m_language_id'))
-                        ->where('country_id', $request->input('country_id'))
-                        ->where('state_id', $request->input('state_id'));
-                }),
-                'max:255',
-            ],
-            'country_id' => $country ? 'required' : '',
-            'state_id' => $state ? 'required' : '',
+            'country_id' => 'required',
+            'feature_image' => ['sometimes', new ImageMimeTypeRule()],
         ];
 
+        foreach ($langs as $lang) {
+            $rules[$lang->code . '_name'] = ($lang->code === $defaultLang->code ? 'required|max:255' : 'nullable|max:255');
+        }
+
+        $stateExists = State::where('country_id', $request->country_id)->exists();
+        if ($stateExists) {
+            $rules['state_id'] = 'required';
+        }
+
         $messages = [
-            'm_language_id.required' => __('The language field is required.'),
             'country_id.required' => __('The country field is required.'),
             'state_id.required' => __('The state field is required.'),
-            'feature_image.required' => __('The featured image field is required.'),
-            'name.required' => __('The name field is required.')
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
 
         if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->getMessageBag()
-            ], 400);
+            return response()->json(['errors' => $validator->getMessageBag()], 400);
         }
 
         if ($request->feature_image) {
-
-            $featuredImgURL = $request->feature_image;
-            $featuredImgExt = $featuredImgURL->getClientOriginalExtension();
-            $featuredImgName = time() . '.' . $featuredImgExt;
+            $featuredImgName = time() . '.' . $request->feature_image->getClientOriginalExtension();
             $featuredDir = public_path('assets/img/location/city/');
-
             if (!file_exists($featuredDir)) {
                 @mkdir($featuredDir, 0777, true);
             }
-
-            copy($featuredImgURL, $featuredDir . $featuredImgName);
+            copy($request->feature_image, $featuredDir . $featuredImgName);
         } else {
             $featuredImgName = null;
         }
 
-        $city = new City();
+        $city = City::create([
+            'country_id' => $request->country_id,
+            'state_id' => $request->state_id,
+            'feature_image' => $featuredImgName,
+        ]);
 
-        $city->language_id = $request->m_language_id;
-        $city->country_id = $request->country_id;
-        $city->state_id = $request->state_id;
-        $city->feature_image = $featuredImgName;
-        $city->name = $request->name;
-        $city->slug = createSlug($request->name);
+        foreach ($langs as $lang) {
+            $name = $request->{$lang->code . '_name'};
+            if (empty($name)) continue;
 
-        $city->save();
+            CityContent::create([
+                'city_id' => $city->id,
+                'language_id' => $lang->id,
+                'name' => $name,
+                'slug' => Str::slug($name),
+            ]);
+        }
 
-        Session::flash('success', __('State stored successfully') . '!');
-
+        Session::flash('success', __('City stored successfully') . '!');
         return response()->json(['status' => 'success'], 200);
     }
 
     public function update(Request $request)
     {
-        $totalCountry = Country::Where('language_id', $request->language_id)->count();
-        if ($totalCountry > 0) {
-            $country = true;
-        } else {
-            $country = false;
-        }
-        $totalState = State::Where('country_id', $request->country_id)->count();
-        if ($totalState > 0) {
-            $state = true;
-        } else {
-            $state = false;
-        }
+        $langs = Language::all();
+        $defaultLang = Language::where('is_default', 1)->first() ?? Language::first();
 
         $rules = [
-            'name' => [
-                'required',
-                'max:255',
-                Rule::unique('cities')->ignore($request->id, 'id')->where(function ($query) use ($request) {
-                    return $query->where('language_id', $request->input('language_id'))
-                        ->where('country_id', $request->input('country_id'))
-                        ->where('state_id', $request->input('state_id'));
-                }),
-            ],
-
-            'country_id' => $country ? 'required' : '',
-            'state_id' => $state ? 'required' : '',
+            'country_id' => 'required',
         ];
+
+        foreach ($langs as $lang) {
+            $rules[$lang->code . '_name'] = ($lang->code === $defaultLang->code ? 'required|max:255' : 'nullable|max:255');
+        }
+
+        $stateExists = State::where('country_id', $request->country_id)->exists();
+        if ($stateExists) {
+            $rules['state_id'] = 'required';
+        }
+
         if ($request->hasFile('image')) {
-            $rules['image'] = [
-                new ImageMimeTypeRule(),
-            ];
+            $rules['image'] = [new ImageMimeTypeRule()];
         }
 
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
-            return Response::json([
-                'errors' => $validator->getMessageBag()
-            ], 400);
+            return Response::json(['errors' => $validator->getMessageBag()], 400);
         }
 
-        $city = City::find($request->id);
+        $city = City::findOrFail($request->id);
 
-        $in = $request->all();
+        $updateData = ['country_id' => $request->country_id];
 
         if ($request->hasFile('image')) {
             @unlink(public_path('assets/img/location/city/') . $city->feature_image);
@@ -188,71 +184,66 @@ class CityController extends Controller
             $directory = public_path('assets/img/location/city/');
             @mkdir($directory, 0775, true);
             $img->move($directory, $filename);
-            $in['feature_image'] = $filename;
+            $updateData['feature_image'] = $filename;
         }
-        $States = State::where('country_id', $request->country_id)->count();
-        if ($States < 1) {
-            $in['state_id'] = null;
-        }
-        $in['slug'] = createSlug($request->name);
 
-        $city->update($in);
+        $statesCount = State::where('country_id', $request->country_id)->count();
+        $updateData['state_id'] = $statesCount > 0 ? $request->state_id : null;
+
+        $city->update($updateData);
+
+        foreach ($langs as $lang) {
+            $name = $request->{$lang->code . '_name'};
+            if (empty($name)) continue;
+
+            CityContent::updateOrCreate(
+                ['city_id' => $city->id, 'language_id' => $lang->id],
+                ['name' => $name, 'slug' => Str::slug($name)]
+            );
+        }
 
         Session::flash('success', __('City updated successfully') . '!');
-
         return Response::json(['status' => 'success'], 200);
     }
 
     public function ImageRemove(Request $request)
     {
-
-        $city = City::Where('id', $request->fileid)->first();
-
-
+        $city = City::findOrFail($request->fileid);
         $city->feature_image = null;
-
         $city->save();
 
-        Session::flash('success', __('Successfully Delete Image') . '!');
-
+        Session::flash('success', __('Image deleted successfully') . '!');
         return Response::json(['status' => 'success'], 200);
     }
 
     public function destroy($id)
     {
-        $City = City::query()->find($id);
+        $City = City::findOrFail($id);
 
-        $listing_content = ListingContent::Where('city_id', $id)->get();
-
-        if (count($listing_content) > 0) {
+        if (ListingContent::where('city_id', $id)->exists()) {
             return redirect()->back()->with('warning', __('First delete all the listing of this City') . '!');
-        } else {
-            $City->delete();
-            return redirect()->back()->with('success', __('City deleted successfully') . '!');
         }
+
+        $City->contents()->delete();
+        $City->delete();
+
+        return redirect()->back()->with('success', __('City deleted successfully') . '!');
     }
 
     public function bulkDestroy(Request $request)
     {
         $ids = $request['ids'];
 
-        $errorOccurred = false;
         foreach ($ids as $id) {
-            $City = City::query()->find($id);
-            $listing_content = ListingContent::Where('city_id', $id)->get();
+            $City = City::find($id);
+            if (!$City) continue;
+            if (ListingContent::where('city_id', $id)->exists()) continue;
 
-            if (count($listing_content) > 0) {
-                $errorOccurred = true;
-                break;
-            } else {
-                $City->delete();
-            }
+            $City->contents()->delete();
+            $City->delete();
         }
-        if ($errorOccurred == true) {
-            Session::flash('warning', __('First delete all the listing of these City') . '!');
-        } else {
-            Session::flash('success', __('Selected Informations deleted successfully') . '!');
-        }
+
+        Session::flash('success', __('Selected cities deleted successfully') . '!');
         return Response::json(['status' => 'success'], 200);
     }
 }

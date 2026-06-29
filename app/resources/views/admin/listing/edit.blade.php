@@ -374,6 +374,66 @@
                                     </div>
                                 </div>
 
+                                <div class="row mt-3">
+                                    <div class="col-lg-4">
+                                        <div class="form-group">
+                                            <label>{{ __('Country') . '*' }}</label>
+                                            <select name="country_id" class="form-control js-example-basic-single2-country" id="listing_country_id">
+                                                <option value="">{{ __('Select a Country') }}</option>
+                                                @if($defaultListingContent && $defaultListingContent->country_id)
+                                                    @php
+                                                        $selectedCountry = App\Models\Location\CountryContent::where('country_id', $defaultListingContent->country_id)
+                                                            ->where('language_id', $defaultLang->id)
+                                                            ->select('country_id as id', 'name')
+                                                            ->first();
+                                                    @endphp
+                                                    @if($selectedCountry)
+                                                        <option selected value="{{ $selectedCountry->id }}">{{ $selectedCountry->name }}</option>
+                                                    @endif
+                                                @endif
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 @if(!$defaultListingContent || !$defaultListingContent->country_id || App\Models\Location\State::where('country_id', $defaultListingContent->country_id)->forLanguage($defaultLang->id)->count() == 0) d-none @endif" id="listing_state_wrapper">
+                                        <div class="form-group">
+                                            <label>{{ __('State') . '*' }}</label>
+                                            <select name="state_id" class="form-control" id="listing_state_id">
+                                                <option value="">{{ __('Select a State') }}</option>
+                                                @if($defaultListingContent && $defaultListingContent->state_id)
+                                                    @php
+                                                    $selectedState = App\Models\Location\StateContent::where('state_id', $defaultListingContent->state_id)
+                                                        ->where('language_id', $defaultLang->id)
+                                                        ->select('state_id as id', 'name')
+                                                        ->first();
+                                                    @endphp
+                                                    @if($selectedState)
+                                                        <option selected value="{{ $selectedState->id }}">{{ $selectedState->name }}</option>
+                                                    @endif
+                                                @endif
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 @if(!$defaultListingContent || !$defaultListingContent->city_id) d-none @endif" id="listing_city_wrapper">
+                                        <div class="form-group">
+                                            <label>{{ __('City') . '*' }}</label>
+                                            <select name="city_id" class="form-control" id="listing_city_id">
+                                                <option value="">{{ __('Select a City') }}</option>
+                                                @if($defaultListingContent && $defaultListingContent->city_id)
+                                                    @php
+                                                    $selectedCity = App\Models\Location\CityContent::where('city_id', $defaultListingContent->city_id)
+                                                        ->where('language_id', $defaultLang->id)
+                                                        ->select('city_id as id', 'name')
+                                                        ->first();
+                                                    @endphp
+                                                    @if($selectedCity)
+                                                        <option selected value="{{ $selectedCity->id }}">{{ $selectedCity->name }}</option>
+                                                    @endif
+                                                @endif
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div id="accordion" class="mt-3">
                                     @foreach ($languages as $language)
                                         @php
@@ -417,82 +477,6 @@
 
 
 
-
-                                                        @php
-                                                            $country = App\Models\Location\Country::where([
-                                                                ['language_id', $language->id],
-                                                                ['id', $listingContent->country_id ?? 0],
-                                                            ])
-                                                                ->select('id', 'name')
-                                                                ->first();
-                                                        @endphp
-                                                        <div class="col-lg-4">
-                                                            <div
-                                                                class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                                                <label>{{ __('Country') . '*' }}</label>
-                                                                <select name="{{ $language->code }}_country_id"
-                                                                    class="form-control js-country-basic"
-                                                                    data-code="{{ $language->code }}">
-                                                                    @if($country)
-                                                                    <option selected value="{{ $country->id }}">
-                                                                        {{ $country->name }}</option>
-                                                                    @endif
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
-                                                        @php
-                                                            $totalStateshave = App\Models\Location\State::where([
-                                                                ['language_id', $language->id],
-                                                                [
-                                                                    'country_id',
-                                                                    $listingContent ? $listingContent->country_id : 0,
-                                                                ],
-                                                            ])->count();
-
-                                                            $state = App\Models\Location\State::where([
-                                                                ['language_id', $language->id],
-                                                                ['id', $listingContent->state_id ?? 0],
-                                                                ['country_id', $listingContent->country_id ?? 0],
-                                                            ])
-                                                                ->select('id', 'name')
-                                                                ->first();
-                                                        @endphp
-                                                        <div
-                                                            class="col-lg-4 {{ $language->code }}_hide_state @if ($totalStateshave == 0) d-none @endif ">
-                                                            <div
-                                                                class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                                                <label>{{ __('State') . '*' }} </label>
-                                                                <select name="{{ $language->code }}_state_id"
-                                                                    class="form-control js-state-basic stateDropDown {{ $language->code }}_country_state_id"data-code="{{ $language->code }}">
-                                                                    <option selected value="{{ @$state->id }}">
-                                                                        {{ @$state->name }}</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
-                                                        @php
-                                                            $city = App\Models\Location\City::where([
-                                                                ['language_id', $language->id],
-                                                                ['id', $listingContent->city_id ?? 0],
-                                                            ])
-                                                                ->select('id', 'name')
-                                                                ->first();
-                                                        @endphp
-                                                        <div class="col-lg-4">
-                                                            <div
-                                                                class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                                                <label>{{ __('City') . '*' }} </label>
-                                                                <select name="{{ $language->code }}_city_id"
-                                                                    data-code="{{ $language->code }}"
-                                                                    class="form-control js-select-city-ajax {{ $language->code }}_state_city_id">
-                                                                    @if($city)
-                                                                    <option selected value="{{ $city->id }}">
-                                                                        {{ $city->name }}</option>
-                                                                    @endif
-                                                                </select>
-                                                            </div>
-                                                        </div>
 
                                                         <div class="col-lg-12">
                                                             <div class="form-group">
@@ -702,7 +686,157 @@
         const cityUrl = "{{ route('admin.get_city') }}";
         const stateUrl = "{{ route('admin.get_state') }}";
         const getHomeCatUrl = "{{ route('admin.get_categories') }}";
+        var defaultLangCode = '{{ $defaultLang->code }}';
+        var selectedCountryId = '{{ $defaultListingContent->country_id ?? '' }}';
+        var selectedStateId = '{{ $defaultListingContent->state_id ?? '' }}';
+        var selectedCityId = '{{ $defaultListingContent->city_id ?? '' }}';
     </script>
+
+    <script>
+        'use strict';
+        $(document).ready(function () {
+            $('#listing_country_id').select2({
+                placeholder: '{{ __("Select a Country") }}',
+                allowClear: true,
+                minimumInputLength: 0,
+                ajax: {
+                    url: countryUrl,
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term || '',
+                            page: params.page || 1,
+                            lang: defaultLangCode
+                        };
+                    },
+                    processResults: function (data, params) {
+                        return {
+                            results: data.results.map(function (item) {
+                                return { text: item.name, id: item.id };
+                            }),
+                            pagination: { more: data.more }
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            function loadStates(countryId) {
+                if (!countryId) return;
+                $.ajax({
+                    url: getStateUrl,
+                    type: 'POST',
+                    data: { id: countryId, lang: defaultLangCode },
+                    success: function (response) {
+                        $('#listing_state_id').empty().append('<option value="">{{ __("Select a State") }}</option>');
+                        $('#listing_city_id').empty().append('<option value="">{{ __("Select a City") }}</option>');
+                        $('#listing_city_wrapper').addClass('d-none');
+
+                        if (response.states && response.states.length > 0) {
+                            $('#listing_state_wrapper').removeClass('d-none');
+                            $.each(response.states, function (i, state) {
+                                var selected = state.id == selectedStateId ? 'selected' : '';
+                                $('#listing_state_id').append('<option value="' + state.id + '" ' + selected + '>' + state.name + '</option>');
+                            });
+                            if (selectedStateId) {
+                                loadCities(selectedStateId);
+                            }
+                        } else {
+                            $('#listing_state_wrapper').addClass('d-none');
+                            if (response.cities && response.cities.length > 0) {
+                                $('#listing_city_wrapper').removeClass('d-none');
+                                $.each(response.cities, function (i, city) {
+                                    var selected = city.id == selectedCityId ? 'selected' : '';
+                                    $('#listing_city_id').append('<option value="' + city.id + '" ' + selected + '>' + city.name + '</option>');
+                                });
+                            }
+                        }
+                    }
+                });
+            }
+
+            function loadCities(stateId) {
+                if (!stateId) return;
+                $.ajax({
+                    url: getCityUrl,
+                    type: 'POST',
+                    data: { id: stateId, lang: defaultLangCode },
+                    success: function (response) {
+                        $('#listing_city_id').empty().append('<option value="">{{ __("Select a City") }}</option>');
+                        if (response && response.length > 0) {
+                            $('#listing_city_wrapper').removeClass('d-none');
+                            $.each(response, function (i, city) {
+                                var selected = city.id == selectedCityId ? 'selected' : '';
+                                $('#listing_city_id').append('<option value="' + city.id + '" ' + selected + '>' + city.name + '</option>');
+                            });
+                        }
+                    }
+                });
+            }
+
+            if (selectedCountryId) {
+                loadStates(selectedCountryId);
+            }
+
+            $('#listing_country_id').on('change', function () {
+                selectedStateId = '';
+                selectedCityId = '';
+                var countryId = $(this).val();
+                $('#listing_state_id').empty().append('<option value="">{{ __("Select a State") }}</option>');
+                $('#listing_city_id').empty().append('<option value="">{{ __("Select a City") }}</option>');
+                $('#listing_city_wrapper').addClass('d-none');
+
+                if (countryId) {
+                    $.ajax({
+                        url: getStateUrl,
+                        type: 'POST',
+                        data: { id: countryId, lang: defaultLangCode },
+                        success: function (response) {
+                            if (response.states && response.states.length > 0) {
+                                $('#listing_state_wrapper').removeClass('d-none');
+                                $.each(response.states, function (i, state) {
+                                    $('#listing_state_id').append('<option value="' + state.id + '">' + state.name + '</option>');
+                                });
+                            } else {
+                                $('#listing_state_wrapper').addClass('d-none');
+                                if (response.cities && response.cities.length > 0) {
+                                    $('#listing_city_wrapper').removeClass('d-none');
+                                    $.each(response.cities, function (i, city) {
+                                        $('#listing_city_id').append('<option value="' + city.id + '">' + city.name + '</option>');
+                                    });
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    $('#listing_state_wrapper').addClass('d-none');
+                }
+            });
+
+            $('#listing_state_id').on('change', function () {
+                var stateId = $(this).val();
+                $('#listing_city_id').empty().append('<option value="">{{ __("Select a City") }}</option>');
+
+                if (stateId) {
+                    $.ajax({
+                        url: getCityUrl,
+                        type: 'POST',
+                        data: { id: stateId, lang: defaultLangCode },
+                        success: function (response) {
+                            $('#listing_city_wrapper').removeClass('d-none');
+                            $.each(response, function (i, city) {
+                                $('#listing_city_id').append('<option value="' + city.id + '">' + city.name + '</option>');
+                            });
+                        }
+                    });
+                } else {
+                    $('#listing_city_wrapper').addClass('d-none');
+                }
+            });
+        });
+    </script>
+
     <script type="text/javascript" src="{{ asset('assets/admin/js/admin-partial.js') }}"></script>
     <script type="text/javascript" src="{{ asset('assets/admin/js/admin-dropzone.js') }}"></script>
     <script src="{{ asset('assets/admin/js/admin-listing.js') }}"></script>

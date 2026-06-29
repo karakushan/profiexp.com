@@ -69,7 +69,7 @@ class ListingController extends Controller
         $cityIds = [];
         if ($request->filled('city')) {
             $city = $request->city;
-            $city_content = City::where([['language_id', $language->id], ['id', $city]])->first();
+            $city_content = City::forLanguage($language->id)->where('id', $city)->first();
 
             if (!empty($city_content)) {
                 $city_id = $city_content->id;
@@ -501,17 +501,17 @@ class ListingController extends Controller
         $information['aminites'] = Aminite::where('language_id', $language->id)
             ->orderBy('updated_at', 'asc')->get();
 
-        $information['countries'] = Country::where('language_id', $language->id)
+        $information['countries'] = Country::forLanguage($language->id)
             ->orderBy('id', 'asc')->get();
 
-        $information['states'] = State::where('language_id', $language->id)
+        $information['states'] = State::forLanguage($language->id)
             ->orderBy('id', 'asc')->get();
 
         if ($request->city) {
-            $searchCity = City::where([['language_id', $language->id], ['id', $request->city]]);
+            $searchCity = City::forLanguage($language->id)->where('id', $request->city)->first();
 
-            if ($searchCity->exists()) {
-                $information['searchCity'] = $searchCity->first()->name;
+            if ($searchCity) {
+                $information['searchCity'] = $searchCity->getName($language->id);
             }
         }
 
@@ -603,17 +603,17 @@ class ListingController extends Controller
 
         $listing = Listing::join('listing_contents', 'listings.id', '=', 'listing_contents.listing_id')
             ->leftJoin('listing_categories', 'listing_categories.id', '=', 'listing_contents.category_id')
-            ->leftJoin('countries', function ($join) use ($language) {
-                $join->on('countries.id', '=', 'listing_contents.country_id')
-                    ->where('countries.language_id', $language->id);
+            ->leftJoin('country_contents', function ($join) use ($language) {
+                $join->on('country_contents.country_id', '=', 'listing_contents.country_id')
+                    ->where('country_contents.language_id', $language->id);
             })
-            ->leftJoin('states', function ($join) use ($language) {
-                $join->on('states.id', '=', 'listing_contents.state_id')
-                    ->where('states.language_id', $language->id);
+            ->leftJoin('state_contents', function ($join) use ($language) {
+                $join->on('state_contents.state_id', '=', 'listing_contents.state_id')
+                    ->where('state_contents.language_id', $language->id);
             })
-            ->leftJoin('cities', function ($join) use ($language) {
-                $join->on('cities.id', '=', 'listing_contents.city_id')
-                    ->where('cities.language_id', $language->id);
+            ->leftJoin('city_contents', function ($join) use ($language) {
+                $join->on('city_contents.city_id', '=', 'listing_contents.city_id')
+                    ->where('city_contents.language_id', $language->id);
             })
             ->where('listing_contents.language_id', $language->id)
             ->when($vendorId && $vendorId != 0, function ($query) {
@@ -636,9 +636,9 @@ class ListingController extends Controller
                 'listing_contents.summary as summary',
                 'listing_contents.address as address',
                 'listing_contents.description as description',
-                'countries.name as country_name',
-                'states.name as state_name',
-                'cities.name as city_name',
+                'country_contents.name as country_name',
+                'state_contents.name as state_name',
+                'city_contents.name as city_name',
                 'listing_categories.name as category_name',
                 'listing_categories.icon as category_icon',
                 'listing_categories.slug as category_slug'
@@ -1235,14 +1235,13 @@ class ListingController extends Controller
         }
 
         $data = [];
-        $baseCountryId = $this->getBaseCountryId($request->country_id, $language);
 
-        $data['states'] = State::where('country_id', $baseCountryId)
-            ->where('language_id', $language->id)
+        $data['states'] = State::forLanguage($language->id)
+            ->where('country_id', $request->country_id)
             ->get();
 
-        $data['cities'] = City::where('country_id', $baseCountryId)
-            ->where('language_id', $language->id)
+        $data['cities'] = City::forLanguage($language->id)
+            ->where('country_id', $request->country_id)
             ->get();
 
         return response()->json([
@@ -1267,10 +1266,8 @@ class ListingController extends Controller
             ], 422);
         }
 
-        $baseStateId = $this->getBaseStateId($request->state_id, $language);
-
-        $data['cities'] = City::where('state_id', $baseStateId)
-            ->where('language_id', $language->id)
+        $data['cities'] = City::forLanguage($language->id)
+            ->where('state_id', $request->state_id)
             ->get();
 
         return response()->json([
@@ -1279,39 +1276,5 @@ class ListingController extends Controller
         ], 200);
     }
 
-    private function getBaseCountryId($countryId, $language)
-    {
-        $position = Country::where('language_id', $language->id)
-            ->orderBy('id')
-            ->pluck('id')
-            ->search($countryId);
 
-        if ($position === false) {
-            return $countryId;
-        }
-
-        $enLang = Language::where('code', 'en')->first();
-        return Country::where('language_id', $enLang->id)
-            ->orderBy('id')
-            ->skip($position)
-            ->value('id') ?: $countryId;
-    }
-
-    private function getBaseStateId($stateId, $language)
-    {
-        $position = State::where('language_id', $language->id)
-            ->orderBy('id')
-            ->pluck('id')
-            ->search($stateId);
-
-        if ($position === false) {
-            return $stateId;
-        }
-
-        $enLang = Language::where('code', 'en')->first();
-        return State::where('language_id', $enLang->id)
-            ->orderBy('id')
-            ->skip($position)
-            ->value('id') ?: $stateId;
-    }
 }
