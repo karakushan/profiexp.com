@@ -8,6 +8,7 @@ use App\Models\Journal\BlogCategoryContent;
 use App\Models\Journal\BlogInformation;
 use App\Models\Language;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class BlogSeeder extends Seeder
 {
@@ -69,8 +70,17 @@ class BlogSeeder extends Seeder
                 continue;
             }
 
+            $images = [
+                '663b3fa55cb46.png',
+                '663b3fb1052e5.png',
+                '663b3fc9a3c11.png',
+                '663b3fdcf2d29.png',
+                '663b4016d8f69.png',
+                '663b40207f13d.png',
+            ];
+
             $blog = Blog::create([
-                'image' => 'default-blog.jpg',
+                'image' => $images[$i] ?? 'default-blog.jpg',
                 'serial_number' => $i + 1,
                 'translated_languages' => '{}',
             ]);
@@ -80,7 +90,7 @@ class BlogSeeder extends Seeder
                 'blog_category_id' => $categoryId,
                 'blog_id' => $blog->id,
                 'title' => $post['title'],
-                'slug' => createSlug($post['title']),
+                'slug' => Str::slug($post['title']),
                 'author' => 'Администратор',
                 'content' => $post['content'],
                 'meta_keywords' => $post['category'] . ', бизнес, советы',

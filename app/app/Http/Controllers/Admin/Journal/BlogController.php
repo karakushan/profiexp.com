@@ -12,6 +12,7 @@ use App\Models\Journal\BlogInformation;
 use App\Models\Language;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 use Mews\Purifier\Facades\Purifier;
 
 class BlogController extends Controller
@@ -70,7 +71,7 @@ class BlogController extends Controller
             $blogInformation->blog_category_id = $request->category_id;
             $blogInformation->blog_id = $blog->id;
             $blogInformation->title = $request[$language->code . '_title'];
-            $blogInformation->slug = createSlug($request[$language->code . '_title']);
+            $blogInformation->slug = Str::slug($request[$language->code . '_title']);
             $blogInformation->author = $request[$language->code . '_author'];
             $blogInformation->content = Purifier::clean($request[$language->code . '_content'], 'youtube');
             $blogInformation->meta_keywords = $request[$language->code . '_meta_keywords'];

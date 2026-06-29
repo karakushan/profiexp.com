@@ -6,6 +6,7 @@ use App\Models\Journal\BlogCategory;
 use App\Models\Journal\BlogCategoryContent;
 use App\Models\Language;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class BlogCategorySeeder extends Seeder
 {
@@ -31,7 +32,7 @@ class BlogCategorySeeder extends Seeder
                 'blog_category_id' => $category->id,
                 'language_id' => $lang->id,
                 'name' => $cat['name'],
-                'slug' => createSlug($cat['name']),
+                'slug' => Str::slug($cat['name']),
             ]);
         }
 

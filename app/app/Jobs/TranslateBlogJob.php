@@ -82,7 +82,7 @@ class TranslateBlogJob implements ShouldQueue
                     }
                 }
             }
-            $targetContent->slug = createSlug($slugTitle);
+            $targetContent->slug = Str::slug($slugTitle);
             $targetContent->author = $translated['author'] ?? ($sourceContent->author ?? '');
             $targetContent->content = $translated['content'] ?? ($sourceContent->content ?? '');
             $targetContent->meta_keywords = $translated['meta_keywords'] ?? '';
