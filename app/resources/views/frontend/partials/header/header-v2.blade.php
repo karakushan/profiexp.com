@@ -123,6 +123,71 @@
         </div>
       </nav>
     </div>
+    <div class="category-navbar mobile-item">
+      <div class="container">
+        <ul class="category-nav-list">
+          @php
+            $displayCategories = $headerCategories->take(5);
+            $moreCategories = $headerCategories->slice(5);
+          @endphp
+          @foreach ($displayCategories as $category)
+            <li class="category-nav-item {{ $category->children->isNotEmpty() ? 'has-dropdown' : '' }}">
+              <a href="{{ route('frontend.listings', ['category_id' => $category->id]) }}"
+                class="category-nav-link {{ $category->children->isNotEmpty() ? 'toggle' : '' }}">
+                <span class="category-icon-box"><i class="{{ $category->icon ?: 'fal fa-folder' }}"></i></span>
+                <span class="category-name">{{ $category->getName($currentLanguageInfo->id) }}</span>
+                @if ($category->children->isNotEmpty())
+                  <i class="fal fa-angle-down category-arrow"></i>
+                @endif
+              </a>
+              @if ($category->children->isNotEmpty())
+                <ul class="category-dropdown">
+                  @foreach ($category->children as $child)
+                    <li>
+                      <a href="{{ route('frontend.listings', ['category_id' => $child->id]) }}">
+                        <span class="category-icon-box sm"><i class="{{ $child->icon ?: 'fal fa-folder' }}"></i></span>
+                        {{ $child->getName($currentLanguageInfo->id) }}
+                      </a>
+                    </li>
+                  @endforeach
+                </ul>
+              @endif
+            </li>
+          @endforeach
+          @if ($moreCategories->isNotEmpty())
+            <li class="category-nav-item has-dropdown more-categories">
+              <a href="javascript:void(0)" class="category-nav-link toggle">
+                <span class="category-icon-box"><i class="fal fa-ellipsis-h"></i></span>
+                <span class="category-name">{{ __('More Categories') }}</span>
+                <i class="fal fa-angle-down category-arrow"></i>
+              </a>
+              <ul class="category-dropdown category-dropdown-wide">
+                @foreach ($moreCategories as $category)
+                  <li class="{{ $category->children->isNotEmpty() ? 'has-submenu' : '' }}">
+                    <a href="{{ route('frontend.listings', ['category_id' => $category->id]) }}">
+                      <span class="category-icon-box sm"><i class="{{ $category->icon ?: 'fal fa-folder' }}"></i></span>
+                      {{ $category->getName($currentLanguageInfo->id) }}
+                    </a>
+                    @if ($category->children->isNotEmpty())
+                      <ul class="category-submenu">
+                        @foreach ($category->children as $child)
+                          <li>
+                            <a href="{{ route('frontend.listings', ['category_id' => $child->id]) }}">
+                              <span class="category-icon-box sm"><i class="{{ $child->icon ?: 'fal fa-folder' }}"></i></span>
+                              {{ $child->getName($currentLanguageInfo->id) }}
+                            </a>
+                          </li>
+                        @endforeach
+                      </ul>
+                    @endif
+                  </li>
+                @endforeach
+              </ul>
+            </li>
+          @endif
+        </ul>
+      </div>
+    </div>
   </div>
 </header>
 <!-- Header-area end -->

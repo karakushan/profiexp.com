@@ -6,6 +6,7 @@ use App\Http\Helpers\VendorPermissionHelper;
 use App\Models\BasicSettings\SocialMedia;
 use App\Models\HomePage\Section;
 use App\Models\Language;
+use App\Models\ListingCategory;
 use App\Models\Shop\Product;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
@@ -161,6 +162,14 @@ class AppServiceProvider extends ServiceProvider
           $quickLinks = $language->footerQuickLink()->orderBy('serial_number', 'asc')->get();
         }
 
+        // get listing categories for header menu
+        $headerCategories = ListingCategory::with(['children.contents', 'contents'])
+          ->forLanguage($language->id)
+          ->active()
+          ->root()
+          ->orderBy('serial_number', 'asc')
+          ->get();
+
         // get shopping cart information from session
         if (Session::has('productCart')) {
           $information['productCart'] = Session::get('productCart');
@@ -197,7 +206,8 @@ class AppServiceProvider extends ServiceProvider
           'quickLinkInfos' => ($footerSectionStatus == 1) ? $quickLinks : [],
           'cartItemInfo' => $cartItems,
           'footerSectionStatus' => $footerSectionStatus,
-          'rateStar' => $rateStar
+          'rateStar' => $rateStar,
+          'headerCategories' => $headerCategories
         ]);
       });
 
