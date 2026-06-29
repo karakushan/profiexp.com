@@ -44,6 +44,10 @@ class HomeController extends Controller
         $information['listing_contents'] = ListingContent::join('listings', 'listings.id', '=', 'listing_contents.listing_id')
             ->Join('feature_orders', 'listings.id', '=', 'feature_orders.listing_id')
             ->join('listing_categories', 'listing_categories.id', '=', 'listing_contents.category_id')
+            ->leftJoin('listing_category_contents', function ($j) use ($language) {
+                $j->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+                    ->where('listing_category_contents.language_id', '=', $language->id);
+            })
             ->where('listing_contents.language_id', $language->id)
             ->where('feature_orders.order_status', '=', 'completed')
             ->where([
@@ -79,9 +83,9 @@ class HomeController extends Controller
                 'listing_contents.country_id',
                 'listing_contents.description',
                 'listing_contents.address',
-                'listing_categories.name as category_name',
+                DB::raw('COALESCE(listing_category_contents.name, listing_categories.name) as category_name'),
                 'listing_categories.icon as icon',
-                'listing_categories.slug as category_slug',
+                DB::raw('COALESCE(listing_category_contents.slug, listing_categories.slug) as category_slug'),
                 'feature_orders.listing_id as feature_order_listing_id',
             )
 
@@ -210,13 +214,20 @@ class HomeController extends Controller
         $categories = ListingCategory::forLanguage($language->id)
             ->active()
             ->when($name, function ($query) use ($name) {
-                return $query->where('name', 'like', '%' . $name . '%');
+                return $query->whereHas('contents', function ($q) use ($name) {
+                    $q->where('name', 'like', '%' . $name . '%');
+                });
             })
+            ->with(['contents' => function ($q) use ($language) {
+                $q->where('language_id', $language->id);
+            }])
             ->orderBy('serial_number', 'asc')
             ->paginate(10);
 
         // Transform only the items, not the whole paginator
-        $categories->getCollection()->transform(function ($category) {
+        $categories->getCollection()->transform(function ($category) use ($language) {
+            $category->name = $category->contents->first()?->name ?? $category->name;
+            $category->slug = $category->contents->first()?->slug ?? $category->slug;
             $category->mobile_image = $category->mobile_image
                 ? asset('assets/img/listing/category/' . $category->mobile_image)
                 : asset('assets/img/noimage.jpg');

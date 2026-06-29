@@ -382,6 +382,10 @@ class ListingContoller extends Controller
         }
         return $query->whereIn('listings.id', $locationIds);
       })
+      ->leftJoin('listing_category_contents', function ($j) use ($language) {
+        $j->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+          ->where('listing_category_contents.language_id', '=', $language->id);
+      })
       ->select(
         'listings.*',
         'listing_contents.title',
@@ -393,7 +397,7 @@ class ListingContoller extends Controller
         'listing_contents.country_id',
         'listing_contents.description',
         'listing_contents.address',
-        'listing_categories.name as category_name',
+        DB::raw('COALESCE(listing_category_contents.name, listing_categories.name) as category_name'),
         'listing_categories.icon as icon',
         'feature_orders.listing_id as feature_order_listing_id'
       )
@@ -494,6 +498,10 @@ class ListingContoller extends Controller
         }
         return $query->whereIn('listings.id', $locationIds);
       })
+      ->leftJoin('listing_category_contents', function ($j) use ($language) {
+        $j->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+          ->where('listing_category_contents.language_id', '=', $language->id);
+      })
       ->select(
         'listings.*',
         'listing_contents.title',
@@ -505,7 +513,7 @@ class ListingContoller extends Controller
         'listing_contents.country_id',
         'listing_contents.description',
         'listing_contents.address',
-        'listing_categories.name as category_name',
+        DB::raw('COALESCE(listing_category_contents.name, listing_categories.name) as category_name'),
         'listing_categories.icon as icon',
       )
       ->distinct()
@@ -1337,6 +1345,10 @@ class ListingContoller extends Controller
         }
         return $query->whereIn('listings.id', $locationIds);
       })
+      ->leftJoin('listing_category_contents', function ($j) use ($language) {
+        $j->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+          ->where('listing_category_contents.language_id', '=', $language->id);
+      })
       ->select(
         'listings.*',
         'listing_contents.title',
@@ -1348,7 +1360,7 @@ class ListingContoller extends Controller
         'listing_contents.country_id',
         'listing_contents.description',
         'listing_contents.address',
-        'listing_categories.name as category_name',
+        DB::raw('COALESCE(listing_category_contents.name, listing_categories.name) as category_name'),
         'listing_categories.icon as icon',
         'feature_orders.listing_id as feature_order_listing_id'
       )
@@ -1464,6 +1476,10 @@ class ListingContoller extends Controller
         }
         return $query->whereIn('listings.id', $locationIds);
       })
+      ->leftJoin('listing_category_contents', function ($j) use ($language) {
+        $j->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+          ->where('listing_category_contents.language_id', '=', $language->id);
+      })
       ->select(
         'listings.*',
         'listing_contents.title',
@@ -1475,7 +1491,7 @@ class ListingContoller extends Controller
         'listing_contents.country_id',
         'listing_contents.description',
         'listing_contents.address',
-        'listing_categories.name as category_name',
+        DB::raw('COALESCE(listing_category_contents.name, listing_categories.name) as category_name'),
         'listing_categories.icon as icon',
       )
       ->distinct(['listings.id'])
@@ -1618,23 +1634,25 @@ class ListingContoller extends Controller
     $misc = new MiscellaneousController();
     $language = $misc->getLanguage();
 
-
-    $query = ListingCategory::forLanguage($language->id)->root();
+    $query = ListingCategory::root()
+      ->join('listing_category_contents', function ($join) use ($language) {
+        $join->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+          ->where('listing_category_contents.language_id', '=', $language->id);
+      });
 
     if ($search) {
-      $query->where('name', 'like', "%{$search}%")
-        ->orWhere('slug', 'like', "%{$search}%");
+      $query->where(function ($q) use ($search) {
+        $q->where('listing_category_contents.name', 'like', "%{$search}%")
+          ->orWhere('listing_category_contents.slug', 'like', "%{$search}%");
+      });
     }
 
-    // Add pagination
     $categories = $query->skip(($page - 1) * $pageSize)
       ->take($pageSize + 1)
-      ->get(['id', 'name']);
+      ->get(['listing_categories.id', 'listing_category_contents.name']);
 
-    // Check if there's more data
     $hasMore = count($categories) > $pageSize;
     $results = $hasMore ? $categories->slice(0, $pageSize) : $categories;
-
 
     return response()->json([
       'results' => $results,

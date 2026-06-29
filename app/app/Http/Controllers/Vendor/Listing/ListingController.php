@@ -121,7 +121,7 @@ class ListingController extends Controller
             ->orderBy('id', 'desc')
             ->paginate(10);
         $information['vendors'] = Vendor::where('id', '!=', 0)->get();
-        $information['categories'] = ListingCategory::Where('language_id', $language_id)->get();
+        $information['categories'] = ListingCategory::forLanguage($language_id)->with('contents')->get();
 
         //Feature part
         $information['onlineGateways'] = OnlineGateway::where('status', 1)->get();
@@ -1378,23 +1378,24 @@ Thank you for your attention to this matter.";
 
         $language = Language::where('code', $request->lang)->first();
 
-
-        $query = ListingCategory::forLanguage($language->id);
+        $query = ListingCategory::join('listing_category_contents', function ($join) use ($language) {
+            $join->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+                ->where('listing_category_contents.language_id', '=', $language->id);
+        });
 
         if ($search) {
-            $query->where('name', 'like', "%{$search}%")
-                ->orWhere('slug', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('listing_category_contents.name', 'like', "%{$search}%")
+                    ->orWhere('listing_category_contents.slug', 'like', "%{$search}%");
+            });
         }
 
-        // Add pagination
         $categories = $query->skip(($page - 1) * $pageSize)
             ->take($pageSize + 1)
-            ->get(['id', 'name']);
+            ->get(['listing_categories.id', 'listing_category_contents.name']);
 
-        // Check if there's more data
         $hasMore = count($categories) > $pageSize;
         $results = $hasMore ? $categories->slice(0, $pageSize) : $categories;
-
 
         return response()->json([
             'results' => $results,

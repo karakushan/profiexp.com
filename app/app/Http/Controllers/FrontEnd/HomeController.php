@@ -186,6 +186,10 @@ class HomeController extends Controller
           });
       })
       ->whereDate('feature_orders.end_date', '>=', Carbon::now()->format('Y-m-d'))
+      ->leftJoin('listing_category_contents', function ($j) use ($language) {
+        $j->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+          ->where('listing_category_contents.language_id', '=', $language->id);
+      })
       ->select(
         'listings.*',
         'listing_contents.title',
@@ -196,7 +200,7 @@ class HomeController extends Controller
         'listing_contents.country_id',
         'listing_contents.description',
         'listing_contents.address',
-        'listing_categories.name as category_name',
+        DB::raw('COALESCE(listing_category_contents.name, listing_categories.name) as category_name'),
         'listing_categories.icon as icon',
         'feature_orders.listing_id as feature_order_listing_id'
       )
@@ -211,6 +215,10 @@ class HomeController extends Controller
     $total_listing_contents = ListingContent::join('listings', 'listings.id', '=', 'listing_contents.listing_id')
       ->Join('feature_orders', 'listings.id', '=', 'feature_orders.listing_id')
       ->join('listing_categories', 'listing_categories.id', '=', 'listing_contents.category_id')
+      ->leftJoin('listing_category_contents', function ($j) use ($language) {
+        $j->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+          ->where('listing_category_contents.language_id', '=', $language->id);
+      })
       ->where('listing_contents.language_id', $language->id)
       ->where('feature_orders.order_status', '=', 'completed')
       ->where([
@@ -246,7 +254,7 @@ class HomeController extends Controller
         'listing_contents.country_id',
         'listing_contents.description',
         'listing_contents.address',
-        'listing_categories.name as category_name',
+        DB::raw('COALESCE(listing_category_contents.name, listing_categories.name) as category_name'),
         'listing_categories.icon as icon',
         'feature_orders.listing_id as feature_order_listing_id'
       )
@@ -257,6 +265,10 @@ class HomeController extends Controller
 
       $latest_listing_contents = ListingContent::join('listings', 'listings.id', '=', 'listing_contents.listing_id')
         ->join('listing_categories', 'listing_categories.id', '=', 'listing_contents.category_id')
+        ->leftJoin('listing_category_contents', function ($j) use ($language) {
+          $j->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+            ->where('listing_category_contents.language_id', '=', $language->id);
+        })
         ->where('listing_contents.language_id', $language->id)
         ->where([
           ['listings.status', '=', '1'],
@@ -300,7 +312,7 @@ class HomeController extends Controller
           'listing_contents.country_id',
           'listing_contents.description',
           'listing_contents.address',
-          'listing_categories.name as category_name',
+          DB::raw('COALESCE(listing_category_contents.name, listing_categories.name) as category_name'),
           'listing_categories.icon as icon',
         )
 
@@ -311,6 +323,10 @@ class HomeController extends Controller
       $latest_listing_content_total =
         ListingContent::join('listings', 'listings.id', '=', 'listing_contents.listing_id')
         ->join('listing_categories', 'listing_categories.id', '=', 'listing_contents.category_id')
+        ->leftJoin('listing_category_contents', function ($j) use ($language) {
+          $j->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+            ->where('listing_category_contents.language_id', '=', $language->id);
+        })
         ->where('listing_contents.language_id', $language->id)
         ->where([
           ['listings.status', '=', '1'],
@@ -354,7 +370,7 @@ class HomeController extends Controller
           'listing_contents.country_id',
           'listing_contents.description',
           'listing_contents.address',
-          'listing_categories.name as category_name',
+          DB::raw('COALESCE(listing_category_contents.name, listing_categories.name) as category_name'),
           'listing_categories.icon as icon',
         )
         ->orderBy('listings.id', 'desc')

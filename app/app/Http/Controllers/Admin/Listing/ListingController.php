@@ -366,7 +366,7 @@ class ListingController extends Controller
             ->paginate(10);
           
 
-        $information['categories'] = ListingCategory::Where('language_id', $language_id)->get();
+        $information['categories'] = ListingCategory::forLanguage($language_id)->with('contents')->get();
 
 
         // hhhhhhhhhhhhhhhh

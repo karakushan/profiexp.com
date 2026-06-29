@@ -18,6 +18,7 @@ use App\Models\Listing\Listing;
 use App\Models\Listing\ListingContent;
 use App\Models\Listing\ListingFaq;
 use App\Models\Listing\ListingFeature;
+use Illuminate\Support\Facades\DB;
 use App\Models\Listing\ListingImage;
 use App\Models\Listing\ListingMessage;
 use App\Models\Listing\ListingReview;
@@ -223,6 +224,10 @@ class ListingController extends Controller
         $featured_contents = ListingContent::join('listings', 'listings.id', '=', 'listing_contents.listing_id')
             ->Join('feature_orders', 'listings.id', '=', 'feature_orders.listing_id')
             ->join('listing_categories', 'listing_categories.id', '=', 'listing_contents.category_id')
+            ->leftJoin('listing_category_contents', function ($j) use ($language) {
+                $j->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+                    ->where('listing_category_contents.language_id', '=', $language->id);
+            })
             ->where('listing_contents.language_id', $language->id)
             ->where('feature_orders.order_status', '=', 'completed')
             ->where([
@@ -297,7 +302,7 @@ class ListingController extends Controller
                 'listing_contents.country_id',
                 'listing_contents.description',
                 'listing_contents.address',
-                'listing_categories.name as category_name',
+                DB::raw('COALESCE(listing_category_contents.name, listing_categories.name) as category_name'),
                 'listing_categories.icon as icon',
                 'feature_orders.listing_id as feature_order_listing_id'
             )
@@ -335,6 +340,10 @@ class ListingController extends Controller
 
         $listing_contents = ListingContent::join('listings', 'listings.id', '=', 'listing_contents.listing_id')
             ->join('listing_categories', 'listing_categories.id', '=', 'listing_contents.category_id')
+            ->leftJoin('listing_category_contents', function ($j) use ($language) {
+                $j->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+                    ->where('listing_category_contents.language_id', '=', $language->id);
+            })
             ->where('listing_contents.language_id', $language->id)
             ->where([
                 ['listings.status', '=', '1'],
@@ -407,9 +416,9 @@ class ListingController extends Controller
                 'listing_contents.country_id',
                 'listing_contents.description',
                 'listing_contents.address',
-                'listing_categories.name as category_name',
+                DB::raw('COALESCE(listing_category_contents.name, listing_categories.name) as category_name'),
                 'listing_categories.icon as icon',
-                'listing_categories.slug as category_slug',
+                DB::raw('COALESCE(listing_category_contents.slug, listing_categories.slug) as category_slug'),
             )
             ->distinct()
             ->orderBy($order_by_column, $order)
@@ -603,6 +612,10 @@ class ListingController extends Controller
 
         $listing = Listing::join('listing_contents', 'listings.id', '=', 'listing_contents.listing_id')
             ->leftJoin('listing_categories', 'listing_categories.id', '=', 'listing_contents.category_id')
+            ->leftJoin('listing_category_contents', function ($j) use ($language) {
+                $j->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+                    ->where('listing_category_contents.language_id', '=', $language->id);
+            })
             ->leftJoin('country_contents', function ($join) use ($language) {
                 $join->on('country_contents.country_id', '=', 'listing_contents.country_id')
                     ->where('country_contents.language_id', $language->id);
@@ -639,9 +652,9 @@ class ListingController extends Controller
                 'country_contents.name as country_name',
                 'state_contents.name as state_name',
                 'city_contents.name as city_name',
-                'listing_categories.name as category_name',
+                DB::raw('COALESCE(listing_category_contents.name, listing_categories.name) as category_name'),
                 'listing_categories.icon as category_icon',
-                'listing_categories.slug as category_slug'
+                DB::raw('COALESCE(listing_category_contents.slug, listing_categories.slug) as category_slug'),
             )
             ->where('listings.id', $id)
             ->first();

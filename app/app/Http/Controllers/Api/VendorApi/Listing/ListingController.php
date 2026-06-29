@@ -102,7 +102,7 @@ class ListingController extends Controller
     }
 
     $listings = Listing::with([
-      'listing_content' => fn($q) => $q->where('language_id', $languageId)->with('category'),
+      'listing_content' => fn($q) => $q->where('language_id', $languageId)->with(['category.contents' => fn($cq) => $cq->where('language_id', $languageId)]),
     ])
       ->where('vendor_id', $vendor->id)
       ->when($titleFilterIds !== null, fn($q) => $q->whereIn('id', $titleFilterIds))
@@ -122,7 +122,7 @@ class ListingController extends Controller
 
     $today  = Carbon::today()->toDateString();
 
-    $items = $listings->getCollection()->map(function ($listing) use ($today) {
+    $items = $listings->getCollection()->map(function ($listing) use ($today, $languageId) {
       $content = $listing->listing_content->first();
 
       $featureOrder = FeatureOrder::where('listing_id', $listing->id)
@@ -152,7 +152,7 @@ class ListingController extends Controller
         'feature_image'    => $listing->feature_image
           ? asset('assets/img/listing/' . $listing->feature_image)
           : null,
-        'category'         => $content?->category?->name ?? '',
+        'category'         => $content?->category?->contents->first()?->name ?? $content?->category?->name ?? '',
         'status'           => (int) $listing->status,
         'status_label'     => $statusLabel,
         'visibility'       => (int) $listing->visibility,
@@ -160,8 +160,11 @@ class ListingController extends Controller
       ];
     });
 
-    $categories = ListingCategory::forLanguage($languageId)
-      ->select('id', 'name', 'slug')
+    $categories = ListingCategory::join('listing_category_contents', function ($join) use ($languageId) {
+        $join->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+            ->where('listing_category_contents.language_id', '=', $languageId);
+      })
+      ->select('listing_categories.id', 'listing_category_contents.name', 'listing_category_contents.slug')
       ->get();
 
     return response()->json([
@@ -733,8 +736,11 @@ Thank you for your attention to this matter.";
     // Categories per language
     $categories = [];
     foreach ($languages as $language) {
-      $categories[$language->code] = ListingCategory::forLanguage($language->id)
-        ->select('id', 'name', 'slug')
+      $categories[$language->code] = ListingCategory::join('listing_category_contents', function ($join) use ($language) {
+          $join->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+              ->where('listing_category_contents.language_id', '=', $language->id);
+        })
+        ->select('listing_categories.id', 'listing_category_contents.name', 'listing_category_contents.slug')
         ->get();
     }
 
@@ -1674,23 +1680,24 @@ Thank you for your attention to this matter.";
 
     $language = Language::where('code', $request->lang)->first();
 
-
-    $query = ListingCategory::forLanguage($language->id);
+    $query = ListingCategory::join('listing_category_contents', function ($join) use ($language) {
+      $join->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+        ->where('listing_category_contents.language_id', '=', $language->id);
+    });
 
     if ($search) {
-      $query->where('name', 'like', "%{$search}%")
-        ->orWhere('slug', 'like', "%{$search}%");
+      $query->where(function ($q) use ($search) {
+        $q->where('listing_category_contents.name', 'like', "%{$search}%")
+          ->orWhere('listing_category_contents.slug', 'like', "%{$search}%");
+      });
     }
 
-    // Add pagination
     $categories = $query->skip(($page - 1) * $pageSize)
       ->take($pageSize + 1)
-      ->get(['id', 'name']);
+      ->get(['listing_categories.id', 'listing_category_contents.name']);
 
-    // Check if there's more data
     $hasMore = count($categories) > $pageSize;
     $results = $hasMore ? $categories->slice(0, $pageSize) : $categories;
-
 
     return response()->json([
       'results' => $results,
@@ -1768,8 +1775,11 @@ Thank you for your attention to this matter.";
     $categories = [];
     $aminitiesAvailable = [];
     foreach ($languages as $language) {
-      $categories[$language->code] = ListingCategory::forLanguage($language->id)
-        ->select('id', 'name', 'slug')
+      $categories[$language->code] = ListingCategory::join('listing_category_contents', function ($join) use ($language) {
+          $join->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
+              ->where('listing_category_contents.language_id', '=', $language->id);
+        })
+        ->select('listing_categories.id', 'listing_category_contents.name', 'listing_category_contents.slug')
         ->get();
       $aminitiesAvailable[$language->code] = Aminite::where('language_id', $language->id)
         ->select('id', 'title')
