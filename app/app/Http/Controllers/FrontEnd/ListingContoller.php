@@ -58,10 +58,18 @@ class ListingContoller extends Controller
     if ($request->id) {
       $data['states'] = State::forLanguage($language->id)
           ->where('country_id', $request->id)
-          ->get();
+          ->get()
+          ->map(function ($state) use ($language) {
+              $state->name = $state->getName($language->id);
+              return $state;
+          });
       $data['cities'] = City::forLanguage($language->id)
           ->where('country_id', $request->id)
-          ->get();
+          ->get()
+          ->map(function ($city) use ($language) {
+              $city->name = $city->getName($language->id);
+              return $city;
+          });
     }
     return $data;
   }
@@ -106,9 +114,18 @@ class ListingContoller extends Controller
     if ($request->id) {
       $data = City::forLanguage($language->id)
           ->where('state_id', $request->id)
-          ->get();
+          ->get()
+          ->map(function ($city) use ($language) {
+              $city->name = $city->getName($language->id);
+              return $city;
+          });
     } else {
-      $data = City::forLanguage($language->id)->get();
+      $data = City::forLanguage($language->id)
+          ->get()
+          ->map(function ($city) use ($language) {
+              $city->name = $city->getName($language->id);
+              return $city;
+          });
     }
     return $data;
   }
