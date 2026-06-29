@@ -267,29 +267,6 @@
                                         $status = $approve->admin_approve_status;
                                     @endphp
                                     <input type="hidden" value="{{ $status }}"name="status" id="status">
-                                    @if ($settings->google_map_api_key_status == 0)
-                                        <div class="col-lg-3">
-                                            <div class="form-group">
-                                                <label>{{ __('Latitude') . '*' }} </label>
-                                                <input type="text" class="form-control" name="latitude"
-                                                    placeholder="{{ __('Enter Latitude') }}">
-                                                <p class="text-warning">
-                                                    {{ __('The Latitude must be between -90 and 90. Ex:49.43453') }}</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="col-lg-3">
-                                            <div class="form-group">
-                                                <label>{{ __('Longitude') . '*' }} </label>
-                                                <input type="text" class="form-control" name="longitude"
-                                                    placeholder="{{ __('Enter Longitude') }}">
-                                                <p class="text-warning">
-                                                    {{ __('The Longitude must be between -180 and 180. Ex:149.91553') }}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    @endif
-
                                     <div class="col-lg-3">
                                         <div class="form-group">
                                             <label>{{ __('Min Price') }}({{ $settings->base_currency_text }})</label>
@@ -311,6 +288,98 @@
                                     <input type="hidden" name="can_listing_add" value="{{ $can_listing_add }}">
                                 </div>
 
+                                <div class="col-12">
+                                    <div class="card border mb-3">
+                                        <div class="card-header bg-light">
+                                            <h5 class="mb-0">{{ __('Location') }}</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-lg-12">
+                                                    <div class="form-group">
+                                                        <label>{{ __('Search address on map') }}</label>
+                                                        <input type="text" class="form-control" id="search-address"
+                                                            placeholder="{{ __('Enter address to search on map') }}">
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-lg-6">
+                                                    <div class="form-group">
+                                                        <label>{{ __('Latitude') . '*' }} </label>
+                                                        <input type="text" class="form-control" name="latitude"
+                                                            placeholder="{{ __('Enter Latitude') }}">
+                                                        <p class="text-warning mb-0">
+                                                            {{ __('The Latitude must be between -90 and 90. Ex:49.43453') }}</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-lg-6">
+                                                    <div class="form-group">
+                                                        <label>{{ __('Longitude') . '*' }} </label>
+                                                        <input type="text" class="form-control" name="longitude"
+                                                            placeholder="{{ __('Enter Longitude') }}">
+                                                        <p class="text-warning mb-0">
+                                                            {{ __('The Longitude must be between -180 and 180. Ex:149.91553') }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                @if ($settings->google_map_api_key_status == 1)
+                                                    <div class="col-lg-12">
+                                                        <div class="form-group mb-0">
+                                                            <a href="" class="btn btn-secondary btn-sm"
+                                                                data-toggle="modal" data-target="#GoogleMapModal">
+                                                                <i class="fas fa-eye"></i>
+                                                                {{ __('Show Map') }}
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-lg-4">
+                                        <div class="form-group">
+                                            <label>{{ __('Category') . '*' }} </label>
+                                            <select name="category_id"
+                                                data-code="{{ $defaultLang->code }}"
+                                                class="form-control js-example-basic-single2">
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <div class="form-group">
+                                            <label>{{ __('Country') . '*' }}</label>
+                                            <select name="country_id" class="form-control" id="listing_country_id">
+                                                <option value="">{{ __('Select a Country') }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 d-none" id="listing_state_wrapper">
+                                        <div class="form-group">
+                                            <label>{{ __('State') . '*' }}</label>
+                                            <select name="state_id" class="form-control" id="listing_state_id">
+                                                <option value="">{{ __('Select a State') }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-4 d-none" id="listing_city_wrapper">
+                                        <div class="form-group">
+                                            <label>{{ __('City') . '*' }}</label>
+                                            <select name="city_id" class="form-control" id="listing_city_id">
+                                                <option value="">{{ __('Select a City') }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @php
+                                    $defaultLang = $languages->firstWhere('is_default', 1);
+                                @endphp
+
                                 <div id="accordion" class="mt-3">
                                     @foreach ($languages as $language)
                                         <div class="version">
@@ -320,8 +389,8 @@
                                                         data-target="#collapse{{ $language->id }}"
                                                         aria-expanded="{{ $language->is_default == 1 ? 'true' : 'false' }}"
                                                         aria-controls="collapse{{ $language->id }}">
-                                                        {{ $language->name . __(' Language') }}
-                                                        {{ $language->is_default == 1 ? '(Default)' : '' }}
+                                                        {{ $language->name }}
+                                                        {{ $language->is_default == 1 ? __('(Default)') : '' }}
                                                     </button>
                                                 </h5>
                                             </div>
@@ -350,58 +419,13 @@
                                                             </div>
                                                         </div>
 
-                                                        <div class="col-lg-6">
-                                                            <div class="form-group">
-                                                                <label>{{ __('Category') . '*' }} </label>
-                                                                <select name="{{ $language->code }}_category_id"
-                                                                    data-code="{{ $language->code }}"
-                                                                    class="form-control js-example-basic-single2">
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
-
-                                                        <div class="col-lg-4">
-                                                            <div
-                                                                class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                                                <label>{{ __('Country') . '*' }}</label>
-                                                                <select name="{{ $language->code }}_country_id"
-                                                                    class="form-control js-country-basic"
-                                                                    data-code="{{ $language->code }}">
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="col-lg-4 {{ $language->code }}_hide_state">
-                                                            <div
-                                                                class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                                                <label>{{ __('State') . '*' }} </label>
-                                                                <select name="{{ $language->code }}_state_id"
-                                                                    class="form-control js-state-basic stateDropDown {{ $language->code }}_country_state_id"
-                                                                    data-code="{{ $language->code }}">
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="col-lg-4">
-                                                            <div
-                                                                class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                                                <label>{{ __('City') . '*' }} </label>
-                                                                <select name="{{ $language->code }}_city_id"
-                                                                    class="form-control  js-select-city-ajax {{ $language->code }}_state_city_id"
-                                                                    data-code="{{ $language->code }}">
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
                                                         <div class="col-lg-12">
                                                             <div class="form-group">
-                                                                <label>{{ __('Address') . '*' }}</label>
-                                                                <input type="text" class="form-control"
-                                                                    value="{{ old($language->code . '_address') }}"
-                                                                    name="{{ $language->code }}_address"
-                                                                    placeholder="{{ __('Enter Address') }}"
-                                                                    id="search-address">
+                                                                <label>{{ __('Address displayed in the listing') . '*' }}</label>
+                                                                 <input type="text" class="form-control"
+                                                                     value="{{ old($language->code . '_address') }}"
+                                                                     name="{{ $language->code }}_address"
+                                                                     placeholder="{{ __('Enter Address') }}">
                                                                 @if ($language->is_default == 1 && $settings->google_map_api_key_status == 1)
                                                                     <a href=""
                                                                         class="btn btn-secondary mt-2 btn-sm"
@@ -411,32 +435,6 @@
                                                                 @endif
                                                             </div>
                                                         </div>
-
-                                                        @if ($language->is_default == 1 && $settings->google_map_api_key_status == 1)
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label>{{ __('Latitude' . '*') }}</label>
-                                                                    <input type="text" class="form-control"
-                                                                        id="latitude" name="latitude"
-                                                                        placeholder="{{ __('Enter Latitude') }}">
-                                                                </div>
-                                                                <p class="text-warning pl-10">
-                                                                    {{ __('The Latitude must be between -90 to 90. Ex:49.43453') }}
-                                                                </p>
-                                                            </div>
-
-                                                            <div class="col-lg-6">
-                                                                <div class="form-group">
-                                                                    <label>{{ __('Longitude' . '*') }}</label>
-                                                                    <input type="text" id="longitude"
-                                                                        class="form-control" name="longitude"
-                                                                        placeholder="{{ __('Enter Longitude') }}">
-                                                                </div>
-                                                                <p class="text-warning pl-10">
-                                                                    {{ __('The Longitude must be between -180 to 180. Ex:149.91553') }}
-                                                                </p>
-                                                            </div>
-                                                        @endif
 
                                                         @if (is_array($permissions) && in_array('Amenities', $permissions))
                                                             <div class="col-lg-12">
@@ -634,6 +632,93 @@
             return ['code' => $language->code];
         })->values()->toJson() !!};
         const baseURL = "{{ url('/') }}";
+        var defaultLangCode = '{{ $defaultLang->code }}';
+    </script>
+
+    <script>
+        'use strict';
+        $(document).ready(function () {
+            $('#listing_country_id').select2({
+                placeholder: '{{ __("Select a Country") }}',
+                allowClear: true,
+                minimumInputLength: 0,
+                ajax: {
+                    url: countryUrl,
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term || '',
+                            page: params.page || 1,
+                            lang: defaultLangCode
+                        };
+                    },
+                    processResults: function (data, params) {
+                        return {
+                            results: data.results.map(function (item) {
+                                return { text: item.name, id: item.id };
+                            }),
+                            pagination: { more: data.more }
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            $('#listing_country_id').on('change', function () {
+                var countryId = $(this).val();
+                $('#listing_state_id').empty().append('<option value="">{{ __("Select a State") }}</option>');
+                $('#listing_city_id').empty().append('<option value="">{{ __("Select a City") }}</option>');
+                $('#listing_city_wrapper').addClass('d-none');
+
+                if (countryId) {
+                    $.ajax({
+                        url: getStateUrl,
+                        type: 'POST',
+                        data: { id: countryId, lang: defaultLangCode },
+                        success: function (response) {
+                            if (response.states && response.states.length > 0) {
+                                $('#listing_state_wrapper').removeClass('d-none');
+                                $.each(response.states, function (i, state) {
+                                    $('#listing_state_id').append('<option value="' + state.id + '">' + state.name + '</option>');
+                                });
+                            } else {
+                                $('#listing_state_wrapper').addClass('d-none');
+                                if (response.cities && response.cities.length > 0) {
+                                    $('#listing_city_wrapper').removeClass('d-none');
+                                    $.each(response.cities, function (i, city) {
+                                        $('#listing_city_id').append('<option value="' + city.id + '">' + city.name + '</option>');
+                                    });
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    $('#listing_state_wrapper').addClass('d-none');
+                }
+            });
+
+            $('#listing_state_id').on('change', function () {
+                var stateId = $(this).val();
+                $('#listing_city_id').empty().append('<option value="">{{ __("Select a City") }}</option>');
+
+                if (stateId) {
+                    $.ajax({
+                        url: getCityUrl,
+                        type: 'POST',
+                        data: { id: stateId, lang: defaultLangCode },
+                        success: function (response) {
+                            $('#listing_city_wrapper').removeClass('d-none');
+                            $.each(response, function (i, city) {
+                                $('#listing_city_id').append('<option value="' + city.id + '">' + city.name + '</option>');
+                            });
+                        }
+                    });
+                } else {
+                    $('#listing_city_wrapper').addClass('d-none');
+                }
+            });
+        });
     </script>
 
     <script src="{{ asset('assets/admin/js/ai-image-modal.js') }}"></script>
