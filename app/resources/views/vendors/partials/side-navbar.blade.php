@@ -6,7 +6,7 @@
                 <div class="avatar-sm float-left mr-2">
                     @if (Auth::guard('vendor')->user()->photo != null)
                         <img src="{{ asset('assets/admin/img/vendor-photo/' . Auth::guard('vendor')->user()->photo) }}"
-                            alt="Vendor Image" class="avatar-img rounded-circle">
+                            alt="{{ __('Vendor') }}" class="avatar-img rounded-circle">
                     @else
                         <img src="{{ asset('assets/img/blank-user.jpg') }}" alt=""
                             class="avatar-img rounded-circle">

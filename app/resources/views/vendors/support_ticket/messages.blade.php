@@ -92,7 +92,7 @@
                       </div>
                       <div class="info-user ml-3">
                         <div class="username">{{ $admin->username }}</div>
-                        <div class="status">{{ $admin->id == 1 ? 'Super Admin' : $admin->role->name }}</div>
+                        <div class="status">{{ $admin->id == 1 ? __('Super Admin') : $admin->role->name }}</div>
                         <p>{!! $reply->reply !!}</p>
                         @if ($reply->file)
                           <a href="{{ asset('assets/admin/img/support-ticket/' . $reply->file) }}"
@@ -109,10 +109,10 @@
                         @if ($vendor)
                           @if ($vendor->photo != null)
                             <img class="avatar-img rounded-circle"
-                              src="{{ asset('assets/admin/img/vendor-photo/' . $vendor->photo) }}" alt="user-photo">
+                              src="{{ asset('assets/admin/img/vendor-photo/' . $vendor->photo) }}" alt="{{ __('User') }}">
                           @else
                             <img class="avatar-img rounded-circle" src="{{ asset('assets/img/blank-user.jpg') }}"
-                              alt="user-photo">
+                              alt="{{ __('User') }}">
                           @endif
                         @else
                           <img class="avatar-img rounded-circle" src="{{ asset('assets/img/blank-user.jpg') }}"

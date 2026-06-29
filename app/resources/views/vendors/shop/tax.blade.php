@@ -44,7 +44,7 @@
                   <label>{{ __('Tax Amount') . '* (%)' }}</label>
                   <input type="number" step="0.01" class="form-control" name="product_tax_amount"
                     value="{{ $data->product_tax_amount != null ? $data->product_tax_amount : '' }}"
-                    placeholder="Enter Tax Amount">
+                    placeholder="{{ __('Enter Tax Amount') }}">
                   @error('product_tax_amount')
                     <p class="mt-2 mb-0 text-danger">{{ $message }}</p>
                   @enderror

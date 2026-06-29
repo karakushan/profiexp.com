@@ -10,7 +10,7 @@
     @endif
 
     <button class="navbar-toggler sidenav-toggler ml-auto" type="button" data-toggle="collapse" data-target="collapse"
-      aria-expanded="false" aria-label="Toggle navigation">
+      aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
       <span class="navbar-toggler-icon">
         <i class="icon-menu"></i>
       </span>
@@ -129,7 +129,7 @@
           <li>
             <a class="btn btn-primary btn-sm btn-round" target="_blank"
               href="{{ route('frontend.vendor.details', ['username' => Auth::guard('vendor')->user()->username]) }}"
-              title="View Profile">
+              title="{{ __('View Profile') }}">
               <i class="fas fa-eye"></i>
             </a>
           </li>
@@ -159,21 +159,21 @@
             <div class="avatar-sm">
               @if (Auth::guard('vendor')->user()->photo != null)
                 <img src="{{ asset('assets/admin/img/vendor-photo/' . Auth::guard('vendor')->user()->photo) }}"
-                  alt="Vendor Image" class="avatar-img rounded-circle">
-              @else
-                <img src="{{ asset('assets/img/blank-user.jpg') }}" alt="" class="avatar-img rounded-circle">
-              @endif
-            </div>
-          </a>
+                  alt="{{ __('Vendor') }}" class="avatar-img rounded-circle">
+                @else
+                  <img src="{{ asset('assets/img/blank-user.jpg') }}" alt="" class="avatar-img rounded-circle">
+                @endif
+              </div>
+            </a>
 
-          <ul class="dropdown-menu dropdown-user animated fadeIn">
-            <div class="dropdown-user-scroll scrollbar-outer">
-              <li>
-                <div class="user-box">
-                  <div class="avatar-lg">
-                    @if (Auth::guard('vendor')->user()->photo != null)
-                      <img src="{{ asset('assets/admin/img/vendor-photo/' . Auth::guard('vendor')->user()->photo) }}"
-                        alt="Vendor Image" class="avatar-img rounded-circle">
+            <ul class="dropdown-menu dropdown-user animated fadeIn">
+              <div class="dropdown-user-scroll scrollbar-outer">
+                <li>
+                  <div class="user-box">
+                    <div class="avatar-lg">
+                      @if (Auth::guard('vendor')->user()->photo != null)
+                        <img src="{{ asset('assets/admin/img/vendor-photo/' . Auth::guard('vendor')->user()->photo) }}"
+                          alt="{{ __('Vendor') }}" class="avatar-img rounded-circle">
                     @else
                       <img src="{{ asset('assets/img/blank-user.jpg') }}" alt=""
                         class="avatar-img rounded-circle">

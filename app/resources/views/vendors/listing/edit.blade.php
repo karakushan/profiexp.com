@@ -85,8 +85,8 @@
                         <tr class="trdb table-row" id="trdb{{ $item->id }}">
                           <td>
                             <div class="">
-                              <img class="thumb-preview wf-150"
-                                src="{{ asset('assets/img/listing-gallery/' . $item->image) }}" alt="Ad Image">
+                                                              <img class="thumb-preview wf-150"
+                                                                src="{{ asset('assets/img/listing-gallery/' . $item->image) }}" alt="{{ __('Gallery Images') }}">
                             </div>
                           </td>
                           <td>

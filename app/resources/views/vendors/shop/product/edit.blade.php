@@ -74,7 +74,7 @@
                                                             <td>
                                                                 <img class="thumb-preview wf-150"
                                                                     src="{{ asset('assets/img/products/slider-images/' . $sliderImage) }}"
-                                                                    alt="slider image">
+                                                                    alt="{{ __('Slider Images') }}">
                                                             </td>
                                                             <td>
                                                                 <i class="fa fa-times-circle"
@@ -108,7 +108,7 @@
                                     <br>
                                     <div class="thumb-preview">
                                         <img src="{{ asset('assets/img/products/featured-images/' . $product->featured_image) }}"
-                                            alt="image" class="uploaded-img">
+                                            alt="{{ __('Featured Image') }}" class="uploaded-img">
                                     </div>
 
                                     <div class="mt-3">

@@ -27,19 +27,19 @@
 
           <div class="form-group">
             <label for="">{{ __('Question') . '*' }}</label>
-            <input type="text" class="form-control" name="question" placeholder="Enter Question">
+            <input type="text" class="form-control" name="question" placeholder="{{ __('Enter Question') }}">
             <p id="err_question" class="mt-2 mb-0 text-danger em"></p>
           </div>
 
           <div class="form-group">
             <label for="">{{ __('Answer*') }}</label>
-            <textarea class="form-control" name="answer" rows="5" cols="80" placeholder="Enter Answer"></textarea>
+            <textarea class="form-control" name="answer" rows="5" cols="80" placeholder="{{ __('Enter Answer') }}"></textarea>
             <p id="err_answer" class="mt-2 mb-0 text-danger em"></p>
           </div>
 
           <div class="form-group">
             <label for="">{{ __('Serial Number') . '*' }}</label>
-            <input type="number" class="form-control ltr" name="serial_number" placeholder="Enter FAQ Serial Number">
+            <input type="number" class="form-control ltr" name="serial_number" placeholder="{{ __('Enter FAQ Serial Number') }}">
             <p id="err_serial_number" class="mt-2 mb-0 text-danger em"></p>
             <p class="text-warning mt-2 mb-0">
               <small>{{ __('The higher the serial number is, the later the FAQ will be shown.') }}</small>

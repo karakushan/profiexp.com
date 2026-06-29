@@ -28,8 +28,8 @@ class MessageController extends Controller
                 ->paginate(10);
             return view('vendors.message.listing', $information);
         } else {
-            Session::flash('warning', "Your Listing message Permission is not granted.");
-            Session::flash('success', __('Faviconupdatedsuccessfully') . '!');
+            Session::flash('warning', __('Your Listing message Permission is not granted.'));
+            Session::flash('success', __('Message deleted successfully!'));
             return redirect()->route('vendor.dashboard');
         }
     }
@@ -38,8 +38,7 @@ class MessageController extends Controller
         $message = ListingMessage::findOrFail($request->message_id);
 
         $message->delete();
-        Session::flash('success', 'Message deleted successfully!');
-        Session::flash('success', __('Faviconupdatedsuccessfully') . '!');
+        Session::flash('success', __('Message deleted successfully!'));
         return redirect()->back();
     }
     public function bulkDelete(Request $request)
@@ -52,8 +51,7 @@ class MessageController extends Controller
             $message->delete();
         }
 
-        Session::flash('success', 'Message deleted successfully!');
-        Session::flash('success', __('Faviconupdatedsuccessfully') . '!');
+        Session::flash('success', __('Messages deleted successfully!'));
 
         return response()->json(['status' => 'success'], 200);
     }

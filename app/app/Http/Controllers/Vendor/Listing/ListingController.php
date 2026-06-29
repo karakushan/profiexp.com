@@ -1105,7 +1105,7 @@ Thank you for your attention to this matter.";
 
         $listing_feature->delete();
 
-        Session::flash('success', __('Socail Link deleted successfully') . '!');
+        Session::flash('success', __('Social Link deleted successfully') . '!');
 
         return Response::json(['status' => 'success'], 200);
     }
@@ -1259,7 +1259,7 @@ Thank you for your attention to this matter.";
             ]
         );
 
-        Session::flash('success', __('Messanger info updated successfully') . '!');
+        Session::flash('success', __('Messenger info updated successfully') . '!');
 
         return redirect()->back();
     }

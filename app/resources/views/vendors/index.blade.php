@@ -7,7 +7,7 @@
     @if (Auth::guard('vendor')->user()->status == 0 && $admin_setting->vendor_admin_approval == 1)
         <div class="mt-2 mb-4">
             <div class="alert alert-danger text-dark">
-                {{ $admin_setting->admin_approval_notice != null ? $admin_setting->admin_approval_notice : 'Your account is deactive!' }}
+                {{ $admin_setting->admin_approval_notice != null ? __($admin_setting->admin_approval_notice) : __('Your account is deactive!') }}
             </div>
         </div>
     @endif

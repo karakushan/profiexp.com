@@ -102,7 +102,7 @@
                             @else
                               <div class="">
                                 <input type="text" name="{{ $day->day }}_start_time"
-                                  class="form-control in_start_time" placeholder="Choose Start Time" id="in_start_time"
+                                  class="form-control in_start_time" placeholder="{{ __('Choose Start Time') }}" id="in_start_time"
                                   value="{{ $day->start_time }}">
                                 <p id="err_start_time" class="mt-1 mb-0 text-danger em"></p>
                               </div>
@@ -114,7 +114,7 @@
                             @else
                               <div class="">
                                 <input type="text" name="{{ $day->day }}_end_time"
-                                  class="form-control in_start_time" placeholder="Choose Start Time" id="in_start_time"
+                                  class="form-control in_start_time" placeholder="{{ __('Choose Start Time') }}" id="in_start_time"
                                   value="{{ $day->end_time }}">
                                 <p id="err_start_time" class="mt-1 mb-0 text-danger em"></p>
                               </div>
