@@ -22,3 +22,10 @@
 - vendor
   vendor1 vendor123456
 
+## Локализация (переводы)
+
+- дашборд поставщика (vendor dashboard) использует файлы `admin_*.json` (например `admin_ru.json`, `admin_tr.json`)
+- публичная часть сайта использует `ru.json`, `tr.json` и т.д.
+- это поведение определяется в middleware `VendorLocal` (/app/app/Http/Middleware/VendorLocal.php): vendor->lang_code = 'admin_ru'
+- поэтому переводы для кабинета поставщика добавляй ТОЛЬКО в `admin_*.json`, иначе они не будут отображаться
+
