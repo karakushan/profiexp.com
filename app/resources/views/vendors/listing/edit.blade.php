@@ -63,7 +63,7 @@
                 ->first();
             $slug = !empty($dContent) ? $dContent->slug : '';
           @endphp
-          @if ($dContent)
+          @if ($dContent && $slug)
             <a class="btn btn-success btn-sm float-right mr-1 d-inline-block"
               href="{{ route('frontend.listing.details', ['slug' => $slug, 'id' => $listing->id]) }}" target="_blank">
               <span class="btn-label">
@@ -633,6 +633,11 @@
   <script type="text/javascript" src="{{ asset('assets/admin/js/feature.js') }}"></script>
   <script type="text/javascript" src="{{ asset('assets/admin/js/admin-partial.js') }}"></script>
   <script type="text/javascript" src="{{ asset('assets/admin/js/admin-dropzone.js') }}"></script>
+  <script>
+    if (typeof Dropzone !== 'undefined' && Dropzone.options.myDropzone) {
+      Dropzone.options.myDropzone.dictDefaultMessage = "{{ __('Drop files here to upload') }}";
+    }
+  </script>
   <script src="{{ asset('assets/admin/js/admin-listing.js') }}"></script>
   <script src="{{ asset('assets/admin/js/ai-image-modal.js') }}"></script>
   <script src="{{ asset('assets/admin/js/ai-slider-dropzone.js') }}"></script>
