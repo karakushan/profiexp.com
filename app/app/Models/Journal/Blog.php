@@ -15,7 +15,7 @@ class Blog extends Model
    *
    * @var array
    */
-  protected $fillable = ['image', 'serial_number'];
+  protected $fillable = ['image', 'serial_number', 'translated_languages'];
 
   public function information()
   {

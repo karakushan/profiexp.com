@@ -1,6 +1,6 @@
 <div class="modal fade" id="createModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
   aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLongTitle">{{ __('Add Blog Category') }}</h5>
@@ -13,21 +13,53 @@
         <form id="ajaxForm" class="modal-form create" action="{{ route('admin.blog_management.store_category') }}"
           method="post">
           @csrf
-          <div class="form-group">
-            <label for="">{{ __('Language') . '*' }}</label>
-            <select name="language_id" class="form-control">
-              <option selected disabled>{{ __('Select a Language') }}</option>
-              @foreach ($langs as $lang)
-                <option value="{{ $lang->id }}">{{ $lang->name }}</option>
-              @endforeach
-            </select>
-            <p id="err_language_id" class="mt-2 mb-0 text-danger em"></p>
-          </div>
 
-          <div class="form-group">
-            <label for="">{{ __('Category Name') . '*' }}</label>
-            <input type="text" class="form-control" name="name" placeholder="{{ __('Enter Category Name') }}">
-            <p id="err_name" class="mt-2 mb-0 text-danger em"></p>
+          <div id="createAccordion" class="mt-3">
+            @foreach ($langs as $language)
+              <div class="version">
+                <div class="version-header" id="create-heading{{ $language->id }}">
+                  <h5 class="mb-0">
+                    <button type="button" class="btn btn-link" data-toggle="collapse"
+                      data-target="#create-collapse{{ $language->id }}"
+                      aria-expanded="{{ $language->is_default == 1 ? 'true' : 'false' }}"
+                      aria-controls="create-collapse{{ $language->id }}">
+                      {{ $language->name }}
+                      {{ $language->is_default == 1 ? __('(Default)') : '' }}
+                    </button>
+                  </h5>
+                </div>
+                <div id="create-collapse{{ $language->id }}"
+                  class="collapse {{ $language->is_default == 1 ? 'show' : '' }}"
+                  aria-labelledby="create-heading{{ $language->id }}" data-parent="#createAccordion">
+                  <div class="version-body {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
+                    <div class="form-group">
+                      <label>{{ __('Category Name') . '*' }}</label>
+                      <input type="text" class="form-control" name="{{ $language->code }}_name"
+                        placeholder="{{ __('Enter Category Name') }}">
+                      <p id="err_{{ $language->code }}_name" class="mt-2 mb-0 text-danger em"></p>
+                    </div>
+                    <div class="form-group">
+                      <label>{{ __('Meta Title') }}</label>
+                      <input type="text" class="form-control" name="{{ $language->code }}_meta_title"
+                        placeholder="{{ __('Enter Meta Title') }}">
+                      <p id="err_{{ $language->code }}_meta_title" class="mt-2 mb-0 text-danger em"></p>
+                    </div>
+                    <div class="form-group">
+                      <label>{{ __('Meta Description') }}</label>
+                      <textarea class="form-control" name="{{ $language->code }}_meta_description" rows="3"
+                        placeholder="{{ __('Enter Meta Description') }}"></textarea>
+                      <p id="err_{{ $language->code }}_meta_description" class="mt-2 mb-0 text-danger em"></p>
+                    </div>
+                    <div class="form-group">
+                      <label>{{ __('SEO Text') }}</label>
+                      <textarea class="form-control" name="{{ $language->code }}_seo_text" rows="4"
+                        placeholder="{{ __('Enter SEO Text') }}"></textarea>
+                      <p id="err_{{ $language->code }}_seo_text" class="mt-2 mb-0 text-danger em"></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            @endforeach
           </div>
 
           <div class="form-group">

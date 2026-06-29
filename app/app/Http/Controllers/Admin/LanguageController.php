@@ -921,15 +921,9 @@ class LanguageController extends Controller
                 }
             }
             /**
-             * delete blog-categories info
+             * delete blog-category contents for this language
              */
-            $blogCategories = $language->blogCategory()->get();
-
-            if (count($blogCategories) > 0) {
-                foreach ($blogCategories as $blogCategory) {
-                    $blogCategory->delete();
-                }
-            }
+            \App\Models\Journal\BlogCategoryContent::where('language_id', $language->id)->delete();
             /**
              * delete blog infos
              */

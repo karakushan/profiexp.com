@@ -22,7 +22,6 @@ class BlogController extends Controller
 
     $information['pageHeading'] = $misc->getPageHeading($language);
 
-
     $information['bgImg'] = $misc->getBreadcrumb();
 
     $blogTitle = $blogCategory = null;
@@ -35,15 +34,18 @@ class BlogController extends Controller
     }
 
     $information['blogs'] = Blog::join('blog_informations', 'blogs.id', '=', 'blog_informations.blog_id')
-      ->join('blog_categories', 'blog_categories.id', '=', 'blog_informations.blog_category_id')
+      ->join('blog_category_contents', function ($join) use ($language) {
+        $join->on('blog_category_contents.blog_category_id', '=', 'blog_informations.blog_category_id')
+          ->where('blog_category_contents.language_id', '=', $language->id);
+      })
       ->where('blog_informations.language_id', '=', $language->id)
       ->when($blogTitle, function ($query, $blogTitle) {
         return $query->where('blog_informations.title', 'like', '%' . $blogTitle . '%');
       })
       ->when($blogCategory, function ($query, $blogCategory) {
-        return $query->where('blog_categories.slug', 'like', '%' . $blogCategory . '%');
+        return $query->where('blog_category_contents.slug', 'like', '%' . $blogCategory . '%');
       })
-      ->select('blogs.image', 'blogs.id', 'blog_categories.name as categoryName', 'blog_categories.slug AS categorySlug', 'blog_informations.title', 'blog_informations.slug', 'blog_informations.author', 'blogs.created_at', 'blog_informations.content')
+      ->select('blogs.image', 'blogs.id', 'blog_category_contents.name as categoryName', 'blog_category_contents.slug AS categorySlug', 'blog_informations.title', 'blog_informations.slug', 'blog_informations.author', 'blogs.created_at', 'blog_informations.content')
       ->orderBy('blogs.serial_number', 'asc')
       ->paginate(6);
 
@@ -62,10 +64,13 @@ class BlogController extends Controller
     $information['bgImg'] = $misc->getBreadcrumb();
 
     $details = Blog::join('blog_informations', 'blogs.id', '=', 'blog_informations.blog_id')
-      ->join('blog_categories', 'blog_categories.id', '=', 'blog_informations.blog_category_id')
+      ->join('blog_category_contents', function ($join) use ($language) {
+        $join->on('blog_category_contents.blog_category_id', '=', 'blog_informations.blog_category_id')
+          ->where('blog_category_contents.language_id', '=', $language->id);
+      })
       ->where('blog_informations.language_id', '=', $language->id)
       ->where('blog_informations.blog_id', '=', $id)
-      ->select('blogs.id', 'blogs.image', 'blogs.created_at', 'blog_informations.title', 'blog_informations.content', 'blog_informations.meta_keywords', 'blog_informations.meta_description', 'blog_categories.name as categoryName', 'blog_categories.slug as categorySlug')
+      ->select('blogs.id', 'blogs.image', 'blogs.created_at', 'blog_informations.title', 'blog_informations.content', 'blog_informations.meta_keywords', 'blog_informations.meta_description', 'blog_category_contents.name as categoryName', 'blog_category_contents.slug as categorySlug')
       ->firstOrFail();
 
     $information['details'] = $details;
@@ -89,8 +94,11 @@ class BlogController extends Controller
   {
     $categories = $language->blogCategory()->where('status', 1)->orderBy('serial_number', 'asc')->get();
 
-    $categories->map(function ($category) {
+    $categories->map(function ($category) use ($language) {
+      $category->name = $category->getName($language->id);
+      $category->slug = $category->getSlug($language->id);
       $category['blogCount'] = $category->blogInfo()->count();
+      return $category;
     });
 
     return $categories;

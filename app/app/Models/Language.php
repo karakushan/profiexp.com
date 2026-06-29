@@ -21,6 +21,7 @@ use App\Models\HomePage\Prominence\Feature;
 use App\Models\HomePage\Testimony\Testimonial;
 use App\Models\HomePage\Testimony\TestimonialSection;
 use App\Models\Journal\BlogCategory;
+use App\Models\Journal\BlogCategoryContent;
 use App\Models\Journal\BlogInformation;
 use App\Models\MenuBuilder;
 use App\Models\Popup;
@@ -87,7 +88,7 @@ class Language extends Model
 
   public function blogCategory()
   {
-    return $this->hasMany(BlogCategory::class);
+    return $this->hasManyThrough(BlogCategory::class, BlogCategoryContent::class, 'language_id', 'id', 'id', 'blog_category_id');
   }
 
   public function blogInformation()

@@ -18,6 +18,8 @@ Route::get('/subcheck', 'CronJobController@expired')->name('cron.expired');
 Route::get('/translate-listings', \App\Http\Controllers\Cron\TranslateListingsController::class);
 Route::get('/translate-categories', \App\Http\Controllers\Cron\TranslateCategoriesController::class);
 Route::get('/translate-locations', \App\Http\Controllers\Cron\TranslateLocationsController::class);
+Route::get('/translate-blog-categories', \App\Http\Controllers\Cron\TranslateBlogCategoriesController::class);
+Route::get('/translate-blogs', \App\Http\Controllers\Cron\TranslateBlogsController::class);
 
 Route::get('/change-language', 'FrontEnd\MiscellaneousController@changeLanguage')->name('change_language');
 

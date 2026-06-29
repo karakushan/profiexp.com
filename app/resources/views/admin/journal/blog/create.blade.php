@@ -78,6 +78,20 @@
                   </p>
                 </div>
 
+                <div class="form-group">
+                  <label for="">{{ __('Category') . '*' }}</label>
+                  <select name="category_id" class="form-control" id="categorySelect">
+                    <option selected disabled>{{ __('Select Category') }}</option>
+                    @foreach ($languages as $language)
+                      @if ($language->is_default)
+                        @foreach ($language->categories as $category)
+                          <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        @endforeach
+                      @endif
+                    @endforeach
+                  </select>
+                </div>
+
                 <div id="accordion" class="mt-3">
                   @foreach ($languages as $language)
                     <div class="version">
@@ -102,32 +116,15 @@
                               <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
                                 <label>{{ __('Title') . '*' }}</label>
                                 <input type="text" class="form-control" name="{{ $language->code }}_title"
-                                  placeholder="{{ __('Enter Title') }}">
+                                  placeholder="{{ __('Enter Title') }}" value="{{ old($language->code . '_title') }}">
                               </div>
                             </div>
 
                             <div class="col-lg-6">
                               <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                @php $categories = $language->categories; @endphp
-
-                                <label for="">{{ __('Category') . '*' }}</label>
-                                <select name="{{ $language->code }}_category_id" class="form-control">
-                                  <option selected disabled>{{ __('Select Category') }}</option>
-
-                                  @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                  @endforeach
-                                </select>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div class="row">
-                            <div class="col">
-                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
                                 <label>{{ __('Author') . '*' }}</label>
                                 <input type="text" class="form-control" name="{{ $language->code }}_author"
-                                  placeholder="{{ __('Enter Author Name') }}">
+                                  placeholder="{{ __('Enter Author Name') }}" value="{{ old($language->code . '_author') }}">
                               </div>
                             </div>
                           </div>
@@ -136,7 +133,7 @@
                             <div class="col">
                               <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
                                 <label>{{ __('Content') . '*' }}</label>
-                                <textarea class="form-control summernote" name="{{ $language->code }}_content" data-height="300"></textarea>
+                                <textarea class="form-control summernote" name="{{ $language->code }}_content" data-height="300">{{ old($language->code . '_content') }}</textarea>
                               </div>
                             </div>
                           </div>
@@ -146,7 +143,8 @@
                               <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
                                 <label>{{ __('Meta Keywords') }}</label>
                                 <input class="form-control" name="{{ $language->code }}_meta_keywords"
-                                  placeholder="{{ __('Enter Meta Keywords') }}" data-role="tagsinput">
+                                  placeholder="{{ __('Enter Meta Keywords') }}" data-role="tagsinput"
+                                  value="{{ old($language->code . '_meta_keywords') }}">
                               </div>
                             </div>
                           </div>
@@ -156,7 +154,7 @@
                               <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
                                 <label>{{ __('Meta Description') }}</label>
                                 <textarea class="form-control" name="{{ $language->code }}_meta_description" rows="5"
-                                  placeholder="{{ __('Enter Meta Description') }}"></textarea>
+                                  placeholder="{{ __('Enter Meta Description') }}">{{ old($language->code . '_meta_description') }}</textarea>
                               </div>
                             </div>
                           </div>

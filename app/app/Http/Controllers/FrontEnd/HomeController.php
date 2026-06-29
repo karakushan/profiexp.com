@@ -96,16 +96,22 @@ class HomeController extends Controller
       $information['blogSecInfo'] = $language->blogSection()->first();
 
       $information['blogs'] = Blog::query()->join('blog_informations', 'blogs.id', '=', 'blog_informations.blog_id')
-        ->join('blog_categories', 'blog_categories.id', '=', 'blog_informations.blog_category_id')
+        ->join('blog_category_contents', function ($join) use ($language) {
+          $join->on('blog_category_contents.blog_category_id', '=', 'blog_informations.blog_category_id')
+            ->where('blog_category_contents.language_id', '=', $language->id);
+        })
         ->where('blog_informations.language_id', '=', $language->id)
-        ->select('blogs.image', 'blogs.id', 'blog_categories.name AS categoryName', 'blog_categories.slug AS categorySlug', 'blog_informations.title', 'blog_informations.slug', 'blog_informations.author', 'blogs.created_at', 'blog_informations.content')
+        ->select('blogs.image', 'blogs.id', 'blog_category_contents.name AS categoryName', 'blog_category_contents.slug AS categorySlug', 'blog_informations.title', 'blog_informations.slug', 'blog_informations.author', 'blogs.created_at', 'blog_informations.content')
         ->orderBy('blogs.serial_number', 'desc')
         ->limit(3)
         ->get();
       $blog_count = Blog::query()->join('blog_informations', 'blogs.id', '=', 'blog_informations.blog_id')
-        ->join('blog_categories', 'blog_categories.id', '=', 'blog_informations.blog_category_id')
+        ->join('blog_category_contents', function ($join) use ($language) {
+          $join->on('blog_category_contents.blog_category_id', '=', 'blog_informations.blog_category_id')
+            ->where('blog_category_contents.language_id', '=', $language->id);
+        })
         ->where('blog_informations.language_id', '=', $language->id)
-        ->select('blogs.image', 'blogs.id', 'blog_categories.name AS categoryName', 'blog_categories.slug AS categorySlug', 'blog_informations.title', 'blog_informations.slug', 'blog_informations.author', 'blogs.created_at', 'blog_informations.content')
+        ->select('blogs.image', 'blogs.id', 'blog_category_contents.name AS categoryName', 'blog_category_contents.slug AS categorySlug', 'blog_informations.title', 'blog_informations.slug', 'blog_informations.author', 'blogs.created_at', 'blog_informations.content')
         ->get();
       $information['blog_count'] = $blog_count;
     }

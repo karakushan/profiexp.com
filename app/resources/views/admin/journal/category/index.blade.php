@@ -1,6 +1,5 @@
 @extends('admin.layout')
 
-
 @section('content')
   <div class="page-header">
     <h4 class="page-title">{{ __('Categories') }}</h4>
@@ -34,10 +33,7 @@
               <div class="card-title d-inline-block">{{ __('Categories') }}</div>
             </div>
 
-            <div class="col-lg-3">
-            </div>
-
-            <div class="col-lg-4 offset-lg-1 mt-2 mt-lg-0">
+            <div class="col-lg-4 offset-lg-4 mt-2 mt-lg-0">
               <a href="#" data-toggle="modal" data-target="#createModal"
                 class="btn btn-primary btn-sm float-lg-right float-left"><i class="fas fa-plus"></i>
                 {{ __('Add') }}</a>
@@ -71,27 +67,48 @@
                     </thead>
                     <tbody>
                       @foreach ($categories as $category)
+                        @php
+                          $defaultContent = $category->contents->firstWhere('language_id', $adminLanguageId ?? 0);
+                          if (!$defaultContent) {
+                              $defaultContent = $category->contents->first();
+                          }
+                          $name = $defaultContent ? $defaultContent->name : '—';
+                          $displayName = mb_strlen($name) > 50 ? mb_substr($name, 0, 50, 'UTF-8') . '...' : $name;
+                        @endphp
                         <tr>
                           <td>
                             <input type="checkbox" class="bulk-check" data-val="{{ $category->id }}">
                           </td>
                           <td>
-                            {{ strlen($category->name) > 50 ? mb_substr($category->name, 0, 50, 'UTF-8') . '...' : $category->name }}
+                            {{ $displayName }}
+                            @if ($category->contents->count() > 0)
+                              <div class="mt-1">
+                                @foreach ($category->contents as $content)
+                                  <span class="badge badge-secondary mr-1" title="{{ $content->language->name ?? '' }}">
+                                    {{ strtoupper($content->language->code ?? '—') }}
+                                  </span>
+                                @endforeach
+                              </div>
+                            @endif
                           </td>
                           <td>
                             @if ($category->status == 1)
-                              <h2 class="d-inline-block"><span class="badge badge-success">{{ __('Active') }}</span>
-                              </h2>
+                              <h2 class="d-inline-block"><span class="badge badge-success">{{ __('Active') }}</span></h2>
                             @else
-                              <h2 class="d-inline-block"><span class="badge badge-danger">{{ __('Deactive') }}</span>
-                              </h2>
+                              <h2 class="d-inline-block"><span class="badge badge-danger">{{ __('Deactive') }}</span></h2>
                             @endif
                           </td>
                           <td>{{ $category->serial_number }}</td>
                           <td>
                             <a class="btn btn-secondary btn-sm mr-1 mb-1 editBtn" href="#" data-toggle="modal"
-                              data-target="#editModal" data-id="{{ $category->id }}" data-name="{{ $category->name }}"
-                              data-status="{{ $category->status }}" data-serial_number="{{ $category->serial_number }}">
+                              data-target="#editModal" data-id="{{ $category->id }}"
+                              data-status="{{ $category->status }}"
+                              data-serial_number="{{ $category->serial_number }}"
+                              @foreach ($category->contents as $content)
+                                data-{{ $content->language->code }}_name="{{ $content->name }}"
+                                data-{{ $content->language->code }}_meta_title="{{ $content->meta_title }}"
+                                data-{{ $content->language->code }}_meta_description="{{ $content->meta_description }}"
+                                data-{{ $content->language->code }}_seo_text="{{ $content->seo_text }}" @endforeach>
                               <span class="btn-label">
                                 <i class="fas fa-edit"></i>
                               </span>
@@ -117,7 +134,13 @@
             </div>
           </div>
         </div>
-        <div class="card-footer"></div>
+        <div class="card-footer">
+          <div class="row">
+            <div class="d-inline-block mx-auto">
+              {{ $categories->links() }}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

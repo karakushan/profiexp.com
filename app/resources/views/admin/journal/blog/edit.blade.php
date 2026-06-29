@@ -79,6 +79,26 @@
                   </p>
                 </div>
 
+                @php
+                  $defaultLangForEdit = $languages->firstWhere('is_default', 1);
+                  $firstBlogData = $defaultLangForEdit ? $defaultLangForEdit->blogData : null;
+                  $currentCategoryId = $firstBlogData ? $firstBlogData->blog_category_id : null;
+                @endphp
+
+                <div class="form-group">
+                  <label for="">{{ __('Category') . '*' }}</label>
+                  <select name="category_id" class="form-control">
+                    <option disabled>{{ __('Select Category') }}</option>
+                    @if ($defaultLangForEdit)
+                      @foreach ($defaultLangForEdit->categories as $category)
+                        <option value="{{ $category->id }}" {{ $currentCategoryId == $category->id ? 'selected' : '' }}>
+                          {{ $category->name }}
+                        </option>
+                      @endforeach
+                    @endif
+                  </select>
+                </div>
+
                 <div id="accordion" class="mt-3">
                   @foreach ($languages as $language)
                     @php $blogData = $language->blogData; @endphp
@@ -110,30 +130,6 @@
                             </div>
 
                             <div class="col-lg-6">
-                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                @php $categories = $language->categories; @endphp
-
-                                <label for="">{{ __('Category') . '*' }}</label>
-                                <select name="{{ $language->code }}_category_id" class="form-control">
-                                  @if (is_null($blogData))
-                                    <option selected disabled>{{ __('Select Category') }}</option>
-                                  @else
-                                    <option disabled>{{ __('Select Category') }}</option>
-
-                                    @foreach ($categories as $category)
-                                      <option value="{{ $category->id }}"
-                                        {{ $blogData->blog_category_id == $category->id ? 'selected' : '' }}>
-                                        {{ $category->name }}
-                                      </option>
-                                    @endforeach
-                                  @endif
-                                </select>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div class="row">
-                            <div class="col">
                               <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
                                 <label>{{ __('Author') . '*' }}</label>
                                 <input type="text" class="form-control" name="{{ $language->code }}_author"
