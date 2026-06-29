@@ -100,13 +100,13 @@
                                 ', ',
                                 array_filter([
                                     $listing_content->city_id
-                                        ? App\Models\Location\City::find($listing_content->city_id)?->name
+                                        ? App\Models\Location\City::find($listing_content->city_id)?->getName($language->id)
                                         : null,
                                     $listing_content->state_id
-                                        ? App\Models\Location\State::find($listing_content->state_id)?->name
+                                        ? App\Models\Location\State::find($listing_content->state_id)?->getName($language->id)
                                         : null,
                                     $listing_content->country_id
-                                        ? App\Models\Location\Country::find($listing_content->country_id)?->name
+                                        ? App\Models\Location\Country::find($listing_content->country_id)?->getName($language->id)
                                         : null,
                                 ]),
                             );
@@ -258,13 +258,13 @@
                                 ', ',
                                 array_filter([
                                     $listing_content->city_id
-                                        ? App\Models\Location\City::find($listing_content->city_id)?->name
+                                        ? App\Models\Location\City::find($listing_content->city_id)?->getName($language->id)
                                         : null,
                                     $listing_content->state_id
-                                        ? App\Models\Location\State::find($listing_content->state_id)?->name
+                                        ? App\Models\Location\State::find($listing_content->state_id)?->getName($language->id)
                                         : null,
                                     $listing_content->country_id
-                                        ? App\Models\Location\Country::find($listing_content->country_id)?->name
+                                        ? App\Models\Location\Country::find($listing_content->country_id)?->getName($language->id)
                                         : null,
                                 ]),
                             );

@@ -80,7 +80,7 @@
                                             title="Link" class="product-category font-sm icon-start">
                                             <span class="product-category color-primary icon-start">
                                                 <i class="{{ $listing->listing_content->first()->category->icon }}"></i>
-                                                {{ $listing->listing_content->first()->category->name }}
+                                                {{ $listing->listing_content->first()->category->getName($language->id) }}
                                             </span></a>
                                         @endif
                                     </li>
@@ -93,17 +93,17 @@
                                                     $listing->listing_content->first()->city_id
                                                         ? App\Models\Location\City::find(
                                                             $listing->listing_content->first()->city_id,
-                                                        )?->name
+                                                        )?->getName($language->id)
                                                         : null,
                                                     $listing->listing_content->first()->state_id
                                                         ? App\Models\Location\State::find(
                                                             $listing->listing_content->first()->state_id,
-                                                        )?->name
+                                                        )?->getName($language->id)
                                                         : null,
                                                     $listing->listing_content->first()->country_id
                                                         ? App\Models\Location\Country::find(
                                                             $listing->listing_content->first()->country_id,
-                                                        )?->name
+                                                        )?->getName($language->id)
                                                         : null,
                                                 ]),
                                             );

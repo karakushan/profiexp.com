@@ -221,17 +221,17 @@ $listing_content->category_id
                                                             $listing_content->city_id
                                                                 ? App\Models\Location\City::find(
                                                                     $listing_content->city_id,
-                                                                )?->name
+                                                                )?->getName($language->id)
                                                                 : null,
                                                             $listing_content->state_id
                                                                 ? App\Models\Location\State::find(
                                                                     $listing_content->state_id,
-                                                                )?->name
+                                                                )?->getName($language->id)
                                                                 : null,
                                                             $listing_content->country_id
                                                                 ? App\Models\Location\Country::find(
                                                                     $listing_content->country_id,
-                                                                )?->name
+                                                                )?->getName($language->id)
                                                                 : null,
                                                         ]),
                                                     );
@@ -394,17 +394,17 @@ $listing_content->category_id
                                                             $listing_content->city_id
                                                                 ? App\Models\Location\City::find(
                                                                     $listing_content->city_id,
-                                                                )?->name
+                                                                )?->getName($language->id)
                                                                 : null,
                                                             $listing_content->state_id
                                                                 ? App\Models\Location\State::find(
                                                                     $listing_content->state_id,
-                                                                )?->name
+                                                                )?->getName($language->id)
                                                                 : null,
                                                             $listing_content->country_id
                                                                 ? App\Models\Location\Country::find(
                                                                     $listing_content->country_id,
-                                                                )?->name
+                                                                )?->getName($language->id)
                                                                 : null,
                                                         ]),
                                                     );
