@@ -196,6 +196,11 @@
 }
 
 /* Dark text on light backgrounds (inner pages + sticky) */
+.theme_2_3 .header-area.header-2 .category-navbar {
+  background-color: var(--color-white);
+  border-bottom: 1px solid var(--border-color);
+}
+
 .theme_2_3 .header-area.header-2 .category-nav-link,
 .header-area.header-2.is-sticky .category-nav-link {
   color: var(--color-dark);
