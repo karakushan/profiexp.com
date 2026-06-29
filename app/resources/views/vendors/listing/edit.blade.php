@@ -52,6 +52,11 @@
             </span>
             {{ __('Back') }}
           </a>
+          <button type="button" class="btn btn-primary btn-sm float-right mr-1 listing-ai-field-btn" id="aiGenerateItemSeoBtn"
+            data-field="" data-lang=""
+            data-title="{{ __('AI Generate Listing Content') }}">
+            <i class="fas fa-magic"></i> {{ __('Generate All Content') }}
+          </button>
           @php
             $dContent = App\Models\Listing\ListingContent::where('listing_id', $listing->id)
                 ->where('language_id', $defaultLang->id)
@@ -86,7 +91,7 @@
                           <td>
                             <div class="">
                                                               <img class="thumb-preview wf-150"
-                                                                src="{{ asset('assets/img/listing-gallery/' . $item->image) }}" alt="{{ __('Gallery Images') }}">
+                                                                  src="{{ asset('assets/img/listing-gallery/' . $item->image) }}" alt="{{ __('Gallery Images') }}">
                             </div>
                           </td>
                           <td>
@@ -105,6 +110,19 @@
                   </div>
                   <input type="hidden" value="{{ $listing->id }}" name="listing_id">
                 </form>
+                <button type="button" class="btn btn-sm btn-primary mt-3" data-ai-slider-open
+                  data-dropzone="#my-dropzone"
+                  data-hidden-wrap="#sliders"
+                  data-hidden-input-name="slider_images[]"
+                  data-endpoint="{{ route('vendor.ai.generate.slider.images') }}"
+                  data-upload-endpoint="{{ route('vendor.listing.imagesstore') }}"
+                  data-remove-endpoint="{{ route('vendor.listing.imagermv') }}"
+                  data-remove-key="fileid"
+                  data-max-count="{{ $current_package->number_of_images_per_listing }}"
+                  data-count-default="3"
+                  data-size="custom_600_400">
+                  <i class="fas fa-magic"></i> {{ __('Generate Gallery Images') }}
+                </button>
                 <p class="em text-danger mb-0" id="errslider_images"></p>
                 <p class="text-warning">
                   {{ __('You can upload maximum') . ' ' . $current_package->number_of_images_per_listing . ' ' . __('images under one listing') }}
@@ -123,13 +141,24 @@
                       <div class="thumb-preview">
                         <img
                           src="{{ $listing->feature_image ? asset('assets/img/listing/' . $listing->feature_image) : asset('assets/admin/img/noimage.jpg') }}"
-                          alt="..." class="uploaded-img">
+                          alt="..." class="uploaded-img" id="listingFeaturePreview">
                       </div>
+                      <input type="hidden" name="ai_feature_image" id="listingAiFeatureImage">
                       <div class="mt-3">
                         <div role="button" class="btn btn-primary btn-sm upload-btn">
                           {{ __('Choose Image') }}
                           <input type="file" class="img-input" name="thumbnail">
                         </div>
+                        <button type="button" class="btn btn-primary btn-sm ml-2"
+                          data-ai-image-open
+                          data-endpoint="{{ route('vendor.ai.generate.category.image') }}"
+                          data-target="#listingFeaturePreview"
+                          data-hidden="#listingAiFeatureImage"
+                          data-file-input="input[name='thumbnail']"
+                          data-size="custom_600_400"
+                          data-confirm-text="{{ __('Generate Image') }}">
+                          <i class="fas fa-magic"></i> {{ __('Generate Image') }}
+                        </button>
                       </div>
                       <p class="mt-2 mb-0 text-warning">{{ __('Image Size 600x400') }}</p>
                     </div>
@@ -152,7 +181,8 @@
                           @endphp
                           <img
                             src="{{ $listing->video_background_image ? asset('assets/img/listing/video/' . $listing->video_background_image) : asset('assets/img/noimage.jpg') }}"
-                            alt="..." class="uploaded-img2">
+                            alt="..." class="uploaded-img2" id="listingVideoPreview">
+                          <input type="hidden" name="ai_video_background_image" id="listingAiVideoImage">
                           <button class="remove-img2 btn btn-remove" type="button" style="display:{{ $display }};">
                             <i class="fal fa-times"></i>
                           </button>
@@ -162,6 +192,16 @@
                             {{ __('Choose Image') }}
                             <input type="file" class="video-img-input" name="video_background_image">
                           </div>
+                          <button type="button" class="btn btn-primary btn-sm ml-2"
+                            data-ai-image-open
+                            data-endpoint="{{ route('vendor.ai.generate.category.image') }}"
+                            data-target="#listingVideoPreview"
+                            data-hidden="#listingAiVideoImage"
+                            data-file-input="input[name='video_background_image']"
+                            data-size="landscape_1536_1024"
+                            data-confirm-text="{{ __('Generate Image') }}">
+                            <i class="fas fa-magic"></i> {{ __('Generate Image') }}
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -211,27 +251,6 @@
                     $status = $approve->admin_approve_status;
                   @endphp
                   <input type="hidden" value="{{ $status }}"name="status" id="status">
-                  @if ($settings->google_map_api_key_status == 0)
-                    <div class="col-lg-3">
-                      <div class="form-group">
-                        <label>{{ __('Latitude') . '*' }} </label>
-                        <input type="text" class="form-control" value="{{ $listing->latitude }}" name="latitude"
-                          placeholder="{{ __('Enter Latitude') }}">
-                        <p class="text-warning">
-                          {{ __('The Latitude must be between -90 and 90. Ex:49.43453') }}</p>
-                      </div>
-                    </div>
-
-                    <div class="col-lg-3">
-                      <div class="form-group">
-                        <label>{{ __('Longitude') . '*' }} </label>
-                        <input type="text" class="form-control" value="{{ $listing->longitude }}" name="longitude"
-                          placeholder="{{ __('Enter Longitude') }}">
-                        <p class="text-warning">
-                          {{ __('The Longitude must be between -180 and 180. Ex:149.91553') }}</p>
-                      </div>
-                    </div>
-                  @endif
 
                   <div class="col-lg-3">
                     <div class="form-group">
@@ -252,6 +271,114 @@
                     value="{{ Auth::guard('vendor')->user()->id }}">
                 </div>
 
+                <div class="col-12">
+                  <div class="card border mb-3">
+                    <div class="card-header bg-light">
+                      <h5 class="mb-0">{{ __('Location') }}</h5>
+                    </div>
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-lg-12">
+                          <div class="form-group">
+                            <label>{{ __('Search Address') }}</label>
+                            <input type="text" class="form-control" id="search-address"
+                              placeholder="{{ __('Search Address') }}" value="{{ $listingAddress }}">
+                          </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                          <div class="form-group">
+                            <label>{{ __('Latitude') . '*' }} </label>
+                            <input type="text" class="form-control" name="latitude" id="latitude"
+                              placeholder="{{ __('Enter Latitude') }}" value="{{ $listing->latitude }}">
+                            <p class="text-warning mb-0">
+                              {{ __('The Latitude must be between -90 and 90. Ex:49.43453') }}</p>
+                          </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                          <div class="form-group">
+                            <label>{{ __('Longitude') . '*' }} </label>
+                            <input type="text" class="form-control" name="longitude" id="longitude"
+                              placeholder="{{ __('Enter Longitude') }}" value="{{ $listing->longitude }}">
+                            <p class="text-warning mb-0">
+                              {{ __('The Longitude must be between -180 and 180. Ex:149.91553') }}
+                            </p>
+                          </div>
+                        </div>
+
+                        @if ($settings->google_map_api_key_status == 1)
+                          <div class="col-lg-12">
+                            <div class="form-group mb-0">
+                              <a href="" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#GoogleMapModal">
+                                <i class="fas fa-eye"></i> {{ __('Show Map') }}
+                              </a>
+                            </div>
+                          </div>
+                        @endif
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                @php
+                  $defaultLang = $languages->firstWhere('is_default', 1);
+                  $defaultListingContent = App\Models\Listing\ListingContent::where('listing_id', $listing->id)
+                      ->where('language_id', $defaultLang->id)
+                      ->first();
+                  $category = App\Models\ListingCategory::where([
+                      ['id', $defaultListingContent->category_id ?? 0],
+                      ['status', 1],
+                  ])->first();
+                @endphp
+
+                <input type="hidden" id="current_country_id" value="{{ $defaultListingContent->country_id ?? '' }}">
+                <input type="hidden" id="current_state_id" value="{{ $defaultListingContent->state_id ?? '' }}">
+                <input type="hidden" id="current_city_id" value="{{ $defaultListingContent->city_id ?? '' }}">
+
+                <div class="row">
+                  <div class="col-lg-4">
+                    <div class="form-group">
+                      <label>{{ __('Category') . '*' }} </label>
+                      <select name="category_id"
+                        data-code="{{ $defaultLang->code }}"
+                        class="form-control js-example-basic-single2">
+                        <option selected value="{{ $defaultListingContent->category_id ?? '' }}">{{ $category ? $category->getName($defaultLang->id) : '' }}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-lg-4">
+                    <div class="form-group">
+                      <label>{{ __('Country') . '*' }}</label>
+                      <select name="country_id" class="form-control" id="listing_country_id">
+                        @php
+                          $currentCountry = $defaultListingContent->country_id ? App\Models\Location\CountryContent::where('country_id', $defaultListingContent->country_id)->where('language_id', $defaultLang->id)->select('name')->first() : null;
+                        @endphp
+                        <option value="">{{ __('Select a Country') }}</option>
+                        @if ($currentCountry)
+                          <option value="{{ $defaultListingContent->country_id }}" selected>{{ $currentCountry->name }}</option>
+                        @endif
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-lg-4 d-none" id="listing_state_wrapper">
+                    <div class="form-group">
+                      <label>{{ __('State') . '*' }}</label>
+                      <select name="state_id" class="form-control" id="listing_state_id">
+                        <option value="">{{ __('Select a State') }}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-lg-4 d-none" id="listing_city_wrapper">
+                    <div class="form-group">
+                      <label>{{ __('City') . '*' }}</label>
+                      <select name="city_id" class="form-control" id="listing_city_id">
+                        <option value="">{{ __('Select a City') }}</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
                 <div id="accordion" class="mt-3">
                   @foreach ($languages as $language)
                     @php
@@ -266,7 +393,7 @@
                             data-target="#collapse{{ $language->id }}"
                             aria-expanded="{{ $language->is_default == 1 ? 'true' : 'false' }}"
                             aria-controls="collapse{{ $language->id }}">
-                            {{ $language->name . __(' Language') }} {{ $language->is_default == 1 ? '(Default)' : '' }}
+                            {{ $language->name }} {{ $language->is_default == 1 ? '(' . __('Default') . ')' : '' }}
                           </button>
                         </h5>
                       </div>
@@ -278,220 +405,136 @@
                           <div class="row">
                             <div class="col-lg-6">
                               <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                <label>{{ __('Title') . '*' }} </label>
+                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                                  <label class="mb-0">{{ __('Title') . '*' }}</label>
+                                  <button type="button"
+                                    class="btn btn-sm btn-primary listing-ai-field-btn"
+                                    data-field="title" data-lang="{{ $language->code }}"
+                                    data-title="{{ __('Title') }}">
+                                    <i class="fas fa-magic"></i> {{ __('Generate') }}
+                                  </button>
+                                </div>
                                 <input type="text" class="form-control" name="{{ $language->code }}_title"
                                   placeholder="{{ __('Enter Title') }}"
                                   value="{{ $listingContent ? $listingContent->title : '' }}">
                               </div>
                             </div>
-                            <div class="col-lg-6">
-                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                @php
-                                  $category = App\Models\ListingCategory::where([
-                                      ['id', $listingContent->category_id],
-                                      ['status', 1],
-                                  ])
-                                      ->first();
-                                @endphp
-
-                                <label>{{ __('Category') . '*' }} </label>
-                                <select name="{{ $language->code }}_category_id"
-                                  class="form-control js-example-basic-single2" data-code="{{ $language->code }}">
-                                  <option selected value="{{ $category->id }}">{{ $category->getName($language->id) }}</option>
-                                </select>
-                              </div>
-                            </div>
-
-
-                            @php
-                              $country = App\Models\Location\Country::where([
-                                  ['language_id', $language->id],
-                                  ['id', $listingContent->country_id],
-                              ])
-                                  ->select('id', 'name')
-                                  ->first();
-                            @endphp
-                            <div class="col-lg-4">
-                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                <label>{{ __('Country') . '*' }}</label>
-                                <select name="{{ $language->code }}_country_id" class="form-control js-country-basic"
-                                  data-code="{{ $language->code }}">
-                                  <option selected value="{{ $country->id }}">{{ $country->name }}</option>
-                                </select>
-                              </div>
-                            </div>
-
-                            @php
-                              $totalStateshave = App\Models\Location\State::where([
-                                  ['language_id', $language->id],
-                                  ['country_id', $listingContent ? $listingContent->country_id : 0],
-                              ])->count();
-
-                              $state = App\Models\Location\State::where([
-                                  ['language_id', $language->id],
-                                  ['id', $listingContent->state_id],
-                                  ['country_id', $listingContent->country_id],
-                              ])
-                                  ->select('id', 'name')
-                                  ->first();
-                            @endphp
-                            <div
-                              class="col-lg-4 {{ $language->code }}_hide_state @if ($totalStateshave == 0) d-none @endif ">
-                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                <label>{{ __('State') . '*' }} </label>
-                                <select name="{{ $language->code }}_state_id"
-                                  class="form-control js-state-basic {{ $language->code }}_country_state_id"data-code="{{ $language->code }}">
-                                  <option selected value="{{ @$state->id }}">{{ @$state->name }}</option>
-                                </select>
-                              </div>
-                            </div>
-
-                            @php
-                              $city = App\Models\Location\City::where([
-                                  ['language_id', $language->id],
-                                  ['id', $listingContent->city_id],
-                              ])
-                                  ->select('id', 'name')
-                                  ->first();
-                            @endphp
-                            <div class="col-lg-4">
-                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                <label>{{ __('City') . '*' }} </label>
-                                <select name="{{ $language->code }}_city_id" data-code="{{ $language->code }}"
-                                  class="form-control js-select-city-ajax {{ $language->code }}_state_city_id">
-                                  <option selected value="{{ $city->id }}">{{ @$city->name }}</option>
-                                </select>
-                              </div>
-                            </div>
 
                             <div class="col-lg-12">
                               <div class="form-group">
-                                <label for="">{{ __('Address') . '*' }}</label>
-                                <input type="text" name="{{ $language->code }}_address" class="form-control"
-                                  placeholder="{{ __('Enter Address') }}" id="search-address"
+                                <label>{{ __('Address') . '*' }}</label>
+                                <input type="text" class="form-control"
+                                  name="{{ $language->code }}_address"
+                                  placeholder="{{ __('Enter Address') }}"
                                   value="{{ $listingContent ? $listingContent->address : '' }}">
-                                @if ($listingContent)
-                                  @if ($language->is_default == 1 && $settings->google_map_api_key_status == 1)
-                                    <a href="" class="btn btn-secondary mt-2 btn-sm" data-toggle="modal"
-                                      data-target="#GoogleMapModal">
-                                      <i class="fas fa-eye"></i> {{ __('Show Map') }}
-                                    </a>
-                                  @endif
+                                @if ($language->is_default == 1 && $settings->google_map_api_key_status == 1)
+                                  <a href="" class="btn btn-secondary mt-2 btn-sm" data-toggle="modal"
+                                    data-target="#GoogleMapModal">
+                                    <i class="fas fa-eye"></i> {{ __('Show Map') }}
+                                  </a>
                                 @endif
                               </div>
                             </div>
 
-                            @if ($language->is_default == 1 && $settings->google_map_api_key_status == 1)
-                              <div class="col-lg-6">
-                                <div class="form-group ">
-                                  <label>{{ __('Latitude') . '*' }}</label>
-                                  <input type="text" class="form-control" value="{{ $listing->latitude }}"
-                                    name="latitude" placeholder="{{ __('Enter Latitude') }}" id="latitude"
-                                    autocomplete="off">
-                                  <p class="text-warning">
-                                    {{ __('The Latitude must be between -90 to 90. Ex:49.43453') }}
-                                  </p>
-                                </div>
-                              </div>
-                              <div class="col-lg-6">
-                                <div class="form-group ">
-                                  <label>{{ __('Longitude') . '*' }}</label>
-                                  <input type="text" class="form-control" value="{{ $listing->longitude }}"
-                                    name="longitude"id="longitude" placeholder="{{ __('Enter Longitude') }}"
-                                    autocomplete="off">
-                                </div>
-                                <p class="text-warning">
-                                  {{ __('The Longitude must be between -180 to 180. Ex:149.91553') }}
-                                </p>
-                              </div>
-                            @endif
-
-
                             @if (is_array($permissions) && in_array('Amenities', $permissions))
-                              <div class="col-lg-12 ">
+                              <div class="col-lg-12">
                                 <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
                                   @php
                                     $aminities = App\Models\Aminite::where('language_id', $language->id)->get();
-
                                     $hasaminitie = $listingContent ? json_decode($listingContent->aminities) : [];
                                   @endphp
 
                                   <label>{{ __('Select Amenities') . '*' }} </label>
                                   <div class="dropdown-content" id="checkboxes">
-                                    @if ($hasaminitie)
-                                      @foreach ($aminities as $aminitie)
-                                        @if (in_array($aminitie->id, $hasaminitie))
-                                          <input
-                                            @if ($amenitieDown) class="input-checkbox  {{ $language->code }}_input-checkbox" @endif
-                                            id="{{ $aminitie->id }}" type="checkbox"
-                                            data-code ="{{ $language->code }}"
-                                            data-listing_id ="{{ $listing->id }}"
-                                            data-language_id ="{{ $language->id }}"
-                                            name="{{ $language->code }}_aminities[]" value="{{ $aminitie->id }}"
-                                            checked>
-                                          <label
-                                            class="amenities-label {{ $language->direction == 1 ? 'ml-2 mr-0' : 'mr-2' }}"
-                                            for="{{ $aminitie->id }}">{{ $aminitie->title }}</label>
-                                        @else
-                                          <input type="checkbox" name="{{ $language->code }}_aminities[]"
-                                            value="{{ $aminitie->id }}" id="{{ $aminitie->id }}">
-                                          <label
-                                            class="amenities-label {{ $language->direction == 1 ? 'ml-2 mr-0' : 'mr-2' }}"
-                                            for="{{ $aminitie->id }}">{{ $aminitie->title }}</label>
-                                        @endif
-                                      @endforeach
-                                    @else
-                                      <div class="dropdown-content" id="checkboxes">
-                                        @foreach ($aminities as $aminitie)
-                                          <input type="checkbox"id="{{ $aminitie->id }}"
-                                            name="{{ $language->code }}_aminities[]" value="{{ $aminitie->id }}">
-                                          <label
-                                            class="amenities-label {{ $language->direction == 1 ? 'ml-2 mr-0' : 'mr-2' }}"
-                                            for="{{ $aminitie->id }}">{{ $aminitie->title }}</label>
-                                        @endforeach
-                                      </div>
-                                    @endif
+                                    @foreach ($aminities as $amenity)
+                                      <input type="checkbox"
+                                        id="{{ $amenity->id }}"
+                                        name="{{ $language->code }}_aminities[]"
+                                        value="{{ $amenity->id }}"
+                                        @if (is_array($hasaminitie) && in_array($amenity->id, $hasaminitie)) checked @endif>
+                                      <label
+                                        class="amenities-label {{ $language->direction == 1 ? 'ml-2 mr-0' : 'mr-2' }}"
+                                        for="{{ $amenity->id }}">{{ $amenity->title }}</label>
+                                    @endforeach
                                   </div>
                                 </div>
                               </div>
                             @endif
                           </div>
+
                           <div class="row">
                             <div class="col-lg-12">
                               <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                <label>{{ __('Summary') }} </label>
+                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                                  <label class="mb-0">{{ __('Description') . '*' }}</label>
+                                  <button type="button"
+                                    class="btn btn-sm btn-primary listing-ai-field-btn"
+                                    data-field="description" data-lang="{{ $language->code }}"
+                                    data-title="{{ __('Description') }}">
+                                    <i class="fas fa-magic"></i> {{ __('Generate') }}
+                                  </button>
+                                </div>
+                                <textarea id="{{ $language->code }}_description" class="form-control summernote"
+                                  name="{{ $language->code }}_description" data-height="300">{{ @$listingContent->description }}</textarea>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="row">
+                            <div class="col-lg-12">
+                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                                  <label class="mb-0">{{ __('Meta Keywords') }}</label>
+                                  <button type="button"
+                                    class="btn btn-sm btn-primary listing-ai-field-btn"
+                                    data-field="meta_keywords" data-lang="{{ $language->code }}"
+                                    data-title="{{ __('Meta Keywords') }}">
+                                    <i class="fas fa-magic"></i> {{ __('Generate') }}
+                                  </button>
+                                </div>
+                                <input class="form-control"
+                                  name="{{ $language->code }}_meta_keyword"
+                                  placeholder="{{ __('Enter Meta Keywords') }}"
+                                  data-role="tagsinput"
+                                  value="{{ $listingContent ? @$listingContent->meta_keyword : '' }}">
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="row">
+                            <div class="col-lg-12">
+                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                                  <label class="mb-0">{{ __('Summary') }}</label>
+                                  <button type="button"
+                                    class="btn btn-sm btn-primary listing-ai-field-btn"
+                                    data-field="summary" data-lang="{{ $language->code }}"
+                                    data-title="{{ __('Summary') }}">
+                                    <i class="fas fa-magic"></i> {{ __('Generate') }}
+                                  </button>
+                                </div>
                                 <textarea class="form-control" name="{{ $language->code }}_summary" data-height="300">{{ @$listingContent->summary }}</textarea>
                               </div>
                             </div>
                             <div class="col-lg-12">
                               <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                <label>{{ __('Description') . '*' }} </label>
-                                <textarea class="form-control summernote" id="{{ $language->code }}_description"
-                                  name="{{ $language->code }}_description" data-height="300">{{ @$listingContent->description }}</textarea>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="row">
-                            <div class="col-lg-12">
-                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                <label>{{ __('Meta Keywords') }}</label>
-                                <input class="form-control" name="{{ $language->code }}_meta_keyword"
-                                  placeholder="{{ __('Enter Meta Keywords') }}" data-role="tagsinput"
-                                  value="{{ $listingContent ? @$listingContent->meta_keyword : '' }}">
-                              </div>
-                            </div>
-                          </div>
-                          <div class="row">
-                            <div class="col-lg-12">
-                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                <label>{{ __('Meta Description') }}</label>
+                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                                  <label class="mb-0">{{ __('Meta Description') }}</label>
+                                  <button type="button"
+                                    class="btn btn-sm btn-primary listing-ai-field-btn"
+                                    data-field="meta_description" data-lang="{{ $language->code }}"
+                                    data-title="{{ __('Meta Description') }}">
+                                    <i class="fas fa-magic"></i> {{ __('Generate') }}
+                                  </button>
+                                </div>
                                 <textarea class="form-control" name="{{ $language->code }}_meta_description" rows="5"
                                   placeholder="{{ __('Enter Meta Description') }}">{{ $listingContent ? @$listingContent->meta_description : '' }}</textarea>
                               </div>
                             </div>
                           </div>
+
                           <div class="row">
-                            <div class="col">
+                            <div class="col-lg-12">
                               @php $currLang = $language; @endphp
                               @foreach ($languages as $language)
                                 @continue($language->id == $currLang->id)
@@ -499,7 +542,9 @@
                                   <label class="form-check-label">
                                     <input class="form-check-input" type="checkbox"
                                       onchange="cloneInput('collapse{{ $currLang->id }}', 'collapse{{ $language->id }}', event)">
-                                    <span class="form-check-sign">{{ __('Clone for') }} <strong
+                                    <span
+                                      class="form-check-sign">{{ __('Clone for') }}
+                                      <strong
                                         class="text-capitalize text-secondary">{{ $language->name }}</strong>
                                       {{ __('language') }}</span>
                                   </label>
@@ -557,21 +602,14 @@
       src="https://maps.googleapis.com/maps/api/js?key={{ $settings->google_map_api_key }}&libraries=places&callback=initMap"
       async defer></script>
   @endif
-  <script type="text/javascript" src="{{ asset('assets/admin/js/feature.js') }}"></script>
-  <script type="text/javascript" src="{{ asset('assets/admin/js/admin-partial.js') }}"></script>
-  <script type="text/javascript" src="{{ asset('assets/admin/js/admin-dropzone.js') }}"></script>
-  <script src="{{ asset('assets/admin/js/admin-listing.js') }}"></script>
-@endsection
 
-@section('variables')
   <script>
-    "use strict";
+    'use strict';
     const countryUrl = "{{ route('vendor.get_country') }}";
     const cityUrl = "{{ route('vendor.get_city') }}";
     const stateUrl = "{{ route('vendor.get_state') }}";
     const getHomeCatUrl = "{{ route('vendor.get_categories') }}";
 
-    var address = "{{ $listingAddress }}";
     var storeUrl = "{{ route('vendor.listing.imagesstore') }}";
     var removeUrl = "{{ route('vendor.listing.imagermv') }}";
     var rmvdbUrl = "{{ route('vendor.listing.imgdbrmv') }}";
@@ -584,6 +622,163 @@
     var updateAminitie = "{{ route('vendor.listing_management.update_aminitie') }}"
     var galleryImages = {{ $current_package->number_of_images_per_listing - count($listing->galleries) }};
     var languages = {!! json_encode($languages) !!};
+    var listingAiLanguages = {!! $languages->map(function ($language) {
+        return ['code' => $language->code];
+    })->values()->toJson() !!};
     const baseURL = "{{ url('/') }}";
+    var address = "{{ $listingAddress }}";
+    var defaultLangCode = '{{ $defaultLang->code }}';
+  </script>
+
+  <script type="text/javascript" src="{{ asset('assets/admin/js/feature.js') }}"></script>
+  <script type="text/javascript" src="{{ asset('assets/admin/js/admin-partial.js') }}"></script>
+  <script type="text/javascript" src="{{ asset('assets/admin/js/admin-dropzone.js') }}"></script>
+  <script src="{{ asset('assets/admin/js/admin-listing.js') }}"></script>
+  <script src="{{ asset('assets/admin/js/ai-image-modal.js') }}"></script>
+  <script src="{{ asset('assets/admin/js/ai-slider-dropzone.js') }}"></script>
+  <script src="{{ asset('assets/admin/js/ai-form-generator.js') }}"></script>
+
+  <script>
+    'use strict';
+    function loadStates(countryId, selectedStateId, selectedCityId) {
+      $('#listing_state_id').empty().append('<option value="">{{ __("Select a State") }}</option>');
+      $('#listing_city_id').empty().append('<option value="">{{ __("Select a City") }}</option>');
+      $('#listing_city_wrapper').addClass('d-none');
+
+      if (countryId) {
+        $.ajax({
+          url: getStateUrl,
+          type: 'POST',
+          data: { id: countryId, lang: defaultLangCode },
+          success: function (response) {
+            if (response.states && response.states.length > 0) {
+              $('#listing_state_wrapper').removeClass('d-none');
+              $.each(response.states, function (i, state) {
+                var selected = selectedStateId && state.id == selectedStateId;
+                $('#listing_state_id').append('<option value="' + state.id + '" ' + (selected ? 'selected' : '') + '>' + state.name + '</option>');
+              });
+              if (selectedStateId) {
+                $('#listing_state_id').val(selectedStateId);
+                loadCities(selectedStateId, selectedCityId);
+              }
+            } else {
+              $('#listing_state_wrapper').addClass('d-none');
+              if (response.cities && response.cities.length > 0) {
+                $('#listing_city_wrapper').removeClass('d-none');
+                $.each(response.cities, function (i, city) {
+                  var selected = selectedCityId && city.id == selectedCityId;
+                  $('#listing_city_id').append('<option value="' + city.id + '" ' + (selected ? 'selected' : '') + '>' + city.name + '</option>');
+                });
+              }
+            }
+          }
+        });
+      } else {
+        $('#listing_state_wrapper').addClass('d-none');
+      }
+    }
+
+    function loadCities(stateId, selectedCityId) {
+      $('#listing_city_id').empty().append('<option value="">{{ __("Select a City") }}</option>');
+
+      if (stateId) {
+        $.ajax({
+          url: getCityUrl,
+          type: 'POST',
+          data: { id: stateId, lang: defaultLangCode },
+          success: function (response) {
+            $('#listing_city_wrapper').removeClass('d-none');
+            $.each(response, function (i, city) {
+              var selected = selectedCityId && city.id == selectedCityId;
+              $('#listing_city_id').append('<option value="' + city.id + '" ' + (selected ? 'selected' : '') + '>' + city.name + '</option>');
+            });
+          }
+        });
+      } else {
+        $('#listing_city_wrapper').addClass('d-none');
+      }
+    }
+
+    $(document).ready(function () {
+      $('#listing_country_id').select2({
+        placeholder: '{{ __("Select a Country") }}',
+        allowClear: true,
+        minimumInputLength: 0,
+        ajax: {
+          url: countryUrl,
+          dataType: 'json',
+          delay: 250,
+          data: function (params) {
+            return {
+              search: params.term || '',
+              page: params.page || 1,
+              lang: defaultLangCode
+            };
+          },
+          processResults: function (data, params) {
+            return {
+              results: data.results.map(function (item) {
+                return { text: item.name, id: item.id };
+              }),
+              pagination: { more: data.more }
+            };
+          },
+          cache: true
+        }
+      });
+
+      var currentCountryId = $('#current_country_id').val();
+      var currentStateId = $('#current_state_id').val();
+      var currentCityId = $('#current_city_id').val();
+
+      if (currentCountryId) {
+        loadStates(currentCountryId, currentStateId, currentCityId);
+      }
+
+      $('#listing_country_id').on('change', function () {
+        loadStates($(this).val(), null);
+      });
+
+      $('#listing_state_id').on('change', function () {
+        loadCities($(this).val(), null);
+      });
+    });
+  </script>
+
+  <script>
+    "use strict";
+    AiFormGenerator.init({
+      openBtn: '.listing-ai-field-btn',
+      modalId: '#aiItemSeoModal',
+      modalTitleEl: '#aiItemSeoModalTitle',
+
+      confirmBtn: '#aiItemSeoConfirmBtn',
+      endpoint: "{{ route('vendor.ai.generate.content') }}",
+
+      prompt: {
+        from: '#ai_item_prompt'
+      },
+
+      hiddenField: '#ai_item_field',
+      hiddenLang: '#ai_item_lang',
+
+      extra: {
+        mode: () => 'item_seo'
+      },
+      outputs: function () {
+        const outputs = {};
+
+        (listingAiLanguages || []).forEach(function (language) {
+          const code = language.code;
+          outputs[code + '_title'] = '[name="' + code + '_title"]';
+          outputs[code + '_summary'] = '[name="' + code + '_summary"]';
+          outputs[code + '_description'] = '[name="' + code + '_description"]';
+          outputs[code + '_meta_keywords'] = '[name="' + code + '_meta_keyword"]';
+          outputs[code + '_meta_description'] = '[name="' + code + '_meta_description"]';
+        });
+
+        return outputs;
+      }
+    });
   </script>
 @endsection
