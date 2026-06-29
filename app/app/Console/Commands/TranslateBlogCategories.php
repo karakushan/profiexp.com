@@ -58,7 +58,7 @@ class TranslateBlogCategories extends Command
 
         $count = 0;
         foreach ($pendingCategories as $category) {
-            TranslateBlogCategoryJob::dispatch(
+            TranslateBlogCategoryJob::dispatchSync(
                 categoryId: $category->id,
                 sourceLangId: $defaultLangId,
                 targetLangId: $targetLang->id,

@@ -100,6 +100,18 @@
                           </td>
                           <td>{{ $category->serial_number }}</td>
                           <td>
+                            @php
+                              $previewContent = $category->contents->firstWhere('language_id', $adminLanguageId ?? 0) ?? $category->contents->first();
+                            @endphp
+                            @if ($previewContent)
+                              <a class="btn btn-success btn-sm mr-1 mb-1"
+                                href="{{ route('blog', ['category' => $previewContent->slug]) }}"
+                                target="_blank" title="{{ __('Preview') }}">
+                                <span class="btn-label">
+                                  <i class="fas fa-eye"></i>
+                                </span>
+                              </a>
+                            @endif
                             <a class="btn btn-secondary btn-sm mr-1 mb-1 editBtn" href="#" data-toggle="modal"
                               data-target="#editModal" data-id="{{ $category->id }}"
                               data-status="{{ $category->status }}"

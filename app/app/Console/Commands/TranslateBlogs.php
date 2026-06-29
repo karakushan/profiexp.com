@@ -72,7 +72,7 @@ class TranslateBlogs extends Command
 
         $count = 0;
         foreach ($pendingBlogs as $blog) {
-            TranslateBlogJob::dispatch(
+            TranslateBlogJob::dispatchSync(
                 blogId: $blog->id,
                 sourceLangId: $defaultLangId,
                 targetLangId: $targetLang->id,

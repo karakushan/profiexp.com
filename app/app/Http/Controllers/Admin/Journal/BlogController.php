@@ -26,7 +26,7 @@ class BlogController extends Controller
                     ->where('blog_category_contents.language_id', '=', $language->id);
             })
             ->where('blog_informations.language_id', '=', $language->id)
-            ->select('blogs.id', 'blogs.serial_number', 'blogs.created_at', 'blog_informations.title', 'blog_category_contents.name AS categoryName')
+            ->select('blogs.id', 'blogs.serial_number', 'blogs.created_at', 'blog_informations.title', 'blog_informations.slug', 'blog_category_contents.name AS categoryName')
             ->orderByDesc('blogs.id')
             ->get();
         $information['langs'] = Language::all();

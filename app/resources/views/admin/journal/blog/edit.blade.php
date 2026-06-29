@@ -35,13 +35,28 @@
       <div class="card">
         <div class="card-header">
           <div class="card-title d-inline-block">{{ __('Edit Post') }}</div>
-          <a class="btn btn-info btn-sm float-right d-inline-block"
-            href="{{ route('admin.blog_management.blogs', ['language' => $defaultLang->code]) }}">
-            <span class="btn-label">
-              <i class="fas fa-backward"></i>
-            </span>
-            {{ __('Back') }}
-          </a>
+          <div class="float-right d-inline-block">
+            @php
+              $previewBlogData = $defaultLangForEdit ? $defaultLangForEdit->blogData : null;
+            @endphp
+            @if ($previewBlogData)
+              <a class="btn btn-success btn-sm mr-1"
+                href="{{ route('blog.details', ['slug' => $previewBlogData->slug]) }}"
+                target="_blank">
+                <span class="btn-label">
+                  <i class="fas fa-eye"></i>
+                </span>
+                {{ __('Preview') }}
+              </a>
+            @endif
+            <a class="btn btn-info btn-sm"
+              href="{{ route('admin.blog_management.blogs', ['language' => $defaultLang->code]) }}">
+              <span class="btn-label">
+                <i class="fas fa-backward"></i>
+              </span>
+              {{ __('Back') }}
+            </a>
+          </div>
         </div>
 
         <div class="card-body">

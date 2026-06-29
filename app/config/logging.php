@@ -92,6 +92,13 @@ return [
       'level' => env('LOG_LEVEL', 'debug'),
     ],
 
+    'translate' => [
+      'driver' => 'daily',
+      'path' => storage_path('logs/translate.log'),
+      'level' => env('LOG_LEVEL', 'debug'),
+      'days' => 14,
+    ],
+
     'null' => [
       'driver' => 'monolog',
       'handler' => NullHandler::class,

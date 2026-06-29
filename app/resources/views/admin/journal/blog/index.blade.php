@@ -88,6 +88,14 @@
                           </td>
                           <td>{{ $blog->serial_number }}</td>
                           <td>
+                            <a class="btn btn-success mt-1 btn-sm mr-1"
+                              href="{{ route('blog.details', ['slug' => $blog->slug ?? '']) }}"
+                              target="_blank" title="{{ __('Preview') }}">
+                              <span class="btn-label">
+                                <i class="fas fa-eye"></i>
+                              </span>
+                            </a>
+
                             <a class="btn btn-secondary mt-1 btn-sm mr-1"
                               href="{{ route('admin.blog_management.edit_blog', ['id' => $blog->id]) }}">
                               <span class="btn-label">
