@@ -50,21 +50,7 @@
                 </div>
               </a>
             </div>
-            @if ($basicInfo->shop_status == 1)
-              <div class="col-md-6">
-                <a href="{{ route('user.order.index') }}">
-                  <div class="card card-box radius-md mb-30 color-2">
-                    <div class="card-icon mb-15">
-                      <i class="ico-grid"></i>
-                    </div>
-                    <div class="card-info">
-                      <h3 class="mb-0">{{ count($orders) }}</h3>
-                      <p class="mb-0">{{ __('Total Orders') }}</p>
-                    </div>
-                  </div>
-                </a>
-              </div>
-            @endif
+
           </div>
 
           <div class="account-info radius-md mb-40">
