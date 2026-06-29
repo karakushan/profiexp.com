@@ -120,8 +120,12 @@ class HomeController extends Controller
 
     if ($themeVersion == 2 || $themeVersion == 3) {
 
-      $cities = City::withCount('listing_city')
-        ->has('listing_city')
+      $cities = City::withCount(['listing_city' => function ($query) use ($language) {
+            $query->where('language_id', $language->id);
+        }])
+        ->whereHas('listing_city', function ($query) use ($language) {
+            $query->where('language_id', $language->id);
+        })
         ->forLanguage($language->id)
         ->addSelect(['name' => CityContent::select('name')
             ->whereColumn('city_id', 'cities.id')

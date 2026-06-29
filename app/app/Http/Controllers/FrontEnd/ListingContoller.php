@@ -615,13 +615,28 @@ class ListingContoller extends Controller
     $metaCountryName = null;
 
     if ($request->city) {
-      $cityModel = City::with('country', 'state')->forLanguage($language->id)->where('id', $request->city)->first();
+      $cityModel = City::with('country', 'state')->find($request->city);
 
       if ($cityModel) {
         $metaCityName = $cityModel->getName($language->id);
         $information['searchCity'] = $metaCityName;
         $metaStateName = $cityModel->state?->getName($language->id);
         $metaCountryName = $cityModel->country?->getName($language->id);
+
+        // Fallback to default language for city name when current language has no translation
+        if (!$metaCityName) {
+          $metaCityName = $cityModel->getName($language->id);
+          $defaultLang = Language::where('is_default', 1)->first();
+          if ($defaultLang && $defaultLang->id !== $language->id) {
+            $metaCityName = $cityModel->getName($defaultLang->id) ?: null;
+            if (!$metaStateName) {
+              $metaStateName = $cityModel->state?->getName($defaultLang->id) ?: null;
+            }
+            if (!$metaCountryName) {
+              $metaCountryName = $cityModel->country?->getName($defaultLang->id) ?: null;
+            }
+          }
+        }
       }
     } elseif ($request->filled('title') && !empty($listingIds)) {
       $cityId = ListingContent::where('language_id', $language->id)
@@ -632,11 +647,30 @@ class ListingContoller extends Controller
         ->value('city_id');
 
       if ($cityId) {
-        $cityModel = City::with('country', 'state')->forLanguage($language->id)->where('id', $cityId)->first();
+        $cityModel = City::with('country', 'state')->find($cityId);
         if ($cityModel) {
           $metaCityName = $cityModel->getName($language->id);
+
+          // Fallback to default language for city name
+          if (!$metaCityName) {
+            $defaultLang = Language::where('is_default', 1)->first();
+            if ($defaultLang && $defaultLang->id !== $language->id) {
+              $metaCityName = $cityModel->getName($defaultLang->id);
+            }
+          }
+
           $metaStateName = $cityModel->state?->getName($language->id);
           $metaCountryName = $cityModel->country?->getName($language->id);
+
+          // Fallback to default language for state/country
+          if ((!$metaStateName || !$metaCountryName) && isset($defaultLang)) {
+            if (!$metaStateName) {
+              $metaStateName = $cityModel->state?->getName($defaultLang->id) ?: null;
+            }
+            if (!$metaCountryName) {
+              $metaCountryName = $cityModel->country?->getName($defaultLang->id) ?: null;
+            }
+          }
         }
       }
     }
@@ -691,15 +725,23 @@ class ListingContoller extends Controller
 
       $labelBase = $categoryName ? $categoryName : __('Services');
 
-      // Russian pluralization for the meta label
+      // Pluralization for the meta label (RU, UK)
       $labelForTitle = $labelBase;
       $labelForDesc = $labelBase;
-      if ($language->code === 'ru') {
+      if (in_array($language->code, ['ru', 'uk'])) {
         $lowerLabel = mb_strtolower($labelBase);
-        $pluralForms = [
-          'услуги' => ['Услуга', 'Услуги', 'Услуг'],
-          'Услуги' => ['Услуга', 'Услуги', 'Услуг'],
-        ];
+        $pluralForms = [];
+        if ($language->code === 'ru') {
+          $pluralForms = [
+            'услуги' => ['Услуга', 'Услуги', 'Услуг'],
+            'Услуги' => ['Услуга', 'Услуги', 'Услуг'],
+          ];
+        } else {
+          $pluralForms = [
+            'послуги' => ['Послуга', 'Послуги', 'Послуг'],
+            'Послуги' => ['Послуга', 'Послуги', 'Послуг'],
+          ];
+        }
         if (isset($pluralForms[$labelBase]) || isset($pluralForms[$lowerLabel])) {
           $forms = $pluralForms[$lowerLabel] ?? $pluralForms[$labelBase];
           $mod10 = $metaCount % 10;
