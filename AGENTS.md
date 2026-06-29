@@ -1,6 +1,7 @@
 # AGENTS.md
 
 - все запросы консоли делай в докер окружении
+- Python скрипты создавай в `/Users/admin/Documents/dev/profiexp.com/scripts/`
 - проверяй файлы на наличие ошибок docker compose exec -T web php -l ...
 - сейчас активна тема v2 все правки делай там
 
