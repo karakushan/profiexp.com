@@ -30,8 +30,6 @@
         {{ $cityMetaDescription }}
     @elseif (!empty($categoryContent) && !empty($categoryContent->meta_description))
         {{ $categoryContent->meta_description }}
-    @elseif (!empty($seoInfo))
-        {{ $seoInfo->meta_description_listings }}
     @endif
 @endsection
 @section('content')
