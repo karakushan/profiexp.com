@@ -971,4 +971,81 @@ class ListingController extends Controller
         Session::flash('success', __('Business Hours Updated successfully') . '!');
         return back();
     }
+
+    public function delete($id)
+    {
+        $listing = Listing::findOrFail($id);
+
+        $listing->listing_content()->each(fn($c) => $c->delete());
+
+        if (!is_null($listing->feature_image)) {
+            @unlink(public_path('assets/img/listing/') . $listing->feature_image);
+        }
+        if (!is_null($listing->video_background_image)) {
+            @unlink(public_path('assets/img/listing/video/') . $listing->video_background_image);
+        }
+
+        $listing->galleries()->each(function ($g) {
+            @unlink(public_path('assets/img/listing-gallery/') . $g->image);
+            $g->delete();
+        });
+
+        $listing->specifications()->each(function ($f) {
+            $f->contents()->each(fn($fc) => $fc->delete());
+            $f->delete();
+        });
+
+        FeatureOrder::where('listing_id', $id)->each(function ($o) {
+            @unlink(public_path('assets/file/attachments/feature-activation/') . $o->attachment);
+            @unlink(public_path('assets/file/invoices/listing-feature/') . $o->invoice);
+            $o->delete();
+        });
+
+        ListingMessage::where('listing_id', $id)->each(fn($m) => $m->delete());
+        ListingReview::where('listing_id', $id)->each(fn($r) => $r->delete());
+        Visitor::where('listing_id', $id)->each(fn($v) => $v->delete());
+        $listing->listingFaqs()->each(fn($f) => $f->delete());
+        $listing->sociallinks()->each(fn($s) => $s->delete());
+        BusinessHour::where('listing_id', $id)->delete();
+
+        ClaimListing::where('listing_id', $id)->each(function ($claim) {
+            if ($claim->information) {
+                foreach (json_decode($claim->information, true) ?? [] as $fieldData) {
+                    if (($fieldData['type'] ?? null) == 8 && !empty($fieldData['value'])) {
+                        @unlink(public_path('assets/file/zip-files/' . $fieldData['value']));
+                    }
+                }
+            }
+            $claim->delete();
+        });
+
+        ListingProduct::where('listing_id', $id)->each(function ($product) {
+            $product->listing_product_content()->each(fn($pc) => $pc->delete());
+            @unlink(public_path('assets/img/listing/product/') . $product->feature_image);
+            $product->galleries()->each(function ($pg) {
+                @unlink(public_path('assets/img/listing/product-gallery/') . $pg->image);
+                $pg->delete();
+            });
+            ProductMessage::where('product_id', $product->id)->each(fn($pm) => $pm->delete());
+            $product->delete();
+        });
+
+        $listing->delete();
+
+        Session::flash('success', __('Listing deleted successfully') . '!');
+        return redirect()->back();
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->ids;
+        foreach ($ids as $id) {
+            try {
+                $this->delete($id);
+            } catch (\Exception $e) {
+            }
+        }
+        Session::flash('success', __('Listings deleted successfully') . '!');
+        return Response::json(['status' => 'success'], 200);
+    }
 }
