@@ -118,8 +118,12 @@ class HomeController extends Controller
 
     $information['locationSecInfo'] = $language->locationSection()->first();
 
-    $categories = ListingCategory::with('contents')->withCount('listing_contents')->forLanguage($language->id)->active()->root()
-      ->orderBy('listing_contents_count', 'desc')
+    $categories = ListingCategory::with('contents')
+      ->withCount(['listing_contents as distinct_listing_count' => function ($q) {
+          $q->select(DB::raw('COUNT(DISTINCT listing_id)'));
+      }])
+      ->forLanguage($language->id)->active()->root()
+      ->orderBy('distinct_listing_count', 'desc')
       ->get();
 
     $information['categories'] = $categories;

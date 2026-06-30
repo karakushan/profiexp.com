@@ -129,7 +129,7 @@
                                                 </div>
                                                 <h3 class="category-title mb-20">{{ $category->getName($language->id) }}</h3>
                                                 <span
-                                                    class="category-qty">{{ $category->listing_contents_count }}</span>
+                                                    class="category-qty">{{ $category->distinct_listing_count }}</span>
                                             </div>
                                         </a>
                                     </div>
