@@ -32,6 +32,11 @@ class Listing extends Model
         return $this->hasMany(ListingContent::class, 'listing_id', 'id');
     }
 
+    public function listing_content_all()
+    {
+        return $this->hasMany(ListingContent::class, 'listing_id', 'id');
+    }
+
     public function galleries()
     {
         return $this->hasMany(ListingImage::class, 'listing_id', 'id');

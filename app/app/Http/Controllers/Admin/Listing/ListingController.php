@@ -338,6 +338,7 @@ class ListingController extends Controller
                 $q->where('language_id', $language_id);
             },
             'listing_content.category.contents',
+            'listing_content_all' => fn($q) => $q->with('language'),
         ])
             ->when($category, function ($query) use ($category_listingIds) {
 

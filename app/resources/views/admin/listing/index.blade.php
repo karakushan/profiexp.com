@@ -228,6 +228,15 @@
                             @else
                               --
                             @endif
+                            @if ($listing->listing_content_all->count() > 0)
+                              <div class="mt-1">
+                                @foreach ($listing->listing_content_all as $lc)
+                                  <span class="badge badge-secondary mr-1" title="{{ $lc->language->name ?? '' }}">
+                                    {{ strtoupper($lc->language->code ?? '—') }}
+                                  </span>
+                                @endforeach
+                              </div>
+                            @endif
                           </td>
                           <td>
                             @if ($listing->vendor_id != 0)
