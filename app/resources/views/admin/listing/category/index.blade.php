@@ -99,3 +99,7 @@
     @include('admin.listing.category.create')
     @include('admin.listing.category.edit')
 @endsection
+
+@section('script')
+@include('admin.listing.category.edit-seo-script')
+@endsection
