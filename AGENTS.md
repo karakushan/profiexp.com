@@ -1,5 +1,7 @@
 # AGENTS.md
 
+- используй memories.sh для сохранения важных решений и фактов между сессиями: `memories add --decision "..."` или `memories add --fact "..."`
+- в начале сессии выполняй `memories recall --json` для загрузки контекста
 - все запросы консоли делай в докер окружении
 - Python скрипты создавай в `/Users/admin/Documents/dev/profiexp.com/scripts/`
 - проверяй файлы на наличие ошибок docker compose exec -T web php -l ...
