@@ -36,11 +36,44 @@ class TranslateListings extends Command
 
         $batchSize = max(1, (int) $this->option('batch'));
 
+        $this->dispatchDefaultBatch($defaultLang, $batchSize);
+
         foreach ($targetLanguages as $targetLang) {
             $this->dispatchBatch($defaultLang->id, $targetLang, $batchSize);
         }
 
         return self::SUCCESS;
+    }
+
+    private function dispatchDefaultBatch(Language $defaultLang, int $batchSize): void
+    {
+        $pendingListings = Listing::query()
+            ->whereHas('listing_content', function ($q) {
+                $q->whereNotNull('title')->where('title', '!=', '');
+            })
+            ->whereDoesntHave('listing_content', function ($q) use ($defaultLang) {
+                $q->where('language_id', $defaultLang->id)
+                    ->whereNotNull('title')->where('title', '!=', '');
+            })
+            ->limit($batchSize)
+            ->get();
+
+        $ids = [];
+        foreach ($pendingListings as $listing) {
+            TranslateListingJob::dispatch(
+                listingId: $listing->id,
+                sourceLangId: $defaultLang->id,
+                targetLangId: $defaultLang->id,
+                targetLangCode: $defaultLang->code,
+                targetLangName: $defaultLang->name,
+            );
+            $ids[] = $listing->id;
+        }
+
+        if ($ids) {
+            Log::channel('translate')->info("Dispatched default lang listing jobs: [" . implode(', ', $ids) . "]");
+            $this->info("Dispatched " . count($ids) . " listing translation jobs for default language: [" . implode(', ', $ids) . "]");
+        }
     }
 
     private function dispatchBatch(int $defaultLangId, Language $targetLang, int $batchSize): void

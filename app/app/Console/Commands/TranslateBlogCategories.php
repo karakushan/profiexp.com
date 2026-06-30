@@ -36,11 +36,49 @@ class TranslateBlogCategories extends Command
 
         $batchSize = max(1, (int) $this->option('batch'));
 
+        $this->dispatchDefaultBatch($defaultLang, $batchSize);
+
         foreach ($targetLanguages as $targetLang) {
             $this->dispatchBatch($defaultLang->id, $targetLang, $batchSize);
         }
 
         return self::SUCCESS;
+    }
+
+    private function dispatchDefaultBatch(Language $defaultLang, int $batchSize): void
+    {
+        $pendingCategories = BlogCategory::whereDoesntHave('contents', function ($q) use ($defaultLang) {
+            $q->where('language_id', $defaultLang->id)
+                ->whereNotNull('name')->where('name', '!=', '');
+        })
+            ->whereHas('contents', function ($q) {
+                $q->whereNotNull('name')->where('name', '!=', '');
+            })
+            ->with(['contents' => function ($q) {
+                $q->whereNotNull('name')->where('name', '!=', '');
+            }])
+            ->limit($batchSize)
+            ->get();
+
+        $ids = [];
+        foreach ($pendingCategories as $category) {
+            $source = $category->contents->first();
+            if (!$source) continue;
+
+            TranslateBlogCategoryJob::dispatchSync(
+                categoryId: $category->id,
+                sourceLangId: $defaultLang->id,
+                targetLangId: $defaultLang->id,
+                targetLangCode: $defaultLang->code,
+                targetLangName: $defaultLang->name,
+            );
+            $ids[] = $category->id;
+        }
+
+        if ($ids) {
+            Log::channel('translate')->info("Dispatched default lang blog category jobs: [" . implode(', ', $ids) . "]");
+            $this->info("Dispatched " . count($ids) . " blog category translation jobs for default language: [" . implode(', ', $ids) . "]");
+        }
     }
 
     private function dispatchBatch(int $defaultLangId, Language $targetLang, int $batchSize): void

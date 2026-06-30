@@ -36,11 +36,44 @@ class TranslateBlogs extends Command
 
         $batchSize = max(1, (int) $this->option('batch'));
 
+        $this->dispatchDefaultBatch($defaultLang, $batchSize);
+
         foreach ($targetLanguages as $targetLang) {
             $this->dispatchBatch($defaultLang->id, $targetLang, $batchSize);
         }
 
         return self::SUCCESS;
+    }
+
+    private function dispatchDefaultBatch(Language $defaultLang, int $batchSize): void
+    {
+        $pendingBlogs = Blog::query()
+            ->whereHas('information', function ($q) {
+                $q->whereNotNull('title')->where('title', '!=', '');
+            })
+            ->whereDoesntHave('information', function ($q) use ($defaultLang) {
+                $q->where('language_id', $defaultLang->id)
+                    ->whereNotNull('title')->where('title', '!=', '');
+            })
+            ->limit($batchSize)
+            ->get();
+
+        $ids = [];
+        foreach ($pendingBlogs as $blog) {
+            TranslateBlogJob::dispatchSync(
+                blogId: $blog->id,
+                sourceLangId: $defaultLang->id,
+                targetLangId: $defaultLang->id,
+                targetLangCode: $defaultLang->code,
+                targetLangName: $defaultLang->name,
+            );
+            $ids[] = $blog->id;
+        }
+
+        if ($ids) {
+            Log::channel('translate')->info("Dispatched default lang blog jobs: [" . implode(', ', $ids) . "]");
+            $this->info("Dispatched " . count($ids) . " blog translation jobs for default language: [" . implode(', ', $ids) . "]");
+        }
     }
 
     private function dispatchBatch(int $defaultLangId, Language $targetLang, int $batchSize): void

@@ -38,6 +38,8 @@ class TranslateLocations extends Command
 
         $batchSize = max(1, (int) $this->option('batch'));
 
+        $this->dispatchDefaultBatch($defaultLang, $batchSize);
+
         foreach ($targetLanguages as $targetLang) {
             $this->dispatchForModel(
                 'country',
@@ -68,6 +70,50 @@ class TranslateLocations extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    private function dispatchDefaultBatch(Language $defaultLang, int $batchSize): void
+    {
+        foreach (['country', 'state', 'city'] as $entityType) {
+            $modelClass = match ($entityType) {
+                'country' => Country::class,
+                'state' => State::class,
+                'city' => City::class,
+            };
+            $contentClass = match ($entityType) {
+                'country' => 'App\Models\Location\CountryContent',
+                'state' => 'App\Models\Location\StateContent',
+                'city' => 'App\Models\Location\CityContent',
+            };
+
+            $pendingIds = $modelClass::whereHas('contents', function ($q) {
+                $q->whereNotNull('name')->where('name', '!=', '');
+            })
+                ->whereDoesntHave('contents', function ($q) use ($defaultLang) {
+                    $q->where('language_id', $defaultLang->id)
+                        ->whereNotNull('name')->where('name', '!=', '');
+                })
+                ->limit($batchSize)
+                ->pluck('id');
+
+            $dispatched = [];
+            foreach ($pendingIds as $id) {
+                TranslateLocationJob::dispatch(
+                    entityType: $entityType,
+                    entityId: $id,
+                    sourceLangId: $defaultLang->id,
+                    targetLangId: $defaultLang->id,
+                    targetLangCode: $defaultLang->code,
+                    targetLangName: $defaultLang->name,
+                );
+                $dispatched[] = $id;
+            }
+
+            if ($dispatched) {
+                Log::channel('translate')->info("Dispatched default lang {$entityType} jobs: [" . implode(', ', $dispatched) . "]");
+                $this->info("Dispatched " . count($dispatched) . " {$entityType} translation jobs for default language: [" . implode(', ', $dispatched) . "]");
+            }
+        }
     }
 
     private function dispatchForModel(
