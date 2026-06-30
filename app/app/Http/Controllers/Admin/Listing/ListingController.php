@@ -333,9 +333,12 @@ class ListingController extends Controller
             }
         }
 
-        $information['listings'] = Listing::with(['listing_content' => function ($q) use ($language_id) {
-            $q->where('language_id', $language_id);
-        }])
+        $information['listings'] = Listing::with([
+            'listing_content' => function ($q) use ($language_id) {
+                $q->where('language_id', $language_id);
+            },
+            'listing_content.category.contents',
+        ])
             ->when($category, function ($query) use ($category_listingIds) {
 
                 return $query->whereIn('listings.id', $category_listingIds);

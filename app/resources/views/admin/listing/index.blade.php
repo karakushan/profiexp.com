@@ -296,7 +296,7 @@
                               <a href="{{ route('frontend.listings', ['category_id' => $listing_content->category_id]) }}"
                                 target="_blank">
 
-                                {{ $listing_content->category->name ?? null }}
+                                {{ $listing_content->category?->getName($language->id) ?? '—' }}
                               </a>
                             @else
                               --
