@@ -8,6 +8,7 @@ use App\Models\Location\City;
 use App\Models\Location\Country;
 use App\Models\Location\State;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -27,7 +28,7 @@ class TranslateLocations extends Command
 
         $defaultLang = Language::where('is_default', 1)->first();
         if (!$defaultLang) {
-            Log::warning('TranslateLocations: no default language found');
+            Log::channel('translate')->warning('TranslateLocations: no default language found');
             return self::FAILURE;
         }
 
@@ -103,7 +104,7 @@ class TranslateLocations extends Command
         }
 
         if ($count > 0) {
-            Log::info("Dispatched {$count} {$entityType} translation jobs for {$targetLang->code}");
+            Log::channel('translate')->info("Dispatched {$count} {$entityType} translation jobs for {$targetLang->code}");
             $this->info("Dispatched {$count} {$entityType} translation jobs for {$targetLang->code}");
         }
     }

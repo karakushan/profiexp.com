@@ -25,7 +25,7 @@ class TranslateBlogs extends Command
 
         $defaultLang = Language::where('is_default', 1)->first();
         if (!$defaultLang) {
-            Log::warning('TranslateBlogs: no default language found');
+            Log::channel('translate')->warning('TranslateBlogs: no default language found');
             return self::FAILURE;
         }
 
@@ -83,7 +83,7 @@ class TranslateBlogs extends Command
         }
 
         if ($count > 0) {
-            Log::info("Dispatched {$count} blog translation jobs for {$targetLang->code}");
+            Log::channel('translate')->info("Dispatched {$count} blog translation jobs for {$targetLang->code}");
             $this->info("Dispatched {$count} blog translation jobs for {$targetLang->code}");
         }
     }

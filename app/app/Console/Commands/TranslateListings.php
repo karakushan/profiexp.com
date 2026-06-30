@@ -25,7 +25,7 @@ class TranslateListings extends Command
 
         $defaultLang = Language::where('is_default', 1)->first();
         if (!$defaultLang) {
-            Log::warning('TranslateListings: no default language found');
+            Log::channel('translate')->warning('TranslateListings: no default language found');
             return self::FAILURE;
         }
 
@@ -83,7 +83,7 @@ class TranslateListings extends Command
         }
 
         if ($count > 0) {
-            Log::info("Dispatched {$count} translation jobs for {$targetLang->code}");
+            Log::channel('translate')->info("Dispatched {$count} translation jobs for {$targetLang->code}");
             $this->info("Dispatched {$count} translation jobs for {$targetLang->code}");
         }
     }
