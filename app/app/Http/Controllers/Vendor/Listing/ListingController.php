@@ -25,6 +25,7 @@ use App\Models\Listing\ListingReview;
 use App\Models\Listing\ListingSocialMedia;
 use App\Models\Listing\ProductMessage;
 use App\Models\ListingCategory;
+use App\Models\ListingCategoryContent;
 use App\Models\Location\City;
 use App\Models\Location\Country;
 use App\Models\Location\State;
@@ -65,11 +66,14 @@ class ListingController extends Controller
 
         $category_listingIds = [];
         if ($request->filled('category') && $request->input('category') !== "All") {
-            $category_content = ListingCategory::find(intval($request->input('category')));
+            $slug = $request->input('category');
+            $categoryContent = ListingCategoryContent::where('language_id', $language->id)
+                ->where('slug', $slug)
+                ->first();
 
-            if (!is_null($category_content)) {
+            if ($categoryContent) {
                 $contents = ListingContent::where('language_id', $language->id)
-                    ->where('category_id', $category_content->id)
+                    ->where('category_id', $categoryContent->listing_category_id)
                     ->get()
                     ->pluck('listing_id');
                 foreach ($contents as $content) {
@@ -77,6 +81,7 @@ class ListingController extends Controller
                         array_push($category_listingIds, $content);
                     }
                 }
+                $category = true;
             }
         }
 

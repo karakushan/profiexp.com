@@ -64,9 +64,14 @@
                       <option value="All" {{ request()->input('category') == 'All' ? 'selected' : '' }}>
                         {{ __('All') }}</option>
                       @foreach ($categories as $category)
-                        <option @selected($category->slug == request()->input('category')) value="{{ $category->slug }}">
-                          {{ $category->name }}
-                        </option>
+                        @php
+                          $catContent = $category->contents->firstWhere('language_id', $language->id);
+                        @endphp
+                        @if ($catContent)
+                          <option @selected($catContent->slug == request()->input('category')) value="{{ $catContent->slug }}">
+                            {{ $catContent->name }}
+                          </option>
+                        @endif
                       @endforeach
                     </select>
                   </div>
