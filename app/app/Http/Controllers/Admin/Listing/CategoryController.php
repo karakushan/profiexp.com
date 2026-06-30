@@ -7,6 +7,7 @@ use App\Http\Helpers\UploadFile;
 use App\Models\Language;
 use App\Models\ListingCategory;
 use App\Models\ListingCategoryContent;
+use App\Services\Ai\AiTextManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
@@ -226,5 +227,68 @@ class CategoryController extends Controller
     private function getAdminLanguageId(): int
     {
         return $this->getAdminLanguage()->id;
+    }
+
+    public function generateSeo(Request $request, AiTextManager $aiText): \Illuminate\Http\JsonResponse
+    {
+        $name = $request->input('name', '');
+        $langCode = $request->input('lang_code', 'en');
+        $langName = $request->input('lang_name', 'English');
+
+        if (empty($name)) {
+            return Response::json(['error' => 'Category name is required'], 400);
+        }
+
+        $prompt = "Return ONLY valid JSON. No markdown. No explanation.\n"
+            . "You are an SEO specialist for a business directory website.\n"
+            . "Category: {$name}\n"
+            . "Language: {$langCode} ({$langName})\n\n"
+            . "Generate ONLY these 3 keys:\n"
+            . "- meta_title: SEO title for the category page (max 60 chars)\n"
+            . "- meta_description: SEO meta description for the category page (max 160 chars)\n"
+            . "- seo_text: Detailed SEO text for the category page (2-4 paragraphs, HTML format)\n\n"
+            . "Rules:\n"
+            . "1) meta_title MUST be short and include the category name.\n"
+            . "2) meta_description MUST be unique, compelling, and include the category name.\n"
+            . "3) seo_text MUST be rich HTML content with <p> tags, at least 200 characters.\n"
+            . "4) Write in {$langName} language.\n"
+            . "5) Keys must be: meta_title, meta_description, seo_text\n\n"
+            . "JSON FORMAT:\n"
+            . "{\n"
+            . "  \"meta_title\": \"...\",\n"
+            . "  \"meta_description\": \"...\",\n"
+            . "  \"seo_text\": \"...\"\n"
+            . "}";
+
+        try {
+            $resp = $aiText->generateWithMeta($prompt, 'gemini');
+            $rawText = (string) ($resp['text'] ?? '');
+
+            $json = json_decode($rawText, true);
+            if (!is_array($json)) {
+                $json = $this->extractJsonFromText($rawText);
+            }
+
+            return Response::json([
+                'status' => 'success',
+                'data' => [
+                    'meta_title' => $json['meta_title'] ?? '',
+                    'meta_description' => $json['meta_description'] ?? '',
+                    'seo_text' => $json['seo_text'] ?? '',
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return Response::json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    private function extractJsonFromText(string $text): array
+    {
+        preg_match('/\{.*\}/s', $text, $matches);
+        if (!empty($matches[0])) {
+            $decoded = json_decode($matches[0], true);
+            if (is_array($decoded)) return $decoded;
+        }
+        return [];
     }
 }

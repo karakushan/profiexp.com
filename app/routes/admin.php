@@ -105,6 +105,7 @@ Route::prefix('/admin')->middleware('auth:admin', 'Demo', 'adminLang')->group(fu
         Route::post('/update-category', 'Admin\Listing\CategoryController@update')->name('admin.listing_specification.update_category');
         Route::post('/delete-category/{id}', 'Admin\Listing\CategoryController@destroy')->name('admin.listing_specification.delete_category');
         Route::post('/bulk-delete-category', 'Admin\Listing\CategoryController@bulkDestroy')->name('admin.listing_specification.bulk_delete_category');
+        Route::post('/generate-category-seo', 'Admin\Listing\CategoryController@generateSeo')->name('admin.listing_specification.generate_category_seo');
 
 
         // Listing Aminites route
