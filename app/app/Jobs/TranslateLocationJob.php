@@ -36,82 +36,96 @@ class TranslateLocationJob implements ShouldQueue
 
     public function handle(LocationTranslationService $translator): void
     {
-        $sourceContent = match ($this->entityType) {
-            'country' => CountryContent::where('country_id', $this->entityId)
-                ->where('language_id', $this->sourceLangId)
-                ->first(),
-            'state' => StateContent::where('state_id', $this->entityId)
-                ->where('language_id', $this->sourceLangId)
-                ->first(),
-            'city' => CityContent::where('city_id', $this->entityId)
-                ->where('language_id', $this->sourceLangId)
-                ->first(),
-            default => null,
-        };
+        try {
+            $sourceContent = match ($this->entityType) {
+                'country' => CountryContent::where('country_id', $this->entityId)
+                    ->where('language_id', $this->sourceLangId)
+                    ->first(),
+                'state' => StateContent::where('state_id', $this->entityId)
+                    ->where('language_id', $this->sourceLangId)
+                    ->first(),
+                'city' => CityContent::where('city_id', $this->entityId)
+                    ->where('language_id', $this->sourceLangId)
+                    ->first(),
+                default => null,
+            };
 
-        if (!$sourceContent || empty($sourceContent->name)) {
-            return;
-        }
-
-        $exists = match ($this->entityType) {
-            'country' => CountryContent::where('country_id', $this->entityId)
-                ->where('language_id', $this->targetLangId)
-                ->exists(),
-            'state' => StateContent::where('state_id', $this->entityId)
-                ->where('language_id', $this->targetLangId)
-                ->exists(),
-            'city' => CityContent::where('city_id', $this->entityId)
-                ->where('language_id', $this->targetLangId)
-                ->exists(),
-            default => true,
-        };
-
-        if ($exists) {
-            return;
-        }
-
-        $translated = match ($this->entityType) {
-            'country' => $translator->translateCountry($sourceContent, $this->targetLangName),
-            'state' => $translator->translateState($sourceContent, $this->targetLangName),
-            'city' => $translator->translateCity($sourceContent, $this->targetLangName),
-            default => [],
-        };
-
-        if (empty($translated['name'])) {
-            return;
-        }
-
-        $data = ['name' => $translated['name']];
-
-        if ($this->entityType === 'city') {
-            $slug = $translated['slug'] ?? '';
-            if (empty($slug)) {
-                $slug = Str::slug($translated['name']);
+            if (!$sourceContent || empty($sourceContent->name)) {
+                Log::channel('translate')->warning("TranslateLocationJob [{$this->entityType}#{$this->entityId}]: source content not found for lang #{$this->sourceLangId}");
+                return;
             }
-            if ($this->targetLangCode !== 'en') {
-                $transliterated = $this->transliterateSlug($translated['name']);
-                if (!empty($transliterated)) {
-                    $slug = $transliterated;
+
+            $exists = match ($this->entityType) {
+                'country' => CountryContent::where('country_id', $this->entityId)
+                    ->where('language_id', $this->targetLangId)
+                    ->exists(),
+                'state' => StateContent::where('state_id', $this->entityId)
+                    ->where('language_id', $this->targetLangId)
+                    ->exists(),
+                'city' => CityContent::where('city_id', $this->entityId)
+                    ->where('language_id', $this->targetLangId)
+                    ->exists(),
+                default => true,
+            };
+
+            if ($exists) {
+                Log::channel('translate')->info("TranslateLocationJob [{$this->entityType}#{$this->entityId}]: already translated to {$this->targetLangCode}");
+                return;
+            }
+
+            Log::channel('translate')->info("TranslateLocationJob [{$this->entityType}#{$this->entityId}]: calling translate to {$this->targetLangCode}");
+
+            $translated = match ($this->entityType) {
+                'country' => $translator->translateCountry($sourceContent, $this->targetLangName),
+                'state' => $translator->translateState($sourceContent, $this->targetLangName),
+                'city' => $translator->translateCity($sourceContent, $this->targetLangName),
+                default => [],
+            };
+
+            Log::channel('translate')->info("TranslateLocationJob [{$this->entityType}#{$this->entityId}]: translate response to {$this->targetLangCode}: " . json_encode($translated));
+
+            if (empty($translated['name'])) {
+                Log::channel('translate')->warning("TranslateLocationJob [{$this->entityType}#{$this->entityId}]: empty translation result to {$this->targetLangCode}");
+                return;
+            }
+
+            $data = ['name' => $translated['name']];
+
+            if ($this->entityType === 'city') {
+                $slug = $translated['slug'] ?? '';
+                if (empty($slug)) {
+                    $slug = Str::slug($translated['name']);
                 }
+                if ($this->targetLangCode !== 'en') {
+                    $transliterated = $this->transliterateSlug($translated['name']);
+                    if (!empty($transliterated)) {
+                        $slug = $transliterated;
+                    }
+                }
+                $data['slug'] = $slug;
             }
-            $data['slug'] = $slug;
-        }
 
-        match ($this->entityType) {
-            'country' => CountryContent::create(array_merge(
-                ['country_id' => $this->entityId, 'language_id' => $this->targetLangId],
-                $data
-            )),
-            'state' => StateContent::create(array_merge(
-                ['state_id' => $this->entityId, 'language_id' => $this->targetLangId],
-                $data
-            )),
-            'city' => CityContent::create(array_merge(
-                ['city_id' => $this->entityId, 'language_id' => $this->targetLangId],
-                $data
-            )),
-            default => null,
-        };
+            match ($this->entityType) {
+                'country' => CountryContent::create(array_merge(
+                    ['country_id' => $this->entityId, 'language_id' => $this->targetLangId],
+                    $data
+                )),
+                'state' => StateContent::create(array_merge(
+                    ['state_id' => $this->entityId, 'language_id' => $this->targetLangId],
+                    $data
+                )),
+                'city' => CityContent::create(array_merge(
+                    ['city_id' => $this->entityId, 'language_id' => $this->targetLangId],
+                    $data
+                )),
+                default => null,
+            };
+
+            Log::channel('translate')->info("TranslateLocationJob [{$this->entityType}#{$this->entityId}]: successfully translated to {$this->targetLangCode}");
+        } catch (\Throwable $e) {
+            Log::channel('translate')->error("TranslateLocationJob [{$this->entityType}#{$this->entityId}] error to {$this->targetLangCode}: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            throw $e;
+        }
     }
 
     private function transliterateSlug(string $text): string
@@ -136,6 +150,6 @@ class TranslateLocationJob implements ShouldQueue
 
     public function failed(\Throwable $e): void
     {
-        Log::error("Translation job failed for {$this->entityType} #{$this->entityId} to {$this->targetLangCode}: " . $e->getMessage());
+        Log::channel('translate')->error("TranslateLocationJob [{$this->entityType}#{$this->entityId}] FAILED to {$this->targetLangCode}: " . $e->getMessage());
     }
 }

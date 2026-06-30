@@ -32,49 +32,62 @@ class TranslateCategoryJob implements ShouldQueue
 
     public function handle(CategoryTranslationService $translator): void
     {
-        $sourceContent = ListingCategoryContent::where('listing_category_id', $this->categoryId)
-            ->where('language_id', $this->sourceLangId)
-            ->first();
+        try {
+            $sourceContent = ListingCategoryContent::where('listing_category_id', $this->categoryId)
+                ->where('language_id', $this->sourceLangId)
+                ->first();
 
-        if (!$sourceContent || empty($sourceContent->name)) {
-            return;
-        }
-
-        $exists = ListingCategoryContent::where('listing_category_id', $this->categoryId)
-            ->where('language_id', $this->targetLangId)
-            ->exists();
-
-        if ($exists) {
-            return;
-        }
-
-        $translated = $translator->translate(
-            $sourceContent,
-            $this->targetLangCode,
-            $this->targetLangName
-        );
-
-        $slug = $translated['slug'] ?? '';
-        if (empty($slug)) {
-            $slug = Str::slug($translated['name'] ?? $sourceContent->name);
-        }
-
-        if ($this->targetLangCode !== 'en' && !empty($translated['name'])) {
-            $transliteratedSlug = $this->transliterateSlug($translated['name']);
-            if (!empty($transliteratedSlug)) {
-                $slug = $transliteratedSlug;
+            if (!$sourceContent || empty($sourceContent->name)) {
+                Log::channel('translate')->warning("TranslateCategoryJob [cat_id={$this->categoryId}]: source content not found for lang #{$this->sourceLangId}");
+                return;
             }
-        }
 
-        ListingCategoryContent::create([
-            'listing_category_id' => $this->categoryId,
-            'language_id' => $this->targetLangId,
-            'name' => $translated['name'] ?? '',
-            'slug' => $slug,
-            'meta_title' => $translated['meta_title'] ?? '',
-            'meta_description' => $translated['meta_description'] ?? '',
-            'seo_text' => $translated['seo_text'] ?? '',
-        ]);
+            $exists = ListingCategoryContent::where('listing_category_id', $this->categoryId)
+                ->where('language_id', $this->targetLangId)
+                ->exists();
+
+            if ($exists) {
+                Log::channel('translate')->info("TranslateCategoryJob [cat_id={$this->categoryId}]: already translated to {$this->targetLangCode}");
+                return;
+            }
+
+            Log::channel('translate')->info("TranslateCategoryJob [cat_id={$this->categoryId}]: calling translate from ru to {$this->targetLangCode}");
+
+            $translated = $translator->translate(
+                $sourceContent,
+                $this->targetLangCode,
+                $this->targetLangName
+            );
+
+            Log::channel('translate')->info("TranslateCategoryJob [cat_id={$this->categoryId}]: translate response to {$this->targetLangCode}: " . json_encode($translated));
+
+            $slug = $translated['slug'] ?? '';
+            if (empty($slug)) {
+                $slug = Str::slug($translated['name'] ?? $sourceContent->name);
+            }
+
+            if ($this->targetLangCode !== 'en' && !empty($translated['name'])) {
+                $transliteratedSlug = $this->transliterateSlug($translated['name']);
+                if (!empty($transliteratedSlug)) {
+                    $slug = $transliteratedSlug;
+                }
+            }
+
+            ListingCategoryContent::create([
+                'listing_category_id' => $this->categoryId,
+                'language_id' => $this->targetLangId,
+                'name' => $translated['name'] ?? '',
+                'slug' => $slug,
+                'meta_title' => $translated['meta_title'] ?? '',
+                'meta_description' => $translated['meta_description'] ?? '',
+                'seo_text' => $translated['seo_text'] ?? '',
+            ]);
+
+            Log::channel('translate')->info("TranslateCategoryJob [cat_id={$this->categoryId}]: successfully translated to {$this->targetLangCode}");
+        } catch (\Throwable $e) {
+            Log::channel('translate')->error("TranslateCategoryJob [cat_id={$this->categoryId}] error to {$this->targetLangCode}: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            throw $e;
+        }
     }
 
     private function transliterateSlug(string $text): string
@@ -99,6 +112,6 @@ class TranslateCategoryJob implements ShouldQueue
 
     public function failed(\Throwable $e): void
     {
-        Log::error("Translation job failed for category #{$this->categoryId} to {$this->targetLangCode}: " . $e->getMessage());
+        Log::channel('translate')->error("TranslateCategoryJob [cat_id={$this->categoryId}] FAILED to {$this->targetLangCode}: " . $e->getMessage());
     }
 }

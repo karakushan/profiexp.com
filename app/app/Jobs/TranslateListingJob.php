@@ -32,80 +32,93 @@ class TranslateListingJob implements ShouldQueue
 
     public function handle(ListingTranslationService $translator): void
     {
-        $sourceContent = ListingContent::where('listing_id', $this->listingId)
-            ->where('language_id', $this->sourceLangId)
-            ->first();
+        try {
+            $sourceContent = ListingContent::where('listing_id', $this->listingId)
+                ->where('language_id', $this->sourceLangId)
+                ->first();
 
-        if (!$sourceContent || empty($sourceContent->title)) {
-            return;
-        }
+            if (!$sourceContent || empty($sourceContent->title)) {
+                Log::channel('translate')->warning("TranslateListingJob [listing_id={$this->listingId}]: source content not found for lang #{$this->sourceLangId}");
+                return;
+            }
 
-        $targetContent = ListingContent::where('listing_id', $this->listingId)
-            ->where('language_id', $this->targetLangId)
-            ->first();
+            $targetContent = ListingContent::where('listing_id', $this->listingId)
+                ->where('language_id', $this->targetLangId)
+                ->first();
 
-        if ($targetContent && !empty($targetContent->title)) {
-            return;
-        }
+            if ($targetContent && !empty($targetContent->title)) {
+                Log::channel('translate')->info("TranslateListingJob [listing_id={$this->listingId}]: already translated to {$this->targetLangCode}");
+                return;
+            }
 
-        $translated = $translator->translate(
-            $sourceContent,
-            $this->targetLangCode,
-            $this->targetLangName
-        );
+            Log::channel('translate')->info("TranslateListingJob [listing_id={$this->listingId}]: calling translate from ru to {$this->targetLangCode}");
 
-        if (!$targetContent) {
-            $targetContent = new ListingContent();
-            $targetContent->listing_id = $this->listingId;
-            $targetContent->language_id = $this->targetLangId;
-            $targetContent->category_id = $sourceContent->category_id;
-            $targetContent->country_id = $sourceContent->country_id;
-            $targetContent->state_id = $sourceContent->state_id;
-            $targetContent->city_id = $sourceContent->city_id;
-        }
+            $translated = $translator->translate(
+                $sourceContent,
+                $this->targetLangCode,
+                $this->targetLangName
+            );
 
-        $targetContent->title = $translated['title'] ?? '';
-        $slugTitle = $translated['title'] ?? '';
-        if ($this->targetLangCode !== 'en') {
-            $enLanguage = Language::where('code', 'en')->first();
-            if ($enLanguage) {
-                $enContent = ListingContent::where('listing_id', $this->listingId)
-                    ->where('language_id', $enLanguage->id)
-                    ->first();
-                if ($enContent && !empty($enContent->title)) {
-                    $slugTitle = $enContent->title;
+            Log::channel('translate')->info("TranslateListingJob [listing_id={$this->listingId}]: translate response to {$this->targetLangCode}: " . json_encode($translated));
+
+            if (!$targetContent) {
+                $targetContent = new ListingContent();
+                $targetContent->listing_id = $this->listingId;
+                $targetContent->language_id = $this->targetLangId;
+                $targetContent->category_id = $sourceContent->category_id;
+                $targetContent->country_id = $sourceContent->country_id;
+                $targetContent->state_id = $sourceContent->state_id;
+                $targetContent->city_id = $sourceContent->city_id;
+            }
+
+            $targetContent->title = $translated['title'] ?? '';
+            $slugTitle = $translated['title'] ?? '';
+            if ($this->targetLangCode !== 'en') {
+                $enLanguage = Language::where('code', 'en')->first();
+                if ($enLanguage) {
+                    $enContent = ListingContent::where('listing_id', $this->listingId)
+                        ->where('language_id', $enLanguage->id)
+                        ->first();
+                    if ($enContent && !empty($enContent->title)) {
+                        $slugTitle = $enContent->title;
+                    }
                 }
             }
-        }
-        $targetContent->slug = Str::slug($slugTitle);
-        $targetContent->description = $translated['description'] ?? ($sourceContent->description ?? '');
-        $targetContent->summary = $translated['summary'] ?? '';
-        $targetContent->address = $translated['address'] ?? '';
-        $targetContent->meta_keyword = $translated['meta_keyword'] ?? '';
-        $targetContent->meta_description = $translated['meta_description'] ?? '';
+            $targetContent->slug = Str::slug($slugTitle);
+            $targetContent->description = $translated['description'] ?? ($sourceContent->description ?? '');
+            $targetContent->summary = $translated['summary'] ?? '';
+            $targetContent->address = $translated['address'] ?? '';
+            $targetContent->meta_keyword = $translated['meta_keyword'] ?? '';
+            $targetContent->meta_description = $translated['meta_description'] ?? '';
 
-        $targetContent->save();
+            $targetContent->save();
 
-        $listing = Listing::find($this->listingId);
-        if ($listing) {
-            $currentTranslations = $listing->translated_languages
-                ? json_decode($listing->translated_languages, true)
-                : [];
+            $listing = Listing::find($this->listingId);
+            if ($listing) {
+                $currentTranslations = $listing->translated_languages
+                    ? json_decode($listing->translated_languages, true)
+                    : [];
 
-            if (!is_array($currentTranslations)) {
-                $currentTranslations = [];
+                if (!is_array($currentTranslations)) {
+                    $currentTranslations = [];
+                }
+
+                $currentTranslations[$this->targetLangCode] = true;
+
+                DB::table('listings')
+                    ->where('id', $this->listingId)
+                    ->update(['translated_languages' => json_encode($currentTranslations)]);
             }
 
-            $currentTranslations[$this->targetLangCode] = true;
-
-            DB::table('listings')
-                ->where('id', $this->listingId)
-                ->update(['translated_languages' => json_encode($currentTranslations)]);
+            Log::channel('translate')->info("TranslateListingJob [listing_id={$this->listingId}]: successfully translated to {$this->targetLangCode}");
+        } catch (\Throwable $e) {
+            Log::channel('translate')->error("TranslateListingJob [listing_id={$this->listingId}] error to {$this->targetLangCode}: " . $e->getMessage() . "\n" . $e->getTraceAsString());
+            throw $e;
         }
     }
 
     public function failed(\Throwable $e): void
     {
-        Log::error("Translation job failed for listing #{$this->listingId} to {$this->targetLangCode}: " . $e->getMessage());
+        Log::channel('translate')->error("TranslateListingJob [listing_id={$this->listingId}] FAILED to {$this->targetLangCode}: " . $e->getMessage());
     }
 }
