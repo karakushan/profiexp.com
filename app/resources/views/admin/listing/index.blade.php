@@ -144,6 +144,7 @@
                         <th scope="col">
                           <input type="checkbox" class="bulk-check" data-val="all">
                         </th>
+                        <th scope="col">ID</th>
                         <th scope="col">{{ __('Featured Image') }}</th>
                         <th scope="col">{{ __('Title') }}</th>
                         <th scope="col">{{ __('Vendor') }}</th>
@@ -199,6 +200,7 @@
                           <td>
                             <input type="checkbox" class="bulk-check" data-val="{{ $listing->id }}">
                           </td>
+                          <td><strong>{{ $listing->id }}</strong></td>
                           <td>
                             @if (!empty($listing_content))
                               <a href="{{ route('frontend.listing.details', ['slug' => $listing_content->slug ?: 'listing', 'id' => $listing->id]) }}"
