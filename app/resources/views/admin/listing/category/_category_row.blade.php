@@ -18,6 +18,7 @@
     <td>
         <input type="checkbox" class="bulk-check" data-val="{{ $category->id }}">
     </td>
+    <td><strong>{{ $category->id }}</strong></td>
     <td>
         <span style="padding-left: {{ $level * 24 }}px;">{{ $indent }}{{ $displayName }}</span>
         @if ($category->contents->count() > 0)
