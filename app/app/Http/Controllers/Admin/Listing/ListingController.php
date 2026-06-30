@@ -991,7 +991,7 @@ class ListingController extends Controller
         });
 
         $listing->specifications()->each(function ($f) {
-            $f->contents()->each(fn($fc) => $fc->delete());
+            ListingFeatureContent::where('listing_feature_id', $f->id)->each(fn($fc) => $fc->delete());
             $f->delete();
         });
 
@@ -1040,10 +1040,32 @@ class ListingController extends Controller
     {
         $ids = $request->ids;
         foreach ($ids as $id) {
-            try {
-                $this->delete($id);
-            } catch (\Exception $e) {
+            $listing = Listing::find($id);
+            if (!$listing) continue;
+
+            $listing->listing_content()->each(fn($c) => $c->delete());
+
+            if (!is_null($listing->feature_image)) {
+                @unlink(public_path('assets/img/listing/') . $listing->feature_image);
             }
+            if (!is_null($listing->video_background_image)) {
+                @unlink(public_path('assets/img/listing/video/') . $listing->video_background_image);
+            }
+
+            $listing->galleries()->each(function ($g) {
+                @unlink(public_path('assets/img/listing-gallery/') . $g->image);
+                $g->delete();
+            });
+
+            FeatureOrder::where('listing_id', $id)->each(fn($o) => $o->delete());
+            ListingMessage::where('listing_id', $id)->each(fn($m) => $m->delete());
+            ListingReview::where('listing_id', $id)->each(fn($r) => $r->delete());
+            Visitor::where('listing_id', $id)->each(fn($v) => $v->delete());
+            BusinessHour::where('listing_id', $id)->delete();
+            ClaimListing::where('listing_id', $id)->each(fn($c) => $c->delete());
+            ListingProduct::where('listing_id', $id)->each(fn($p) => $p->delete());
+
+            $listing->delete();
         }
         Session::flash('success', __('Listings deleted successfully') . '!');
         return Response::json(['status' => 'success'], 200);
