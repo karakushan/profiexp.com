@@ -51,8 +51,27 @@ class TranslateLocationJob implements ShouldQueue
             };
 
             if (!$sourceContent || empty($sourceContent->name)) {
-                Log::channel('translate')->warning("TranslateLocationJob [{$this->entityType}#{$this->entityId}]: source content not found for lang #{$this->sourceLangId}");
-                return;
+                Log::channel('translate')->warning("TranslateLocationJob [{$this->entityType}#{$this->entityId}]: source content not found for lang #{$this->sourceLangId}, trying first available...");
+                $sourceContent = match ($this->entityType) {
+                    'country' => CountryContent::where('country_id', $this->entityId)
+                        ->whereNotNull('name')
+                        ->where('name', '!=', '')
+                        ->first(),
+                    'state' => StateContent::where('state_id', $this->entityId)
+                        ->whereNotNull('name')
+                        ->where('name', '!=', '')
+                        ->first(),
+                    'city' => CityContent::where('city_id', $this->entityId)
+                        ->whereNotNull('name')
+                        ->where('name', '!=', '')
+                        ->first(),
+                    default => null,
+                };
+                if (!$sourceContent) {
+                    Log::channel('translate')->warning("TranslateLocationJob [{$this->entityType}#{$this->entityId}]: no filled content found in any language");
+                    return;
+                }
+                Log::channel('translate')->info("TranslateLocationJob [{$this->entityType}#{$this->entityId}]: using lang #{$sourceContent->language_id} as source instead");
             }
 
             $exists = match ($this->entityType) {
