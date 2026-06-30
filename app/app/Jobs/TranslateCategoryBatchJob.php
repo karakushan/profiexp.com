@@ -75,15 +75,21 @@ class TranslateCategoryBatchJob implements ShouldQueue
                     if (!empty($transliterated)) $slug = $transliterated;
                 }
 
-                ListingCategoryContent::create([
-                    'listing_category_id' => $this->categoryId,
-                    'language_id' => $targetLang->id,
-                    'name' => $translated['name'] ?? '',
-                    'slug' => $slug,
-                    'meta_title' => $translated['meta_title'] ?? '',
-                    'meta_description' => $translated['meta_description'] ?? '',
-                    'seo_text' => $translated['seo_text'] ?? '',
-                ]);
+                try {
+                    ListingCategoryContent::updateOrCreate(
+                        ['listing_category_id' => $this->categoryId, 'language_id' => $targetLang->id],
+                        [
+                            'name' => $translated['name'] ?? '',
+                            'slug' => $slug,
+                            'meta_title' => $translated['meta_title'] ?? '',
+                            'meta_description' => $translated['meta_description'] ?? '',
+                            'seo_text' => $translated['seo_text'] ?? '',
+                        ]
+                    );
+                } catch (\Throwable $e2) {
+                    Log::channel('translate')->warning("TranslateCategoryBatchJob [cat_id={$this->categoryId}] create error to {$targetLang->code}: " . $e2->getMessage());
+                    continue;
+                }
 
                 Log::channel('translate')->info("TranslateCategoryBatchJob [cat_id={$this->categoryId}]: translated to {$targetLang->code}");
             } catch (\Throwable $e) {

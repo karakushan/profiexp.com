@@ -102,18 +102,23 @@ class TranslateLocationBatchJob implements ShouldQueue
                     $data['slug'] = $slug;
                 }
 
-                match ($this->entityType) {
-                    'country' => CountryContent::create(array_merge(
-                        ['country_id' => $this->entityId, 'language_id' => $targetLang->id], $data
-                    )),
-                    'state' => StateContent::create(array_merge(
-                        ['state_id' => $this->entityId, 'language_id' => $targetLang->id], $data
-                    )),
-                    'city' => CityContent::create(array_merge(
-                        ['city_id' => $this->entityId, 'language_id' => $targetLang->id], $data
-                    )),
-                    default => null,
-                };
+                try {
+                    match ($this->entityType) {
+                        'country' => CountryContent::updateOrCreate(
+                            ['country_id' => $this->entityId, 'language_id' => $targetLang->id], $data
+                        ),
+                        'state' => StateContent::updateOrCreate(
+                            ['state_id' => $this->entityId, 'language_id' => $targetLang->id], $data
+                        ),
+                        'city' => CityContent::updateOrCreate(
+                            ['city_id' => $this->entityId, 'language_id' => $targetLang->id], $data
+                        ),
+                        default => null,
+                    };
+                } catch (\Throwable $e2) {
+                    Log::channel('translate')->warning("TranslateLocationBatchJob [{$this->entityType}#{$this->entityId}] create error to {$targetLang->code}: " . $e2->getMessage());
+                    continue;
+                }
 
                 Log::channel('translate')->info("TranslateLocationBatchJob [{$this->entityType}#{$this->entityId}]: translated to {$targetLang->code}");
             } catch (\Throwable $e) {
