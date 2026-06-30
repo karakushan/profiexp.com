@@ -89,7 +89,7 @@ class TranslateLocations extends Command
             ->limit($batchSize)
             ->pluck('id');
 
-        $count = 0;
+        $dispatched = [];
         foreach ($pendingIds as $id) {
             TranslateLocationJob::dispatch(
                 entityType: $entityType,
@@ -99,12 +99,12 @@ class TranslateLocations extends Command
                 targetLangCode: $targetLang->code,
                 targetLangName: $targetLang->name,
             );
-            $count++;
+            $dispatched[] = $id;
         }
 
-        if ($count > 0) {
-            Log::channel('translate')->info("Dispatched {$count} {$entityType} translation jobs for {$targetLang->code}");
-            $this->info("Dispatched {$count} {$entityType} translation jobs for {$targetLang->code}");
+        if ($dispatched) {
+            Log::channel('translate')->info("Dispatched {$entityType} jobs for {$targetLang->code}: [" . implode(', ', $dispatched) . "]");
+            $this->info("Dispatched " . count($dispatched) . " {$entityType} translation jobs for {$targetLang->code}: [" . implode(', ', $dispatched) . "]");
         }
     }
 }

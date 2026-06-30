@@ -56,7 +56,7 @@ class TranslateBlogCategories extends Command
             ->limit($batchSize)
             ->get();
 
-        $count = 0;
+        $ids = [];
         foreach ($pendingCategories as $category) {
             TranslateBlogCategoryJob::dispatchSync(
                 categoryId: $category->id,
@@ -65,12 +65,12 @@ class TranslateBlogCategories extends Command
                 targetLangCode: $targetLang->code,
                 targetLangName: $targetLang->name,
             );
-            $count++;
+            $ids[] = $category->id;
         }
 
-        if ($count > 0) {
-            Log::channel('translate')->info("Dispatched {$count} blog category translation jobs for {$targetLang->code}");
-            $this->info("Dispatched {$count} blog category translation jobs for {$targetLang->code}");
+        if ($ids) {
+            Log::channel('translate')->info("Dispatched blog category jobs for {$targetLang->code}: [" . implode(', ', $ids) . "]");
+            $this->info("Dispatched " . count($ids) . " blog category translation jobs for {$targetLang->code}: [" . implode(', ', $ids) . "]");
         }
     }
 }

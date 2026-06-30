@@ -70,7 +70,7 @@ class TranslateListings extends Command
             ->limit($batchSize)
             ->get();
 
-        $count = 0;
+        $ids = [];
         foreach ($pendingListings as $listing) {
             TranslateListingJob::dispatch(
                 listingId: $listing->id,
@@ -79,12 +79,12 @@ class TranslateListings extends Command
                 targetLangCode: $targetLang->code,
                 targetLangName: $targetLang->name,
             );
-            $count++;
+            $ids[] = $listing->id;
         }
 
-        if ($count > 0) {
-            Log::channel('translate')->info("Dispatched {$count} translation jobs for {$targetLang->code}");
-            $this->info("Dispatched {$count} translation jobs for {$targetLang->code}");
+        if ($ids) {
+            Log::channel('translate')->info("Dispatched listing jobs for {$targetLang->code}: [" . implode(', ', $ids) . "]");
+            $this->info("Dispatched " . count($ids) . " listing translation jobs for {$targetLang->code}: [" . implode(', ', $ids) . "]");
         }
     }
 }

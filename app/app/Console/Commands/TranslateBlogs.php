@@ -70,7 +70,7 @@ class TranslateBlogs extends Command
             ->limit($batchSize)
             ->get();
 
-        $count = 0;
+        $ids = [];
         foreach ($pendingBlogs as $blog) {
             TranslateBlogJob::dispatchSync(
                 blogId: $blog->id,
@@ -79,12 +79,12 @@ class TranslateBlogs extends Command
                 targetLangCode: $targetLang->code,
                 targetLangName: $targetLang->name,
             );
-            $count++;
+            $ids[] = $blog->id;
         }
 
-        if ($count > 0) {
-            Log::channel('translate')->info("Dispatched {$count} blog translation jobs for {$targetLang->code}");
-            $this->info("Dispatched {$count} blog translation jobs for {$targetLang->code}");
+        if ($ids) {
+            Log::channel('translate')->info("Dispatched blog jobs for {$targetLang->code}: [" . implode(', ', $ids) . "]");
+            $this->info("Dispatched " . count($ids) . " blog translation jobs for {$targetLang->code}: [" . implode(', ', $ids) . "]");
         }
     }
 }
