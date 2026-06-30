@@ -2,8 +2,10 @@
 @section('pageHeading')
     @if (!empty($cityMetaTitle))
         {{ $cityMetaTitle }}
-    @elseif (!empty($categoryInfo) && !empty($categoryInfo->meta_title))
-        {{ $categoryInfo->meta_title }}
+    @elseif (!empty($categoryContent) && !empty($categoryContent->meta_title))
+        {{ $categoryContent->meta_title }}
+    @elseif (!empty($categoryContent) && !empty($categoryContent->name))
+        {{ $categoryContent->name }}
     @elseif (!empty($pageHeading))
         {{ $pageHeading->listing_page_title }}
     @else
@@ -14,8 +16,8 @@
 @section('metaDescription')
     @if (!empty($cityMetaDescription))
         {{ $cityMetaDescription }}
-    @elseif (!empty($categoryInfo) && !empty($categoryInfo->meta_description))
-        {{ $categoryInfo->meta_description }}
+    @elseif (!empty($categoryContent) && !empty($categoryContent->meta_description))
+        {{ $categoryContent->meta_description }}
     @elseif (!empty($seoInfo))
         {{ $seoInfo->meta_description_listings }}
     @endif
