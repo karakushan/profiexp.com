@@ -40,7 +40,7 @@ class TranslateLocations extends Command
                 'state' => 'states',
                 'city' => 'cities',
             };
-            $contentTable = $table . '_contents';
+            $contentTable = $entityType . '_contents';
             $fk = $entityType . '_id';
 
             $pending = DB::select("
