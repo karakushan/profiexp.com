@@ -37,6 +37,7 @@
           <div class="card-title d-inline-block">{{ __('Edit Post') }}</div>
           <div class="float-right d-inline-block">
             @php
+              $defaultLangForEdit = $languages->firstWhere('is_default', 1);
               $previewBlogData = $defaultLangForEdit ? $defaultLangForEdit->blogData : null;
             @endphp
             @if ($previewBlogData)
