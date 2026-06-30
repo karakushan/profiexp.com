@@ -50,7 +50,7 @@ class TranslateCategories extends Command
                 ->first();
             if (!$source) continue;
 
-            TranslateCategoryBatchJob::dispatch(
+            TranslateCategoryBatchJob::dispatchSync(
                 categoryId: $category->id,
                 sourceLangId: $source->language_id,
             );

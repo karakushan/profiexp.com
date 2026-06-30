@@ -46,7 +46,7 @@ class TranslateListings extends Command
                 ->first();
             if (!$source) continue;
 
-            TranslateListingBatchJob::dispatch(
+            TranslateListingBatchJob::dispatchSync(
                 listingId: $listing->id,
                 sourceLangId: $source->language_id,
             );
