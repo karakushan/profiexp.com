@@ -21,7 +21,7 @@ class CountryController extends Controller
     {
         $language = Language::where('code', $request->language)->firstOrFail();
         $information['countries'] = Country::forLanguage($language->id)
-            ->with(['contents' => fn($q) => $q->where('language_id', $language->id)])
+            ->with(['contents'])
             ->orderByDesc('id')
             ->get();
         $information['langs'] = Language::all();

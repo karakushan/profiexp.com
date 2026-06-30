@@ -32,7 +32,7 @@ class CityController extends Controller
 
         $information['cities'] = City::forLanguage($language->id)
             ->with([
-                'contents' => fn($q) => $q->where('language_id', $language->id),
+                'contents',
                 'country.contents' => fn($q) => $q->where('language_id', $language->id),
                 'state.contents' => fn($q) => $q->where('language_id', $language->id),
             ])

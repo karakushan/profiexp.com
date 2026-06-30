@@ -29,7 +29,7 @@ class StateController extends Controller
 
         $information['states'] = State::forLanguage($language->id)
             ->with([
-                'contents' => fn($q) => $q->where('language_id', $language->id),
+                'contents',
                 'country.contents' => fn($q) => $q->where('language_id', $language->id),
             ])
             ->orderByDesc('id')
