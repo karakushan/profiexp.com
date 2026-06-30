@@ -66,7 +66,7 @@ class TranslateCategories extends Command
             $sourceContent = $category->contents->first();
             if (!$sourceContent) continue;
 
-            TranslateCategoryJob::dispatch(
+            TranslateCategoryJob::dispatchSync(
                 categoryId: $category->id,
                 sourceLangId: $defaultLang->id,
                 targetLangId: $defaultLang->id,

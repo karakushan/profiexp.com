@@ -98,7 +98,7 @@ class TranslateLocations extends Command
 
             $dispatched = [];
             foreach ($pendingIds as $id) {
-                TranslateLocationJob::dispatch(
+                TranslateLocationJob::dispatchSync(
                     entityType: $entityType,
                     entityId: $id,
                     sourceLangId: $defaultLang->id,

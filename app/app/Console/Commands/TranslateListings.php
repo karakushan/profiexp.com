@@ -60,7 +60,7 @@ class TranslateListings extends Command
 
         $ids = [];
         foreach ($pendingListings as $listing) {
-            TranslateListingJob::dispatch(
+            TranslateListingJob::dispatchSync(
                 listingId: $listing->id,
                 sourceLangId: $defaultLang->id,
                 targetLangId: $defaultLang->id,
