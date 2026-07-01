@@ -747,8 +747,9 @@ Thank you for your attention to this matter.";
     // Amenities per language (from DB, not hardcoded)
     $aminitiesAvailable = [];
     foreach ($languages as $language) {
-      $aminitiesAvailable[$language->code] = Aminite::where('language_id', $language->id)
-        ->select('id', 'title')
+      $aminitiesAvailable[$language->code] = AminiteContent::where('language_id', $language->id)
+        ->join('aminites', 'aminites.id', '=', 'aminite_contents.aminite_id')
+        ->select('aminites.id', 'aminite_contents.title')
         ->get();
     }
 
@@ -1781,8 +1782,9 @@ Thank you for your attention to this matter.";
         })
         ->select('listing_categories.id', 'listing_category_contents.name', 'listing_category_contents.slug')
         ->get();
-      $aminitiesAvailable[$language->code] = Aminite::where('language_id', $language->id)
-        ->select('id', 'title')
+      $aminitiesAvailable[$language->code] = AminiteContent::where('language_id', $language->id)
+        ->join('aminites', 'aminites.id', '=', 'aminite_contents.aminite_id')
+        ->select('aminites.id', 'aminite_contents.title')
         ->get();
     }
 

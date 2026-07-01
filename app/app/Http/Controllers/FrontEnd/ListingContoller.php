@@ -625,8 +625,9 @@ class ListingContoller extends Controller
       ->get();
 
 
-    $information['aminites'] = Aminite::where('language_id', $language->id)
-      ->orderBy('updated_at', 'asc')->get();
+    $information['aminites'] = Aminite::with(['contents' => function ($q) use ($language) {
+      $q->where('language_id', $language->id);
+    }])->orderBy('updated_at', 'asc')->get();
 
     $information['countries'] = Country::forLanguage($language->id)
       ->orderBy('id', 'asc')->get();

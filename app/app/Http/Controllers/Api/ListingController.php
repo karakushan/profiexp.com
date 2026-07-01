@@ -507,8 +507,9 @@ class ListingController extends Controller
             ->get();
 
 
-        $information['aminites'] = Aminite::where('language_id', $language->id)
-            ->orderBy('updated_at', 'asc')->get();
+        $information['aminites'] = Aminite::with(['contents' => function ($q) use ($language) {
+            $q->where('language_id', $language->id);
+        }])->orderBy('updated_at', 'asc')->get();
 
         $information['countries'] = Country::forLanguage($language->id)
             ->orderBy('id', 'asc')->get();
@@ -739,7 +740,8 @@ class ListingController extends Controller
             });
 
         $listing_aminites =   $listing->listing_content->first()->aminities ??  [];
-        $information['aminities'] = Aminite::where('language_id', $language->id)->get()->filter(function ($item) use ($listing_aminites) {
+        $aminiteIds = AminiteContent::where('language_id', $language->id)->pluck('aminite_id');
+        $information['aminities'] = Aminite::whereIn('id', $aminiteIds)->get()->filter(function ($item) use ($listing_aminites) {
             return in_array($item->id, json_decode($listing_aminites));
         });
 
