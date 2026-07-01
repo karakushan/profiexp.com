@@ -48,7 +48,6 @@ class ListingUpdateRequest extends FormRequest
                     new ImageMimeTypeRule(),
                 ],
                 'thumbnail' => [
-                    'dimensions:width=600,height=400',
                     new ImageMimeTypeRule(),
                 ],
                 'mail' => 'required',
@@ -122,7 +121,6 @@ class ListingUpdateRequest extends FormRequest
                     new ImageMimeTypeRule(),
                 ],
                 'thumbnail' => [
-                    'dimensions:width=600,height=400',
                     new ImageMimeTypeRule(),
                 ],
 
