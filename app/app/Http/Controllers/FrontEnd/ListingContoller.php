@@ -1646,36 +1646,38 @@ class ListingContoller extends Controller
   public function homeCategories(Request $request)
   {
     $search = $request->input('search');
-    $page = $request->input('page', 1);
-    $pageSize = 10;
 
     $misc = new MiscellaneousController();
     $language = $misc->getLanguage();
 
-    $query = ListingCategory::root()
-      ->join('listing_category_contents', function ($join) use ($language) {
-        $join->on('listing_categories.id', '=', 'listing_category_contents.listing_category_id')
-          ->where('listing_category_contents.language_id', '=', $language->id);
-      });
-
-    if ($search) {
-      $query->where(function ($q) use ($search) {
-        $q->where('listing_category_contents.name', 'like', "%{$search}%")
-          ->orWhere('listing_category_contents.slug', 'like', "%{$search}%");
-      });
-    }
-
-    $categories = $query->skip(($page - 1) * $pageSize)
-      ->take($pageSize + 1)
-      ->get(['listing_categories.id', 'listing_category_contents.name']);
-
-    $hasMore = count($categories) > $pageSize;
-    $results = $hasMore ? $categories->slice(0, $pageSize) : $categories;
+    $results = $this->flatCategoryTree($language, null, '', $search);
 
     return response()->json([
       'results' => $results,
-      'more' => $hasMore
+      'more' => false
     ]);
+  }
+
+  private function flatCategoryTree($language, $parentId, $prefix, $search)
+  {
+    $categories = ListingCategory::where('status', 1)
+      ->where('parent_id', $parentId)
+      ->with(['contents' => function ($q) use ($language) {
+        $q->where('language_id', $language->id);
+      }])
+      ->orderBy('serial_number')
+      ->get();
+
+    $result = [];
+    foreach ($categories as $category) {
+      $name = $category->contents->first()?->name ?? $category->name;
+      $displayName = $prefix . $name;
+      if (!$search || mb_stripos($name, $search) !== false) {
+        $result[] = ['id' => $category->id, 'name' => $displayName];
+      }
+      $result = array_merge($result, $this->flatCategoryTree($language, $category->id, $prefix . '— ', $search));
+    }
+    return $result;
   }
 
   public function details($slug, $id)
