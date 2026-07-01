@@ -306,7 +306,7 @@
                                                 <div class="col-lg-6">
                                                     <div class="form-group">
                                                         <label>{{ __('Latitude') . '*' }} </label>
-                                                        <input type="text" class="form-control" name="latitude"
+                                                        <input type="text" class="form-control" name="latitude" id="latitude"
                                                             placeholder="{{ __('Enter Latitude') }}">
                                                         <p class="text-warning mb-0">
                                                             {{ __('The Latitude must be between -90 and 90. Ex:49.43453') }}</p>
@@ -316,7 +316,7 @@
                                                 <div class="col-lg-6">
                                                     <div class="form-group">
                                                         <label>{{ __('Longitude') . '*' }} </label>
-                                                        <input type="text" class="form-control" name="longitude"
+                                                        <input type="text" class="form-control" name="longitude" id="longitude"
                                                             placeholder="{{ __('Enter Longitude') }}">
                                                         <p class="text-warning mb-0">
                                                             {{ __('The Longitude must be between -180 and 180. Ex:149.91553') }}
