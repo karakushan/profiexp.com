@@ -1087,12 +1087,24 @@ class ListingController extends Controller
 
     public function businessHours($id)
     {
-        $listing = Listing::findOrFail($id);
+        Listing::findOrFail($id);
 
-        $information['days'] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-        $information['businessHours'] = BusinessHour::where('listing_id', $id)->get()->keyBy('day');
         $information['id'] = $id;
-        $information['listing'] = $listing;
+        $information['days'] = BusinessHour::where('listing_id', $id)->get();
+        $information['title'] = ListingContent::where('listing_id', $id)->first();
+
+        if ($information['days']->isEmpty()) {
+            $dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            foreach ($dayNames as $day) {
+                BusinessHour::create([
+                    'listing_id' => $id,
+                    'day' => $day,
+                    'start_time' => '09:00',
+                    'end_time' => '18:00',
+                ]);
+            }
+            $information['days'] = BusinessHour::where('listing_id', $id)->get();
+        }
 
         return view('admin.listing.business-hours', $information);
     }
