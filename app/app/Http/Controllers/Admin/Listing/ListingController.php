@@ -1152,7 +1152,7 @@ class ListingController extends Controller
     {
         $listing = Listing::findOrFail($id);
 
-        $information['features'] = $listing->specifications()->with('contents')->get();
+        $information['features'] = $listing->specifications()->get();
         $information['id'] = $id;
         $information['listing_id'] = $id;
         $information['languages'] = Language::all();
