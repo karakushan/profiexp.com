@@ -1162,27 +1162,49 @@ class ListingController extends Controller
 
     public function updateAdditionalSpecification(Request $request, $id)
     {
-        $rules = [
-            'icon' => 'required',
-            'serial_number' => 'required',
-        ];
+        $rules = [];
+        $messages = [];
+        $languages = Language::all();
 
-        $validator = Validator::make($request->all(), $rules);
+        foreach ($languages as $language) {
+            $rules[$language->code . '_feature_heading'] = 'sometimes|array';
+            $rules[$language->code . '_feature_heading.*'] = 'required';
 
+            $messages[$language->code . '_feature_heading.*.required'] = 'The ' . $language->name . ' Feature Heading is required.';
+        }
+
+        $validator = Validator::make($request->all(), $rules, $messages);
         if ($validator->fails()) {
             return Response::json(['errors' => $validator->getMessageBag()], 400);
         }
 
-        ListingFeature::updateOrCreate(
-            ['id' => $request->feature_id],
-            [
-                'listing_id' => $id,
-                'icon' => $request->icon,
-                'serial_number' => $request->serial_number,
-            ]
-        );
+        $listingFeatures = ListingFeature::where('listing_id', $id)->get();
+        foreach ($listingFeatures as $listingFeature) {
+            ListingFeatureContent::where('listing_feature_id', $listingFeature->id)->each(fn($fc) => $fc->delete());
+            $listingFeature->delete();
+        }
 
-        Session::flash('success', __('Specification updated successfully') . '!');
+        foreach ($languages as $language) {
+            if (!empty($request[$language->code . '_feature_heading'])) {
+                foreach ($request[$language->code . '_feature_heading'] as $key => $heading) {
+                    $featureValue = $request[$language->code . '_feature_value_' . $key];
+
+                    $listingFeature = ListingFeature::where([['listing_id', $id], ['indx', $key]])->first();
+                    if (is_null($listingFeature)) {
+                        $listingFeature = ListingFeature::create(['listing_id' => $id, 'indx' => $key]);
+                    }
+
+                    ListingFeatureContent::create([
+                        'language_id' => $language->id,
+                        'listing_feature_id' => $listingFeature->id,
+                        'feature_heading' => $heading,
+                        'feature_value' => json_encode($featureValue),
+                    ]);
+                }
+            }
+        }
+
+        Session::flash('success', __('Feature Updated successfully') . '!');
         return Response::json(['status' => 'success'], 200);
     }
 
