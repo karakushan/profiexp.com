@@ -1094,7 +1094,7 @@ class ListingController extends Controller
         $information['id'] = $id;
         $information['listing'] = $listing;
 
-        return view('admin.listing.business-hours.index', $information);
+        return view('admin.listing.business-hours', $information);
     }
 
     public function manageSocialLink($id)
