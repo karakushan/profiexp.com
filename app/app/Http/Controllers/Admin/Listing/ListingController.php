@@ -1231,4 +1231,18 @@ class ListingController extends Controller
         Session::flash('success', __('Holiday Updated successfully') . '!');
         return Response::json(['status' => 'success'], 200);
     }
+
+    public function featureDelete(Request $request)
+    {
+        $listing_feature = ListingFeature::find($request->spacificationId);
+        $listing_feature_contents = ListingFeatureContent::where('listing_feature_id', $listing_feature->id)->get();
+        foreach ($listing_feature_contents as $listing_feature_content) {
+            $listing_feature_content->delete();
+        }
+        $listing_feature->delete();
+
+        Session::flash('success', __('Feature deleted successfully') . '!');
+
+        return Response::json(['status' => 'success'], 200);
+    }
 }
