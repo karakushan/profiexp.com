@@ -81,7 +81,7 @@ class ListingStoreRequest extends FormRequest
                 $isDefault = $language->is_default == 1;
                 $titleRule = $isDefault ? 'required|max:255' : 'nullable|max:255';
                 $requiredOrNullable = $isDefault ? 'required' : 'nullable';
-                $descriptionRule = $isDefault ? 'required|min:15' : 'nullable|min:15';
+                $descriptionRule = $isDefault ? 'required|min:15' : 'nullable';
 
                 $rules[$language->code . '_title'] = $titleRule;
                 $rules[$language->code . '_address'] = $requiredOrNullable;
@@ -143,7 +143,7 @@ class ListingStoreRequest extends FormRequest
                     $isDefault = $language->is_default == 1;
                     $titleRule = $isDefault ? 'required|max:255' : 'nullable|max:255';
                     $requiredOrNullable = $isDefault ? 'required' : 'nullable';
-                    $descriptionRule = $isDefault ? 'required|min:15' : 'nullable|min:15';
+                    $descriptionRule = $isDefault ? 'required|min:15' : 'nullable';
 
                     $rules[$language->code . '_title'] = $titleRule;
                     $rules[$language->code . '_address'] = $requiredOrNullable;
