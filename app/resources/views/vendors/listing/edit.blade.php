@@ -543,10 +543,7 @@
                             <div class="row">
                                 <div class="col-lg-12">
                                     @php
-                                        $aminities = App\Models\Aminite::where(
-                                            'language_id',
-                                            $defaultLang->id,
-                                        )->get();
+                                        $aminities = App\Models\Aminite::with('contents')->get();
                                         $hasaminitie = $defaultListingContent
                                             ? json_decode($defaultListingContent->aminities)
                                             : [];
@@ -559,7 +556,7 @@
                                                 id="{{ $amenity->id }}"
                                                 {{ $hasaminitie && in_array($amenity->id, $hasaminitie) ? 'checked' : '' }}>
                                             <label class="amenities-label mr-2"
-                                                for="{{ $amenity->id }}">{{ $amenity->title }}</label>
+                                                for="{{ $amenity->id }}">{{ $amenity->getTitle($defaultLang->id) }}</label>
                                         @endforeach
                                     </div>
                                 </div>

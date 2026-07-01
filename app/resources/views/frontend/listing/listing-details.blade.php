@@ -270,10 +270,7 @@
                                         <h3 class="mb-20">{{ __('Amenities') }}</h3>
                                         <ul class="amenities-list list-unstyled p-0 m-0">
                                             @php
-                                                $aminities = App\Models\Aminite::where(
-                                                    'language_id',
-                                                    $language->id,
-                                                )->get();
+                                                $aminities = App\Models\Aminite::with('contents')->get();
                                                 $hasaminitie = json_decode(
                                                     $listing->listing_content->first()->aminities,
                                                 ) ?? [];
@@ -283,7 +280,7 @@
                                                 @if (in_array($aminitie->id, $hasaminitie))
                                                     <li class="icon-start">
                                                         <i class="{{ $aminitie->icon }}"></i>
-                                                        <span>{{ $aminitie->title }}</span>
+                                                        <span>{{ $aminitie->getTitle($language->id) }}</span>
                                                     </li>
                                                 @endif
                                             @endforeach

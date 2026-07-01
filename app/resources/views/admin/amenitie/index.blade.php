@@ -25,7 +25,6 @@
   </div>
 
   <div class="row">
-
     <div class="col-md-12">
       <div class="card">
         <div class="card-header">
@@ -62,36 +61,54 @@
                         <th scope="col">
                           <input type="checkbox" class="bulk-check" data-val="all">
                         </th>
+                        <th scope="col">ID</th>
                         <th scope="col">{{ __('Title') }}</th>
                         <th scope="col">{{ __('Icon') }}</th>
                         <th scope="col">{{ __('Actions') }}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      @foreach ($aminites as $amenitie)
+                      @foreach ($aminites as $aminite)
                         <tr>
                           <td>
-                            <input type="checkbox" class="bulk-check" data-val="{{ $amenitie->id }}">
+                            <input type="checkbox" class="bulk-check" data-val="{{ $aminite->id }}">
                           </td>
+                          <td><strong>{{ $aminite->id }}</strong></td>
                           <td>
-                            {{ strlen($amenitie->title) > 20 ? mb_substr($amenitie->title, 0, 20, 'UTF-8') . '...' : $amenitie->title }}
+                            @php
+                              $firstContent = $aminite->contents->first();
+                              $displayTitle = $firstContent ? $firstContent->title : '—';
+                              $displayTitle = mb_strlen($displayTitle) > 50 ? mb_substr($displayTitle, 0, 50, 'UTF-8') . '...' : $displayTitle;
+                            @endphp
+                            {{ $displayTitle }}
+                            @if ($aminite->contents->count() > 0)
+                              <div class="mt-1">
+                                @foreach ($aminite->contents as $content)
+                                  <span class="badge badge-secondary mr-1" title="{{ $content->language->name ?? '' }}">
+                                    {{ strtoupper($content->language->code ?? '—') }}
+                                  </span>
+                                @endforeach
+                              </div>
+                            @endif
                           </td>
-                          <td><i class="{{ $amenitie->icon }}"></i></td>
+                          <td><i class="{{ $aminite->icon }}"></i></td>
                           <td>
-                            <a class="btn btn-secondary btn-sm mr-1  mt-1 editBtn" href="#" data-toggle="modal"
-                              data-target="#editModal" data-id="{{ $amenitie->id }}"
-                              data-icon="{{ $amenitie->icon }}"data-language_id="{{ $amenitie->language_id }}"
-                              data-amount="{{ $amenitie->amount }}" data-title="{{ $amenitie->title }}">
+                            <a class="btn btn-secondary btn-sm mr-1 mt-1 editBtn" href="#" data-toggle="modal"
+                              data-target="#editModal" data-id="{{ $aminite->id }}"
+                              data-icon="{{ $aminite->icon }}"
+                              @foreach ($aminite->contents as $content)
+                              data-{{ $content->language->code }}_title="{{ $content->title }}"
+                              @endforeach>
                               <span class="btn-label">
                                 <i class="fas fa-edit"></i>
                               </span>
                             </a>
 
                             <form class="deleteForm d-inline-block"
-                              action="{{ route('admin.listing_specification.delete_aminite', ['id' => $amenitie->id]) }}"
+                              action="{{ route('admin.listing_specification.delete_aminite', ['id' => $aminite->id]) }}"
                               method="post">
                               @csrf
-                              <button type="submit" class="btn btn-danger btn-sm  mt-1 deleteBtn">
+                              <button type="submit" class="btn btn-danger btn-sm mt-1 deleteBtn">
                                 <span class="btn-label">
                                   <i class="fas fa-trash"></i>
                                 </span>
@@ -108,7 +125,11 @@
           </div>
         </div>
 
-        <div class="card-footer"></div>
+        <div class="card-footer">
+          <div class="center">
+            {{ $aminites->links() }}
+          </div>
+        </div>
       </div>
     </div>
   </div>

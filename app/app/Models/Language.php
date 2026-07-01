@@ -121,11 +121,7 @@ class Language extends Model
   {
     return $this->hasMany(CounterInformation::class, 'language_id', 'id');
   }
-  public function aminiteInfo()
-  {
-    return $this->hasMany(Aminite::class, 'language_id', 'id');
-  }
-  public function countryInfo()
+    public function countryInfo()
   {
     return $this->hasMany(CountryContent::class, 'language_id', 'id');
   }

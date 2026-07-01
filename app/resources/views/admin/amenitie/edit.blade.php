@@ -1,6 +1,6 @@
 <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
   aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLongTitle">{{ __('Edit Amenitie') }}</h5>
@@ -14,9 +14,39 @@
           method="post">
           @csrf
           <input type="hidden" name="id" id="in_id">
-          <input type="hidden" id="in_language_id" name="language_id">
 
-          <div class="form-group">
+          <div id="editAccordion" class="mt-3">
+            @foreach ($langs as $language)
+              <div class="version">
+                <div class="version-header" id="edit-heading{{ $language->id }}">
+                  <h5 class="mb-0">
+                    <button type="button" class="btn btn-link" data-toggle="collapse"
+                      data-target="#edit-collapse{{ $language->id }}"
+                      aria-expanded="{{ $language->is_default == 1 ? 'true' : 'false' }}"
+                      aria-controls="edit-collapse{{ $language->id }}">
+                      {{ $language->name }}
+                      {{ $language->is_default == 1 ? __('(Default)') : '' }}
+                    </button>
+                  </h5>
+                </div>
+                <div id="edit-collapse{{ $language->id }}"
+                  class="collapse {{ $language->is_default == 1 ? 'show' : '' }}"
+                  aria-labelledby="edit-heading{{ $language->id }}" data-parent="#editAccordion">
+                  <div class="version-body {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
+                    <div class="form-group">
+                      <label>{{ __('Title') . '*' }}</label>
+                      <input type="text" id="in_{{ $language->code }}_title" class="form-control"
+                        name="{{ $language->code }}_title"
+                        placeholder="{{ __('Enter Amenity Title') }}">
+                      <p id="editErr_{{ $language->code }}_title" class="mt-2 mb-0 text-danger em"></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            @endforeach
+          </div>
+
+          <div class="form-group mt-3">
             <label for="">{{ __('Icon') . '*' }}</label>
             <div class="btn-group d-block">
               <button type="button" class="btn btn-primary iconpicker-component edit-iconpicker-component">
@@ -33,13 +63,6 @@
             <div class="text-warning mt-2">
               <small>{{ __('Click on the dropdown icon to select an icon') . '.' }}</small>
             </div>
-          </div>
-
-          <div class="form-group">
-            <label for="">{{ __('Title') . '*' }}</label>
-            <input type="text" class="form-control" name="title" placeholder="{{ __('Enter Amenity Title') }}"
-              id="in_title">
-            <p id="editErr_title" class="mt-2 mb-0 text-danger em"></p>
           </div>
         </form>
       </div>

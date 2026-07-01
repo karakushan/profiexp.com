@@ -148,7 +148,7 @@
                                 <ul class="list-group custom-checkbox toggle-list" data-toggle-list="amenitiesToggle"
                                     data-toggle-show="5">
                                     @php
-                                        $aminities = App\Models\Aminite::where('language_id', $language->id)->get();
+                                        $aminities = App\Models\Aminite::with('contents')->get();
                                         $vv = request()->input('amenitie');
                                         $hasaminitie = explode(',', $vv);
                                     @endphp
@@ -160,14 +160,14 @@
                                                     id="checkbox_{{ $aminitie->id }}" value="{{ $aminitie->id }}"
                                                     checked>
                                                 <label class="form-check-label"
-                                                    for="checkbox_{{ $aminitie->id }}"><span>{{ $aminitie->title }}</label>
+                                                    for="checkbox_{{ $aminitie->id }}"><span>{{ $aminitie->getTitle($language->id) }}</label>
                                             </li>
                                         @else
                                             <li>
                                                 <input class="input-checkbox" type="checkbox" name="checkbox"
                                                     id="checkbox_{{ $aminitie->id }}" value="{{ $aminitie->id }}">
                                                 <label class="form-check-label"
-                                                    for="checkbox_{{ $aminitie->id }}"><span>{{ $aminitie->title }}</span></label>
+                                                    for="checkbox_{{ $aminitie->id }}"><span>{{ $aminitie->getTitle($language->id) }}</span></label>
                                             </li>
                                         @endif
                                     @endforeach
