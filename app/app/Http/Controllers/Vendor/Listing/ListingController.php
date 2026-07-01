@@ -189,10 +189,10 @@ class ListingController extends Controller
         }
     }
 
-    public function create(Request $request)
+    public function create()
     {
         $information = [];
-        $information['language'] = $this->resolveLanguage($request);
+        $information['language'] = $this->resolveLanguage();
         $information['vendors'] = Vendor::get();
         return view('vendors.listing.create', $information);
     }
@@ -345,7 +345,7 @@ class ListingController extends Controller
             return Response::json(['status' => 'error'], 200);
         } elseif ($request->can_listing_add == 1) {
 
-            $language = $this->resolveLanguage($request);
+            $language = $this->resolveLanguage();
             $code = $language->code;
 
             $featuredImgURL = $request->feature_image;
@@ -620,13 +620,13 @@ Thank you for your attention to this matter.";
         return Response::json(['status' => 'success'], 200);
     }
 
-    public function edit(Request $request, $id)
+    public function edit($id)
     {
         $vendorId = Auth::guard('vendor')->user()->id;
         $current_package = VendorPermissionHelper::packagePermission($vendorId);
 
         if ($current_package != '[]') {
-            $language = $this->resolveLanguage($request);
+            $language = $this->resolveLanguage();
             $listing = Listing::with('galleries')->where('vendor_id', '=', Auth::guard('vendor')->user()->id)->findOrFail($id);
             $information['listing'] = $listing;
             $information['language'] = $language;
@@ -676,7 +676,7 @@ Thank you for your attention to this matter.";
             ];
         }
 
-        $language = $this->resolveLanguage($request);
+        $language = $this->resolveLanguage();
         $code = $language->code;
 
         $in = $request->all();
@@ -1463,10 +1463,11 @@ Thank you for your attention to this matter.";
         ]);
     }
 
-    private function resolveLanguage(Request $request): Language
+    private function resolveLanguage(): Language
     {
-        if ($request->filled('language')) {
-            $lang = Language::where('code', $request->language)->first();
+        $code = Auth::guard('vendor')->user()->code;
+        if ($code) {
+            $lang = Language::where('code', $code)->first();
             if ($lang) {
                 return $lang;
             }
