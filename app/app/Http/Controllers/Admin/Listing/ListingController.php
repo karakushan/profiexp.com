@@ -1137,9 +1137,14 @@ class ListingController extends Controller
     public function updateSocialLink(Request $request, $id)
     {
         $rules = [
-            'icon' => 'required',
-            'url' => 'required|url',
-            'serial_number' => 'required|numeric',
+            'socail_link' => [
+                'sometimes',
+                'array',
+            ],
+            'socail_link.*' => [
+                'required',
+            ],
+            'icons' => 'required',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -1148,15 +1153,20 @@ class ListingController extends Controller
             return Response::json(['errors' => $validator->getMessageBag()], 400);
         }
 
-        ListingSocialMedia::updateOrCreate(
-            ['id' => $request->social_link_id],
-            [
-                'listing_id' => $id,
-                'icon' => $request->icon,
-                'url' => $request->url,
-                'serial_number' => $request->serial_number,
-            ]
-        );
+        ListingSocialMedia::where('listing_id', $id)->delete();
+
+        $iconsString = $request->icons;
+        $iconArray = explode(',', $iconsString);
+
+        if (!empty($request->socail_link)) {
+            foreach ($request->socail_link as $key => $link) {
+                ListingSocialMedia::create([
+                    'listing_id' => $id,
+                    'link' => $link,
+                    'icon' => $iconArray[$key] ?? '',
+                ]);
+            }
+        }
 
         Session::flash('success', __('Social link updated successfully') . '!');
         return Response::json(['status' => 'success'], 200);
