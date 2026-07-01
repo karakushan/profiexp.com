@@ -579,19 +579,13 @@
                                             <a href="{{ route('frontend.vendor.details', ['username' => $userName]) }}"
                                                 target="_self">
                                                 @if ($listing->vendor_id == 0)
-                                                    <img class="lazyload" src="assets/images/placeholder.png"
-                                                        data-src="{{ asset('assets/img/admins/' . $vendor->image) }}"
+                                                    <img class="lazyload"
+                                                        data-src="{{ $vendor->image ? asset('assets/img/admins/' . $vendor->image) : asset('assets/front/images/avatar.svg') }}"
                                                         alt="Vendor">
                                                 @else
-                                                    @if ($vendor->photo)
-                                                        <img class="lazyload"
-                                                            data-src="{{ asset('assets/admin/img/vendor-photo/' . $vendor->photo) }}"
-                                                            alt="Person Image">
-                                                    @else
-                                                        <img class="lazyload"
-                                                            data-src="{{ asset('assets/front/images/avatar-1.jpg') }}"
-                                                            alt="Person Image">
-                                                    @endif
+                                                    <img class="lazyload"
+                                                        data-src="{{ $vendor->photo ? asset('assets/admin/img/vendor-photo/' . $vendor->photo) : asset('assets/front/images/avatar.svg') }}"
+                                                        alt="Person Image">
                                                 @endif
                                             </a>
                                         </div>
@@ -759,6 +753,7 @@
         var listing_id = "{{ $listing->id }}";
         var latitude = "{{ $listing->latitude }}";
         var longitude = "{{ $listing->longitude }}";
+        var markerIcon = "{{ asset('assets/front/css/vendors/images/marker-icon.svg') }}";
     </script>
     <script src="{{ asset('assets/front/js/single-map.js') }}"></script>
     <script src="{{ asset('assets/front/js/review.js') }}"></script>
