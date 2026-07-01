@@ -1182,4 +1182,28 @@ class ListingController extends Controller
         Session::flash('success', __('Specification updated successfully') . '!');
         return Response::json(['status' => 'success'], 200);
     }
+
+    public function updateBusinessHours(Request $request, $id)
+    {
+        $days = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+        foreach ($days as $day) {
+            $businessHours = BusinessHour::where('id', $request[$day . '_id'])->first();
+            if (empty($businessHours)) {
+                $businessHours = new BusinessHour();
+            }
+            $businessHours->start_time = $request[$day . '_start_time'];
+            $businessHours->end_time = $request[$day . '_end_time'];
+            $businessHours->save();
+        }
+        Session::flash('success', __('Business Hours Updated successfully') . '!');
+        return back();
+    }
+
+    public function updateHoliday(Request $request)
+    {
+        $businessHour = BusinessHour::findOrFail($request->holidayId);
+        $businessHour->update(['holiday' => $request->holiday == 1 ? 1 : 0]);
+        Session::flash('success', __('Holiday Updated successfully') . '!');
+        return Response::json(['status' => 'success'], 200);
+    }
 }
