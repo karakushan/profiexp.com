@@ -75,8 +75,9 @@ class ListingUpdateRequest extends FormRequest
                 $rules[$language->code . '_title'] = $titleRule;
                 $rules[$language->code . '_address'] = $requiredOrNullable;
                 $rules[$language->code . '_description'] = $descriptionRule;
-                $rules[$language->code . '_aminities'] = $requiredOrNullable;
             }
+
+            $rules['aminities'] = 'nullable|array';
 
             $rules['category_id'] = 'required|exists:listing_categories,id';
 
@@ -149,9 +150,10 @@ class ListingUpdateRequest extends FormRequest
                 $rules[$language->code . '_title'] = $titleRule;
                 $rules[$language->code . '_address'] = $requiredOrNullable;
                 $rules[$language->code . '_description'] = $descriptionRule;
-                $rules[$language->code . '_aminities'] = $Amenities ? ($isDefault ? 'required' : 'nullable') . '|array|max:' . $aminitiesLimit : '';
                 $rules[$language->code . '_feature_heading'] = 'sometimes|array|max:' . $additionalFeatureLimit;
             }
+
+            $rules['aminities'] = $Amenities ? 'nullable|array|max:' . $aminitiesLimit : 'nullable';
 
             $rules['category_id'] = 'required|exists:listing_categories,id';
 
@@ -178,10 +180,9 @@ class ListingUpdateRequest extends FormRequest
             $messageArray[$code . '_address.required'] = __('The address field is required for') . ' ' . $language->name . ' ' . __('language') . '.';
             $messageArray[$code . '_description.required'] = __('The description field is required for') . ' ' . $language->name . ' ' . __('language') . '.';
             $messageArray[$code . '_description.min'] = __('The description field must have at least 15 characters for') . ' ' . $language->name . ' ' . __('language') . '.';
-            $messageArray[$code . '_aminities.required'] = __('The Amenities field is required for') . ' ' . $language->name . ' ' . __('language') . '.';
-            $messageArray[$code . '_aminities.max'] = __('Maximum') . ' ' . $this->aminitiesLimit() . ' ' . __('aminities can be added per listing for') . ' ' . $language->name .
-                ' ' . __('language') . '.';
         }
+
+        $messageArray['aminities.max'] = __('Maximum') . ' ' . $this->aminitiesLimit() . ' ' . __('amenities can be added per listing') . '.';
 
         return $messageArray;
     }

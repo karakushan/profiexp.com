@@ -413,16 +413,21 @@ class ListingController extends Controller
                 $listingContent->state_id = $request['state_id'];
                 $listingContent->city_id = $request['city_id'];
                 $listingContent->address = $request[$language->code . '_address'];
-
-                $aminities = $request->input($language->code . '_aminities', []);
-                $listingContent->aminities = json_encode($aminities);
-
                 $listingContent->description = Purifier::clean($request[$language->code . '_description'], 'youtube');
                 $listingContent->meta_keyword = $request[$language->code . '_meta_keyword'];
                 $listingContent->summary = $request[$language->code . '_summary'];
                 $listingContent->meta_description = $request[$language->code . '_meta_description'];
 
                 $listingContent->save();
+            }
+
+            $aminities = $request->input('aminities', []);
+            foreach ($languages as $lang) {
+                $lc = ListingContent::where('listing_id', $listing->id)->where('language_id', $lang->id)->first();
+                if ($lc) {
+                    $lc->aminities = json_encode($aminities);
+                    $lc->save();
+                }
             }
 
             //adding business hours
@@ -747,13 +752,20 @@ Thank you for your attention to this matter.";
             $listingContent->state_id = $request['state_id'];
             $listingContent->city_id = $request['city_id'];
             $listingContent->address = $request[$language->code . '_address'];
-            $aminities = $request->input($language->code . '_aminities', []);
-            $listingContent->aminities = json_encode($aminities);
             $listingContent->description = Purifier::clean($request[$language->code . '_description'], 'youtube');
             $listingContent->meta_keyword = $request[$language->code . '_meta_keyword'];
             $listingContent->summary = $request[$language->code . '_summary'];
             $listingContent->meta_description = $request[$language->code . '_meta_description'];
             $listingContent->save();
+        }
+
+        $aminities = $request->input('aminities', []);
+        foreach ($languages as $lang) {
+            $lc = ListingContent::where('listing_id', $id)->where('language_id', $lang->id)->first();
+            if ($lc) {
+                $lc->aminities = json_encode($aminities);
+                $lc->save();
+            }
         }
 
         Session::flash('success', __('Listing Updated successfully') . '!');

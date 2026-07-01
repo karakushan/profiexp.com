@@ -634,8 +634,6 @@ class ListingController extends Controller
                     $listingContent->city_id = $request->city_id;
                     $listingContent->address = $request[$language->code . '_address'];
 
-                    $aminities = $request->input($language->code . '_aminities', []);
-                    $listingContent->aminities = json_encode($aminities);
                     $listingContent->summary = $request[$language->code . '_summary'];
                     $listingContent->description = Purifier::clean($request[$language->code . '_description'], 'youtube');
                     $listingContent->meta_keyword = $request[$language->code . '_meta_keyword'];
@@ -643,6 +641,15 @@ class ListingController extends Controller
 
 
                     $listingContent->save();
+                }
+
+                $aminities = $request->input('aminities', []);
+                foreach ($languages as $lang) {
+                    $lc = ListingContent::where('listing_id', $listing->id)->where('language_id', $lang->id)->first();
+                    if ($lc) {
+                        $lc->aminities = json_encode($aminities);
+                        $lc->save();
+                    }
                 }
 
                 $days = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -944,8 +951,6 @@ class ListingController extends Controller
             $listingContent->state_id = $request->state_id;
             $listingContent->city_id = $request->city_id;
             $listingContent->address = $request[$language->code . '_address'];
-            $aminities = $request->input($language->code . '_aminities', []);
-                    $listingContent->aminities = json_encode($aminities);
                     $listingContent->summary = $request[$language->code . '_summary'];
                     $listingContent->description = Purifier::clean($request[$language->code . '_description'], 'youtube');
                     $listingContent->meta_keyword = $request[$language->code . '_meta_keyword'];
@@ -953,6 +958,15 @@ class ListingController extends Controller
 
 
                     $listingContent->save();
+                }
+
+                $aminities = $request->input('aminities', []);
+                foreach ($languages as $lang) {
+                    $lc = ListingContent::where('listing_id', $request->listing_id)->where('language_id', $lang->id)->first();
+                    if ($lc) {
+                        $lc->aminities = json_encode($aminities);
+                        $lc->save();
+                    }
                 }
 
                 $days = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];

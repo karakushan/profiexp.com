@@ -436,30 +436,6 @@
                               </div>
                             </div>
 
-                            @if (is_array($permissions) && in_array('Amenities', $permissions))
-                              <div class="col-lg-12">
-                                <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                  @php
-                                    $aminities = App\Models\Aminite::where('language_id', $language->id)->get();
-                                    $hasaminitie = $listingContent ? json_decode($listingContent->aminities) : [];
-                                  @endphp
-
-                                  <label>{{ __('Select Amenities') . '*' }} </label>
-                                  <div class="dropdown-content" id="checkboxes">
-                                    @foreach ($aminities as $amenity)
-                                      <input type="checkbox"
-                                        id="{{ $amenity->id }}"
-                                        name="{{ $language->code }}_aminities[]"
-                                        value="{{ $amenity->id }}"
-                                        @if (is_array($hasaminitie) && in_array($amenity->id, $hasaminitie)) checked @endif>
-                                      <label
-                                        class="amenities-label {{ $language->direction == 1 ? 'ml-2 mr-0' : 'mr-2' }}"
-                                        for="{{ $amenity->id }}">{{ $amenity->title }}</label>
-                                    @endforeach
-                                  </div>
-                                </div>
-                              </div>
-                            @endif
                           </div>
 
                           <div class="row">
@@ -557,6 +533,41 @@
                     </div>
                   @endforeach
                 </div>
+
+                @if (is_array($permissions) && in_array('Amenities', $permissions))
+                    <div class="card border mb-3 mt-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">{{ __('Select Amenities') . '*' }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-lg-12">
+                                    @php
+                                        $aminities = App\Models\Aminite::where(
+                                            'language_id',
+                                            $defaultLang->id,
+                                        )->get();
+                                        $hasaminitie = $defaultListingContent
+                                            ? json_decode($defaultListingContent->aminities)
+                                            : [];
+                                    @endphp
+                                    <div class="dropdown-content" id="checkboxes">
+                                        @foreach ($aminities as $amenity)
+                                            <input type="checkbox"
+                                                name="aminities[]"
+                                                value="{{ $amenity->id }}"
+                                                id="{{ $amenity->id }}"
+                                                {{ $hasaminitie && in_array($amenity->id, $hasaminitie) ? 'checked' : '' }}>
+                                            <label class="amenities-label mr-2"
+                                                for="{{ $amenity->id }}">{{ $amenity->title }}</label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <div id="sliders">
                 </div>
               </form>

@@ -491,65 +491,6 @@
 
 
 
-                                                        @if (is_array($permissions) && in_array('Amenities', $permissions))
-                                                            <div class="col-lg-12 ">
-                                                                <div
-                                                                    class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                                                    @php
-                                                                        $aminities = App\Models\Aminite::where(
-                                                                            'language_id',
-                                                                            $language->id,
-                                                                        )->get();
-
-                                                                        $hasaminitie = $listingContent
-                                                                            ? json_decode($listingContent->aminities)
-                                                                            : [];
-                                                                    @endphp
-
-                                                                    <label>{{ __('Select Amenities') . '*' }} </label>
-                                                                    <div class="dropdown-content" id="checkboxes">
-                                                                        @if ($hasaminitie)
-                                                                            @foreach ($aminities as $aminitie)
-                                                                                @if (in_array($aminitie->id, $hasaminitie))
-                                                                                    <input id="{{ $aminitie->id }}"
-                                                                                        type="checkbox"
-                                                                                        data-code ="{{ $language->code }}"
-                                                                                        data-listing_id ="{{ $listing->id }}"
-                                                                                        data-language_id ="{{ $language->id }}"
-                                                                                        name="{{ $language->code }}_aminities[]"
-                                                                                        value="{{ $aminitie->id }}"
-                                                                                        checked>
-                                                                                    <label
-                                                                                        class="amenities-label {{ $language->direction == 1 ? 'ml-2 mr-0' : 'mr-2' }}"
-                                                                                        for="{{ $aminitie->id }}">{{ $aminitie->title }}</label>
-                                                                                @else
-                                                                                    <input type="checkbox"
-                                                                                        name="{{ $language->code }}_aminities[]"
-                                                                                        value="{{ $aminitie->id }}"
-                                                                                        id="{{ $aminitie->id }}">
-                                                                                    <label
-                                                                                        class="amenities-label {{ $language->direction == 1 ? 'ml-2 mr-0' : 'mr-2' }}"
-                                                                                        for="{{ $aminitie->id }}">{{ $aminitie->title }}</label>
-                                                                                @endif
-                                                                            @endforeach
-                                                                        @else
-                                                                            <div class="dropdown-content" id="checkboxes">
-                                                                                @foreach ($aminities as $aminitie)
-                                                                                    <input
-                                                                                        type="checkbox"id="{{ $aminitie->id }}"
-                                                                                        name="{{ $language->code }}_aminities[]"
-                                                                                        value="{{ $aminitie->id }}">
-                                                                                    <label
-                                                                                        class="amenities-label {{ $language->direction == 1 ? 'ml-2 mr-0' : 'mr-2' }}"
-                                                                                        for="{{ $aminitie->id }}">{{ $aminitie->title }}</label>
-                                                                                @endforeach
-                                                                            </div>
-                                                                        @endif
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        @endif
-
                                                     </div>
                                                     <div class="row">
                                                         <div class="col-lg-12">
@@ -618,6 +559,41 @@
                                         </div>
                                     @endforeach
                                 </div>
+
+                                @if (is_array($permissions) && in_array('Amenities', $permissions))
+                                    <div class="card border mb-3 mt-3">
+                                        <div class="card-header bg-light">
+                                            <h5 class="mb-0">{{ __('Select Amenities') . '*' }}</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-lg-12">
+                                                    @php
+                                                        $aminities = App\Models\Aminite::where(
+                                                            'language_id',
+                                                            $defaultLang->id,
+                                                        )->get();
+                                                        $hasaminitie = $defaultListingContent
+                                                            ? json_decode($defaultListingContent->aminities)
+                                                            : [];
+                                                    @endphp
+                                                    <div class="dropdown-content" id="checkboxes">
+                                                        @foreach ($aminities as $aminitie)
+                                                            <input type="checkbox"
+                                                                name="aminities[]"
+                                                                value="{{ $aminitie->id }}"
+                                                                id="{{ $aminitie->id }}"
+                                                                {{ $hasaminitie && in_array($aminitie->id, $hasaminitie) ? 'checked' : '' }}>
+                                                            <label class="amenities-label mr-2"
+                                                                for="{{ $aminitie->id }}">{{ $aminitie->title }}</label>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+
                                 <div id="sliders">
                                 </div>
                             </form>
