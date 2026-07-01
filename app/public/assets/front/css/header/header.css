@@ -95,7 +95,7 @@
 
 .header-area .main-navbar .menu-dropdown {
     position: absolute;
-    top: auto;
+    top: 100%;
     left: 0;
     z-index: 99;
     opacity: 0;
