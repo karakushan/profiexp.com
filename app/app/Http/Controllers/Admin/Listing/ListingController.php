@@ -1155,6 +1155,7 @@ class ListingController extends Controller
         $information['features'] = $listing->specifications()->with('contents')->get();
         $information['id'] = $id;
         $information['listing_id'] = $id;
+        $information['languages'] = Language::all();
 
         return view('admin.listing.feature', $information);
     }
