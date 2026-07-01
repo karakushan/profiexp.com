@@ -1115,6 +1115,7 @@ class ListingController extends Controller
 
         $information['socialLinks'] = $listing->sociallinks;
         $information['id'] = $id;
+        $information['listing_id'] = $id;
 
         return view('admin.listing.social-link', $information);
     }
