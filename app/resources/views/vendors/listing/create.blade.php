@@ -579,6 +579,7 @@
         })->values()->toJson() !!};
         const baseURL = "{{ url('/') }}";
         var defaultLangCode = '{{ $language->code }}';
+        var categoryPlaceholder = '{{ __("Select Category") }}';
     </script>
 
     <script>

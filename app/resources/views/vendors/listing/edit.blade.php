@@ -584,6 +584,7 @@
     const baseURL = "{{ url('/') }}";
     var address = "{{ $listingAddress }}";
     var defaultLangCode = '{{ $language->code }}';
+    var categoryPlaceholder = '{{ __("Select Category") }}';
   </script>
 
   <script type="text/javascript" src="{{ asset('assets/admin/js/feature.js') }}"></script>

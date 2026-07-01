@@ -228,7 +228,7 @@ $('body').on('change', '.stateDropDown', function () {
 
 $(document).ready(function () {
   $('.js-example-basic-single2').select2({
-    placeholder: 'Select Category',
+    placeholder: typeof categoryPlaceholder !== 'undefined' ? categoryPlaceholder : 'Select Category',
     minimumInputLength: 0,
     ajax: {
       url: getHomeCatUrl,
