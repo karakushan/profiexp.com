@@ -1070,4 +1070,104 @@ class ListingController extends Controller
         Session::flash('success', __('Listings deleted successfully') . '!');
         return Response::json(['status' => 'success'], 200);
     }
+
+    public function plugins($id, Request $request)
+    {
+        Listing::findOrFail($id);
+
+        $information['title'] = ListingContent::where([['listing_id', $request->listingId], ['language_id', $request->languageId]])->first();
+        $information['data'] = DB::table('listings')
+            ->where('id', $id)
+            ->select('whatsapp_status', 'whatsapp_number', 'whatsapp_header_title', 'whatsapp_popup_status', 'whatsapp_popup_message', 'tawkto_status', 'tawkto_direct_chat_link', 'telegram_status', 'telegram_username', 'messenger_status', 'messenger_direct_chat_link')
+            ->first();
+        $information['id'] = $id;
+
+        return view('admin.listing.plugins', $information);
+    }
+
+    public function businessHours($id)
+    {
+        $listing = Listing::findOrFail($id);
+
+        $information['days'] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        $information['businessHours'] = BusinessHour::where('listing_id', $id)->get()->keyBy('day');
+        $information['id'] = $id;
+        $information['listing'] = $listing;
+
+        return view('admin.listing.business-hours.index', $information);
+    }
+
+    public function manageSocialLink($id)
+    {
+        $listing = Listing::findOrFail($id);
+
+        $information['socialLinks'] = $listing->sociallinks;
+        $information['id'] = $id;
+
+        return view('admin.listing.social-link.index', $information);
+    }
+
+    public function updateSocialLink(Request $request, $id)
+    {
+        $rules = [
+            'icon' => 'required',
+            'url' => 'required|url',
+            'serial_number' => 'required|numeric',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return Response::json(['errors' => $validator->getMessageBag()], 400);
+        }
+
+        ListingSocialMedia::updateOrCreate(
+            ['id' => $request->social_link_id],
+            [
+                'listing_id' => $id,
+                'icon' => $request->icon,
+                'url' => $request->url,
+                'serial_number' => $request->serial_number,
+            ]
+        );
+
+        Session::flash('success', __('Social link updated successfully') . '!');
+        return Response::json(['status' => 'success'], 200);
+    }
+
+    public function manageAdditionalSpecification($id)
+    {
+        $listing = Listing::findOrFail($id);
+
+        $information['features'] = $listing->specifications()->with('contents')->get();
+        $information['id'] = $id;
+
+        return view('admin.listing.specification.index', $information);
+    }
+
+    public function updateAdditionalSpecification(Request $request, $id)
+    {
+        $rules = [
+            'icon' => 'required',
+            'serial_number' => 'required',
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return Response::json(['errors' => $validator->getMessageBag()], 400);
+        }
+
+        ListingFeature::updateOrCreate(
+            ['id' => $request->feature_id],
+            [
+                'listing_id' => $id,
+                'icon' => $request->icon,
+                'serial_number' => $request->serial_number,
+            ]
+        );
+
+        Session::flash('success', __('Specification updated successfully') . '!');
+        return Response::json(['status' => 'success'], 200);
+    }
 }
