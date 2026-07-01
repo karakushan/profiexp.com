@@ -1269,4 +1269,14 @@ class ListingController extends Controller
 
         return Response::json(['status' => 'success'], 200);
     }
+
+    public function socialDelete(Request $request)
+    {
+        $listingSocialMedia = ListingSocialMedia::find($request->socialID);
+        if ($listingSocialMedia) {
+            $listingSocialMedia->delete();
+        }
+        Session::flash('success', __('Social Link deleted successfully') . '!');
+        return Response::json(['status' => 'success'], 200);
+    }
 }
