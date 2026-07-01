@@ -48,7 +48,6 @@ class PageHeadingRequest extends FormRequest
       'support_ticket_create_page_title' => 'required',
       'change_password_page_title' => 'required',
       'edit_profile_page_title' => 'required',
-      'home_page_title' => 'nullable',
     ];
   }
 }

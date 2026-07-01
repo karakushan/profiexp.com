@@ -1,7 +1,7 @@
 @extends('frontend.layout')
 
 @section('pageHeading')
-    {{ !empty($pageHeading) && !empty($pageHeading->home_page_title) ? $pageHeading->home_page_title : __('Home') }}
+    {{ !empty($seoInfo) && !empty($seoInfo->meta_title_home) ? $seoInfo->meta_title_home : __('Home') }}
 @endsection
 @section('metaKeywords')
     @if (!empty($seoInfo))

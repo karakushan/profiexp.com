@@ -45,6 +45,13 @@
             <div class="row">
               <div class="col-lg-6">
                 <div class="form-group">
+                  <label>{{ __('Meta Title For Home Page') }}</label>
+                  <input class="form-control" name="meta_title_home"
+                    value="{{ is_null($data) ? '' : $data->meta_title_home }}"
+                    placeholder="{{ __('Enter Meta Title') }}">
+                </div>
+
+                <div class="form-group">
                   <label>{{ __('Meta Keywords For Home Page') }}</label>
                   <input class="form-control" name="meta_keyword_home"
                     value="{{ is_null($data) ? '' : $data->meta_keyword_home }}"
@@ -59,6 +66,13 @@
               </div>
 
               <div class="col-lg-6">
+                <div class="form-group">
+                  <label>{{ __('Meta Title For Pricing Page') }}</label>
+                  <input class="form-control" name="meta_title_pricing"
+                    value="{{ is_null($data) ? '' : $data->meta_title_pricing }}"
+                    placeholder="{{ __('Enter Meta Title') }}">
+                </div>
+
                 <div class="form-group">
                   <label>{{ __('Meta Keywords For Pricing Page') }}</label>
                   <input class="form-control" name="meta_keyword_pricing"
@@ -75,6 +89,13 @@
 
               <div class="col-lg-6">
                 <div class="form-group">
+                  <label>{{ __('Meta Title For Listings Page') }}</label>
+                  <input class="form-control" name="meta_title_listings"
+                    value="{{ is_null($data) ? '' : $data->meta_title_listings }}"
+                    placeholder="{{ __('Enter Meta Title') }}">
+                </div>
+
+                <div class="form-group">
                   <label>{{ __('Meta Keywords For Listings Page') }}</label>
                   <input class="form-control" name="meta_keyword_listings"
                     value="{{ is_null($data) ? '' : $data->meta_keyword_listings }}"
@@ -89,6 +110,13 @@
               </div>
 
               <div class="col-lg-6">
+                <div class="form-group">
+                  <label>{{ __('Meta Title For Vendors Page') }}</label>
+                  <input class="form-control" name="meta_title_vendor_page"
+                    value="{{ is_null($data) ? '' : $data->meta_title_vendor_page }}"
+                    placeholder="{{ __('Enter Meta Title') }}">
+                </div>
+
                 <div class="form-group">
                   <label>{{ __('Meta Keywords For Vendors Page') }}</label>
                   <input class="form-control" name="meta_keywords_vendor_page"
@@ -105,6 +133,13 @@
 
               <div class="col-lg-6">
                 <div class="form-group">
+                  <label>{{ __('Meta Title For Products Page') }}</label>
+                  <input class="form-control" name="meta_title_products"
+                    value="{{ is_null($data) ? '' : $data->meta_title_products }}"
+                    placeholder="{{ __('Enter Meta Title') }}">
+                </div>
+
+                <div class="form-group">
                   <label>{{ __('Meta Keywords For Products Page') }}</label>
                   <input class="form-control" name="meta_keyword_products"
                     value="{{ is_null($data) ? '' : $data->meta_keyword_products }}"
@@ -119,6 +154,13 @@
               </div>
 
               <div class="col-lg-6">
+                <div class="form-group">
+                  <label>{{ __('Meta Title For Blog Page') }}</label>
+                  <input class="form-control" name="meta_title_blog"
+                    value="{{ is_null($data) ? '' : $data->meta_title_blog }}"
+                    placeholder="{{ __('Enter Meta Title') }}">
+                </div>
+
                 <div class="form-group">
                   <label>{{ __('Meta Keywords For Blog Page') }}</label>
                   <input class="form-control" name="meta_keyword_blog"
@@ -135,6 +177,13 @@
 
               <div class="col-lg-6">
                 <div class="form-group">
+                  <label>{{ __('Meta Title For FAQ Page') }}</label>
+                  <input class="form-control" name="meta_title_faq"
+                    value="{{ is_null($data) ? '' : $data->meta_title_faq }}"
+                    placeholder="{{ __('Enter Meta Title') }}">
+                </div>
+
+                <div class="form-group">
                   <label>{{ __('Meta Keywords For FAQ Page') }}</label>
                   <input class="form-control" name="meta_keyword_faq"
                     value="{{ is_null($data) ? '' : $data->meta_keyword_faq }}"
@@ -149,6 +198,13 @@
               </div>
 
               <div class="col-lg-6">
+                <div class="form-group">
+                  <label>{{ __('Meta Title For Contact Page') }}</label>
+                  <input class="form-control" name="meta_title_contact"
+                    value="{{ is_null($data) ? '' : $data->meta_title_contact }}"
+                    placeholder="{{ __('Enter Meta Title') }}">
+                </div>
+
                 <div class="form-group">
                   <label>{{ __('Meta Keywords For Contact Page') }}</label>
                   <input class="form-control" name="meta_keyword_contact"
@@ -165,6 +221,13 @@
 
               <div class="col-lg-6">
                 <div class="form-group">
+                  <label>{{ __('Meta Title For Customer Login Page') }}</label>
+                  <input class="form-control" name="meta_title_login"
+                    value="{{ is_null($data) ? '' : $data->meta_title_login }}"
+                    placeholder="{{ __('Enter Meta Title') }}">
+                </div>
+
+                <div class="form-group">
                   <label>{{ __('Meta Keywords For Customer Login Page') }}</label>
                   <input class="form-control" name="meta_keyword_login"
                     value="{{ is_null($data) ? '' : $data->meta_keyword_login }}"
@@ -179,6 +242,13 @@
               </div>
 
               <div class="col-lg-6">
+                <div class="form-group">
+                  <label>{{ __('Meta Title For Customer Signup Page') }}</label>
+                  <input class="form-control" name="meta_title_signup"
+                    value="{{ is_null($data) ? '' : $data->meta_title_signup }}"
+                    placeholder="{{ __('Enter Meta Title') }}">
+                </div>
+
                 <div class="form-group">
                   <label>{{ __('Meta Keywords For Customer Signup Page') }}</label>
                   <input class="form-control" name="meta_keyword_signup"
@@ -195,6 +265,13 @@
 
               <div class="col-lg-6">
                 <div class="form-group">
+                  <label>{{ __('Meta Title For Customer Forget Password Page') }}</label>
+                  <input class="form-control" name="meta_title_forget_password"
+                    value="{{ is_null($data) ? '' : $data->meta_title_forget_password }}"
+                    placeholder="{{ __('Enter Meta Title') }}">
+                </div>
+
+                <div class="form-group">
                   <label>{{ __('Meta Keywords For Customer Forget Password Page') }}</label>
                   <input class="form-control" name="meta_keyword_forget_password"
                     value="{{ is_null($data) ? '' : $data->meta_keyword_forget_password }}"
@@ -209,6 +286,13 @@
               </div>
 
               <div class="col-lg-6">
+                <div class="form-group">
+                  <label>{{ __('Meta Title For Vendor Signup Page') }}</label>
+                  <input class="form-control" name="meta_title_vendor_signup"
+                    value="{{ is_null($data) ? '' : $data->meta_title_vendor_signup }}"
+                    placeholder="{{ __('Enter Meta Title') }}">
+                </div>
+
                 <div class="form-group">
                   <label>{{ __('Meta Keywords For Vendor Signup Page') }}</label>
                   <input class="form-control" name="meta_keywords_vendor_signup"
@@ -225,6 +309,13 @@
 
               <div class="col-lg-6">
                 <div class="form-group">
+                  <label>{{ __('Meta Title For Vendor Login Page') }}</label>
+                  <input class="form-control" name="meta_title_vendor_login"
+                    value="{{ is_null($data) ? '' : $data->meta_title_vendor_login }}"
+                    placeholder="{{ __('Enter Meta Title') }}">
+                </div>
+
+                <div class="form-group">
                   <label>{{ __('Meta Keywords For Vendor Login Page') }}</label>
                   <input class="form-control" name="meta_keywords_vendor_login"
                     value="{{ is_null($data) ? '' : $data->meta_keywords_vendor_login }}"
@@ -239,6 +330,13 @@
               </div>
 
               <div class="col-lg-6">
+                <div class="form-group">
+                  <label>{{ __('Meta Title For Vendor Forget Password Page') }}</label>
+                  <input class="form-control" name="meta_title_vendor_forget_password"
+                    value="{{ is_null($data) ? '' : $data->meta_title_vendor_forget_password }}"
+                    placeholder="{{ __('Enter Meta Title') }}">
+                </div>
+
                 <div class="form-group">
                   <label>{{ __('Meta Keywords For Vendor Forget Password Page') }}</label>
                   <input class="form-control" name="meta_keywords_vendor_forget_password"
@@ -255,6 +353,13 @@
 
 
               <div class="col-lg-6">
+                <div class="form-group">
+                  <label>{{ __('Meta Title For About Us Page') }}</label>
+                  <input class="form-control" name="meta_title_about_page"
+                    value="{{ is_null($data) ? '' : $data->meta_title_about_page }}"
+                    placeholder="{{ __('Enter Meta Title') }}">
+                </div>
+
                 <div class="form-group">
                   <label>{{ __('Meta Keywords For About Us Page') }}</label>
                   <input class="form-control" name="meta_keywords_about_page"

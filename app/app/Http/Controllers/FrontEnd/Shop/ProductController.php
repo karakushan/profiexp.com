@@ -34,7 +34,7 @@ class ProductController extends Controller
 
         $language = $misc->getLanguage();
 
-        $information['seoInfo'] = $language->seoInfo()->select('meta_keyword_products', 'meta_description_products')->first();
+        $information['seoInfo'] = $language->seoInfo()->select('meta_title_products', 'meta_keyword_products', 'meta_description_products')->first();
 
         $information['bgImg'] = $misc->getBreadcrumb();
         $information['pageHeading'] = $misc->getPageHeading($language);

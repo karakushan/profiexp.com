@@ -20,7 +20,7 @@ class ContactController extends Controller
 
 		$language = $misc->getLanguage();
 
-		$information['seoInfo'] = $language->seoInfo()->select('meta_keyword_contact', 'meta_description_contact')->first();
+		$information['seoInfo'] = $language->seoInfo()->select('meta_title_contact', 'meta_keyword_contact', 'meta_description_contact')->first();
 
 		$information['pageHeading'] = $misc->getPageHeading($language);
 

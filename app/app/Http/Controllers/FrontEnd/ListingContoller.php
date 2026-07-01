@@ -142,7 +142,7 @@ class ListingContoller extends Controller
     $information['pageHeading'] = $misc->getPageHeading($language);
 
     $information['language'] = $language;
-    $information['seoInfo'] = $language->seoInfo()->select('meta_keyword_listings', 'meta_description_listings')->first();
+    $information['seoInfo'] = $language->seoInfo()->select('meta_title_listings', 'meta_keyword_listings', 'meta_description_listings')->first();
 
     $information['currencyInfo'] = $this->getCurrencyInfo();
 
@@ -1024,7 +1024,7 @@ class ListingContoller extends Controller
     $misc = new MiscellaneousController();
     $language = $misc->getLanguage();
     $information['language'] = $language;
-    $information['seoInfo'] = $language->seoInfo()->select('meta_keyword_listings', 'meta_description_listings')->first();
+    $information['seoInfo'] = $language->seoInfo()->select('meta_title_listings', 'meta_keyword_listings', 'meta_description_listings')->first();
 
     $information['currencyInfo'] = $this->getCurrencyInfo();
     $title = $location = $category_id = $max_val = $min_val  = $ratings = $amenitie = $vendor = $country = $state = $city = $price_not_mentioned = null;

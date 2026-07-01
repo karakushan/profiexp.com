@@ -58,7 +58,7 @@ class VendorController extends Controller
 
             $language = $misc->getLanguage();
 
-            $information['seoInfo'] = $language->seoInfo()->select('meta_keywords_vendor_signup', 'meta_description_vendor_signup')->first();
+            $information['seoInfo'] = $language->seoInfo()->select('meta_title_vendor_signup', 'meta_keywords_vendor_signup', 'meta_description_vendor_signup')->first();
 
             $information['pageHeading'] = $misc->getPageHeading($language);
 
@@ -241,7 +241,7 @@ class VendorController extends Controller
 
             $language = $misc->getLanguage();
 
-            $information['seoInfo'] = $language->seoInfo()->select('meta_keywords_vendor_login', 'meta_description_vendor_login')->first();
+            $information['seoInfo'] = $language->seoInfo()->select('meta_title_vendor_login', 'meta_keywords_vendor_login', 'meta_description_vendor_login')->first();
 
             $information['pageHeading'] = $misc->getPageHeading($language);
 
@@ -689,7 +689,7 @@ class VendorController extends Controller
 
         $language = $misc->getLanguage();
 
-        $information['seoInfo'] = $language->seoInfo()->select('meta_keywords_vendor_forget_password', 'meta_descriptions_vendor_forget_password')->first();
+        $information['seoInfo'] = $language->seoInfo()->select('meta_title_vendor_forget_password', 'meta_keywords_vendor_forget_password', 'meta_descriptions_vendor_forget_password')->first();
 
         $information['pageHeading'] = $misc->getPageHeading($language);
 
@@ -798,7 +798,7 @@ class VendorController extends Controller
 
         $language = $misc->getLanguage();
 
-        $information['seoInfo'] = $language->seoInfo()->select('meta_keywords_vendor_forget_password', 'meta_descriptions_vendor_forget_password')->first();
+        $information['seoInfo'] = $language->seoInfo()->select('meta_title_vendor_forget_password', 'meta_keywords_vendor_forget_password', 'meta_descriptions_vendor_forget_password')->first();
 
         $information['bgImg'] = $misc->getBreadcrumb();
         return view('frontend.vendor.auth.reset-password', $information);

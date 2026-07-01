@@ -41,8 +41,7 @@ class PageHeading extends Model
     'support_ticket_page_title',
     'support_ticket_create_page_title',
     'change_password_page_title',
-    'edit_profile_page_title',
-    'home_page_title'
+    'edit_profile_page_title'
   ];
 
   public function headingLang()

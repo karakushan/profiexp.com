@@ -40,9 +40,7 @@ class HomeController extends Controller
 
     $information['language'] = $language;
 
-    $information['seoInfo'] = $language->seoInfo()->select('meta_keyword_home', 'meta_description_home')->first();
-
-    $information['pageHeading'] = $misc->getPageHeading($language);
+    $information['seoInfo'] = $language->seoInfo()->select('meta_keyword_home', 'meta_description_home', 'meta_title_home')->first();
 
     if ($secInfo->about_section_status == 1) {
       $information['aboutSectionImage'] = Basic::query()->pluck('about_section_image')->first();
@@ -410,7 +408,7 @@ class HomeController extends Controller
 
     $language = $misc->getLanguage();
 
-    $information['seoInfo'] = $language->seoInfo()->select('meta_keywords_about_page', 'meta_description_about_page')->first();
+    $information['seoInfo'] = $language->seoInfo()->select('meta_title_about_page', 'meta_keywords_about_page', 'meta_description_about_page')->first();
 
     $information['pageHeading'] = $misc->getPageHeading($language);
 
@@ -443,7 +441,7 @@ class HomeController extends Controller
     $language = $misc->getLanguage();
     $information['bgImg'] = $misc->getBreadcrumb();
     $information['packageSecInfo'] = PackageSection::where('language_id', $language->id)->first();
-    $information['seoInfo'] = $language->seoInfo()->select('meta_keyword_pricing', 'meta_description_pricing')->first();
+    $information['seoInfo'] = $language->seoInfo()->select('meta_title_pricing', 'meta_keyword_pricing', 'meta_description_pricing')->first();
     $terms = [];
     if (Package::query()->where('status', '1')->where('term', 'monthly')->count() > 0) {
       $terms[] = 'Monthly';

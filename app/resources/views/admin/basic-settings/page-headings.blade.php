@@ -46,17 +46,6 @@
                 <div class="row">
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label>{{ __('Home Page Title') }}</label>
-                      <input type="text" class="form-control" name="home_page_title"
-                        value="{{ $data != null ? $data->home_page_title : '' }}">
-                      @error('home_page_title')
-                        <p class="mt-2 mb-0 text-danger">{{ $message }}</p>
-                      @enderror
-                    </div>
-                  </div>
-
-                  <div class="col-md-6">
-                    <div class="form-group">
                       <label>{{ __('Listing Page Title') . '*' }}</label>
                       <input type="text" class="form-control" name="listing_page_title"
                         value="{{ $data != null ? $data->listing_page_title : '' }}">

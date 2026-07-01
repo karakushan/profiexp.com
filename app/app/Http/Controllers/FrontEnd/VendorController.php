@@ -30,7 +30,7 @@ class VendorController extends Controller
 
         $information['pageHeading'] = $misc->getPageHeading($language);
 
-        $information['seoInfo'] = $language->seoInfo()->select('meta_keywords_vendor_page', 'meta_description_vendor_page')->first();
+        $information['seoInfo'] = $language->seoInfo()->select('meta_title_vendor_page', 'meta_keywords_vendor_page', 'meta_description_vendor_page')->first();
         $name = $location = null;
         $vendorIds = [];
         $vendorIds = [];

@@ -15,7 +15,7 @@ class FaqController extends Controller
     $language = $misc->getLanguage();
     $information['pageHeading'] = $misc->getPageHeading($language);
 
-    $information['seoInfo'] = $language->seoInfo()->select('meta_keyword_faq', 'meta_description_faq')->first();
+    $information['seoInfo'] = $language->seoInfo()->select('meta_title_faq', 'meta_keyword_faq', 'meta_description_faq')->first();
 
     $information['pageHeading'] = $misc->getPageHeading($language);
 

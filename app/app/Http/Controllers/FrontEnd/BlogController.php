@@ -18,7 +18,7 @@ class BlogController extends Controller
 
     $language = $misc->getLanguage();
 
-    $information['seoInfo'] = $language->seoInfo()->select('meta_keyword_blog', 'meta_description_blog')->first();
+    $information['seoInfo'] = $language->seoInfo()->select('meta_title_blog', 'meta_keyword_blog', 'meta_description_blog')->first();
 
     $information['pageHeading'] = $misc->getPageHeading($language);
 

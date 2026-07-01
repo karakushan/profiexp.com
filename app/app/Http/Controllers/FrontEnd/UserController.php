@@ -49,7 +49,7 @@ class UserController extends Controller
 
     $language = $misc->getLanguage();
 
-    $information['seoInfo'] = $language->seoInfo()->select('meta_keyword_login', 'meta_description_login')->first();
+    $information['seoInfo'] = $language->seoInfo()->select('meta_title_login', 'meta_keyword_login', 'meta_description_login')->first();
 
     $information['pageHeading'] = $misc->getPageHeading($language);
 
@@ -233,7 +233,7 @@ class UserController extends Controller
 
     $language = $misc->getLanguage();
 
-    $information['seoInfo'] = $language->seoInfo()->select('meta_keyword_forget_password', 'meta_description_forget_password')->first();
+    $information['seoInfo'] = $language->seoInfo()->select('meta_title_forget_password', 'meta_keyword_forget_password', 'meta_description_forget_password')->first();
 
     $information['pageHeading'] = $misc->getPageHeading($language);
 
@@ -350,7 +350,7 @@ class UserController extends Controller
 
     $language = $misc->getLanguage();
 
-    $information['seoInfo'] = $language->seoInfo()->select('meta_keyword_signup', 'meta_description_signup')->first();
+    $information['seoInfo'] = $language->seoInfo()->select('meta_title_signup', 'meta_keyword_signup', 'meta_description_signup')->first();
 
     $information['pageHeading'] = $misc->getPageHeading($language);
 
