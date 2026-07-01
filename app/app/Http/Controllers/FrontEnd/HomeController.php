@@ -42,6 +42,7 @@ class HomeController extends Controller
 
     $information['seoInfo'] = $language->seoInfo()->select('meta_keyword_home', 'meta_description_home')->first();
 
+    $information['pageHeading'] = $misc->getPageHeading($language);
 
     if ($secInfo->about_section_status == 1) {
       $information['aboutSectionImage'] = Basic::query()->pluck('about_section_image')->first();
