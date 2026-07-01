@@ -87,44 +87,36 @@ class ListingController extends Controller
     public function homeCategories(Request $request)
     {
         $search = $request->input('search');
-        $page = $request->input('page', 1);
-        $pageSize = 10;
-
         $language = Language::where('code', $request->lang)->first();
 
-        $query = ListingCategory::whereHas('contents', function ($q) use ($language) {
-            $q->where('language_id', $language->id)
-              ->whereNotNull('name')
-              ->where('name', '!=', '');
-        })->with(['contents' => function ($q) use ($language) {
-            $q->where('language_id', $language->id);
-        }]);
-
-        if ($search) {
-            $query->whereHas('contents', function ($q) use ($language, $search) {
-                $q->where('language_id', $language->id)
-                  ->where('name', 'like', "%{$search}%");
-            });
-        }
-
-        $categories = $query->skip(($page - 1) * $pageSize)
-            ->take($pageSize + 1)
-            ->get();
-
-        $hasMore = $categories->count() > $pageSize;
-        $results = $hasMore ? $categories->slice(0, $pageSize) : $categories;
-
-        $results = $results->map(function ($category) {
-            return [
-                'id' => $category->id,
-                'name' => $category->contents->first()?->name ?? $category->name,
-            ];
-        });
+        $results = $this->flatCategoryTree($language, null, '', $search);
 
         return response()->json([
             'results' => $results,
-            'more' => $hasMore
+            'more' => false
         ]);
+    }
+
+    private function flatCategoryTree($language, $parentId, $prefix, $search)
+    {
+        $categories = ListingCategory::where('status', 1)
+            ->where('parent_id', $parentId)
+            ->with(['contents' => function ($q) use ($language) {
+                $q->where('language_id', $language->id);
+            }])
+            ->orderBy('serial_number')
+            ->get();
+
+        $result = [];
+        foreach ($categories as $category) {
+            $name = $category->contents->first()?->name ?? $category->name;
+            $displayName = $prefix . $name;
+            if (!$search || mb_stripos($name, $search) !== false) {
+                $result[] = ['id' => $category->id, 'name' => $displayName];
+            }
+            $result = array_merge($result, $this->flatCategoryTree($language, $category->id, $prefix . '— ', $search));
+        }
+        return $result;
     }
 
     public function searchSate(Request $request)
