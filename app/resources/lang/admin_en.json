@@ -2624,5 +2624,11 @@
     "will be permanently removed. This can't be undone.": "will be permanently removed. This can't be undone.",
     "will be replaced immediately": "will be replaced immediately",
     "year": "year",
-    "yearly": "yearly"
+    "yearly": "yearly",
+    "Address displayed in the listing": "Address displayed in the listing",
+    "Search address on map": "Search address on map",
+    "Enter address to search on map": "Enter address to search on map",
+    "Select a Country": "Select a Country",
+    "Select a State": "Select a State",
+    "Select a City": "Select a City"
 }

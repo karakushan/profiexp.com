@@ -2702,5 +2702,11 @@
     "The category field is required": "Поле категории обязательно",
     "The city field is required.": "Поле города обязательно.",
     "The address displayed in the listing field is required for": "Поле отображаемого адреса обязательно для",
-    "The address displayed in the listing field is required": "Поле отображаемого адреса обязательно"
+    "The address displayed in the listing field is required": "Поле отображаемого адреса обязательно",
+    "Address displayed in the listing": "Отображаемый адрес в объявлении",
+    "Search address on map": "Искать адрес на карте",
+    "Enter address to search on map": "Введите адрес для поиска на карте",
+    "Select a Country": "Выберите страну",
+    "Select a State": "Выберите область",
+    "Select a City": "Выберите город"
 }

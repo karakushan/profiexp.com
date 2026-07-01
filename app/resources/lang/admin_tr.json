@@ -2682,5 +2682,11 @@
     "will be replaced immediately": "will be replaced immediately",
     "year": "yıl",
     "yearly": "yearly",
-    "years": "yıl"
+    "years": "yıl",
+    "Address displayed in the listing": "Listede görüntülenen adres",
+    "Search address on map": "Haritada adres ara",
+    "Enter address to search on map": "Haritada aramak için adres girin",
+    "Select a Country": "Ülke Seçin",
+    "Select a State": "Bölge Seçin",
+    "Select a City": "Şehir Seçin"
 }
