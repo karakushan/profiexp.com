@@ -345,7 +345,7 @@
                                         <div class="form-group">
                                             <label>{{ __('Category') . '*' }} </label>
                                             <select name="category_id"
-                                                data-code="{{ $defaultLang->code }}"
+                                                data-code="{{ $language->code }}"
                                                 class="form-control js-example-basic-single2">
                                             </select>
                                         </div>
@@ -376,169 +376,137 @@
                                     </div>
                                 </div>
 
-                                @php
-                                    $defaultLang = $languages->firstWhere('is_default', 1);
-                                @endphp
+                                <div class="row mb-3">
+                                    <div class="col-lg-4">
+                                        <div class="form-group">
+                                            <label>{{ __('Language') }}</label>
+                                            <select class="form-control" name="language"
+                                                onchange="window.location='{{ url()->current() }}?language=' + this.value">
+                                                @foreach ($langs as $lang)
+                                                    <option value="{{ $lang->code }}" {{ $lang->id == $language->id ? 'selected' : '' }}>
+                                                        {{ $lang->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                <div id="accordion" class="mt-3">
-                                    @foreach ($languages as $language)
-                                        <div class="version">
-                                            <div class="version-header" id="heading{{ $language->id }}">
-                                                <h5 class="mb-0">
-                                                    <button type="button" class="btn btn-link" data-toggle="collapse"
-                                                        data-target="#collapse{{ $language->id }}"
-                                                        aria-expanded="{{ $language->is_default == 1 ? 'true' : 'false' }}"
-                                                        aria-controls="collapse{{ $language->id }}">
-                                                        {{ $language->name }}
-                                                        {{ $language->is_default == 1 ? __('(Default)') : '' }}
-                                                    </button>
-                                                </h5>
+                                <div class="card border mb-3">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0">{{ $language->name }} {{ $language->is_default == 1 ? '(' . __('Default') . ')' : '' }}</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-lg-6">
+                                                <div class="form-group">
+                                                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                                                        <label class="mb-0">{{ __('Title') . '*' }}</label>
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-primary listing-ai-field-btn"
+                                                            data-field="title" data-lang="{{ $language->code }}"
+                                                            data-title="{{ __('Title') }}">
+                                                            <i class="fas fa-magic"></i> {{ __('Generate') }}
+                                                        </button>
+                                                    </div>
+                                                    <input type="text" class="form-control"
+                                                        name="{{ $language->code }}_title"
+                                                        placeholder="{{ __('Enter Title') }}">
+                                                </div>
                                             </div>
 
-                                            <div id="collapse{{ $language->id }}"
-                                                class="collapse {{ $language->is_default == 1 ? 'show' : '' }}"
-                                                aria-labelledby="heading{{ $language->id }}" data-parent="#accordion">
-                                                <div
-                                                    class="version-body {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                                    <div class="row">
-                                                        <div class="col-lg-6">
-                                                            <div
-                                                                class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
-                                                                    <label class="mb-0">{{ __('Title') . '*' }}</label>
-                                                                    <button type="button"
-                                                                        class="btn btn-sm btn-primary listing-ai-field-btn"
-                                                                        data-field="title" data-lang="{{ $language->code }}"
-                                                                        data-title="{{ __('Title') }}">
-                                                                        <i class="fas fa-magic"></i> {{ __('Generate') }}
-                                                                    </button>
-                                                                </div>
-                                                                <input type="text" class="form-control"
-                                                                    name="{{ $language->code }}_title"
-                                                                    placeholder="{{ __('Enter Title') }}">
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="col-lg-12">
-                                                            <div class="form-group">
-                                                                <label>{{ __('Address displayed in the listing') . '*' }}</label>
-                                                                 <input type="text" class="form-control"
-                                                                     value="{{ old($language->code . '_address') }}"
-                                                                     name="{{ $language->code }}_address"
-                                                                     placeholder="{{ __('Enter Address') }}">
-                                                                @if ($language->is_default == 1 && $settings->google_map_api_key_status == 1)
-                                                                    <a href=""
-                                                                        class="btn btn-secondary mt-2 btn-sm"
-                                                                        data-toggle="modal" data-target="#GoogleMapModal">
-                                                                        <i class="fas fa-eye"></i> {{ __('Show Map') }}
-                                                                    </a>
-                                                                @endif
-                                                            </div>
-                                                        </div>
-
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col-lg-12">
-                                                            <div
-                                                                class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
-                                                                    <label class="mb-0">{{ __('Description') . '*' }}</label>
-                                                                    <button type="button"
-                                                                        class="btn btn-sm btn-primary listing-ai-field-btn"
-                                                                        data-field="description"
-                                                                        data-lang="{{ $language->code }}"
-                                                                        data-title="{{ __('Description') }}">
-                                                                        <i class="fas fa-magic"></i> {{ __('Generate') }}
-                                                                    </button>
-                                                                </div>
-                                                                <textarea id="{{ $language->code }}_description" class="form-control summernote"
-                                                                    name="{{ $language->code }}_description" data-height="300"></textarea>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col-lg-12">
-                                                            <div
-                                                                class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
-                                                                    <label class="mb-0">{{ __('Meta Keywords') }}</label>
-                                                                    <button type="button"
-                                                                        class="btn btn-sm btn-primary listing-ai-field-btn"
-                                                                        data-field="meta_keywords"
-                                                                        data-lang="{{ $language->code }}"
-                                                                        data-title="{{ __('Meta Keywords') }}">
-                                                                        <i class="fas fa-magic"></i> {{ __('Generate') }}
-                                                                    </button>
-                                                                </div>
-                                                                <input class="form-control"
-                                                                    name="{{ $language->code }}_meta_keyword"
-                                                                    placeholder="{{ __('Enter Meta Keywords') }}"
-                                                                    data-role="tagsinput">
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col-lg-12">
-                                                            <div
-                                                                class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
-                                                                    <label class="mb-0">{{ __('Summary') }}</label>
-                                                                    <button type="button"
-                                                                        class="btn btn-sm btn-primary listing-ai-field-btn"
-                                                                        data-field="summary"
-                                                                        data-lang="{{ $language->code }}"
-                                                                        data-title="{{ __('Summary') }}">
-                                                                        <i class="fas fa-magic"></i> {{ __('Generate') }}
-                                                                    </button>
-                                                                </div>
-                                                                <textarea class="form-control" name="{{ $language->code }}_summary" data-height="300"></textarea>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-lg-12">
-                                                            <div
-                                                                class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
-                                                                    <label class="mb-0">{{ __('Meta Description') }}</label>
-                                                                    <button type="button"
-                                                                        class="btn btn-sm btn-primary listing-ai-field-btn"
-                                                                        data-field="meta_description"
-                                                                        data-lang="{{ $language->code }}"
-                                                                        data-title="{{ __('Meta Description') }}">
-                                                                        <i class="fas fa-magic"></i> {{ __('Generate') }}
-                                                                    </button>
-                                                                </div>
-                                                                <textarea class="form-control" name="{{ $language->code }}_meta_description" rows="5"
-                                                                    placeholder="{{ __('Enter Meta Description') }}"></textarea>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="row">
-                                                        <div class="col-lg-12">
-                                                            @php $currLang = $language; @endphp
-                                                            @foreach ($languages as $language)
-                                                                @continue($language->id == $currLang->id)
-                                                                <div class="form-check py-0">
-                                                                    <label class="form-check-label">
-                                                                        <input class="form-check-input" type="checkbox"
-                                                                            onchange="cloneInput('collapse{{ $currLang->id }}', 'collapse{{ $language->id }}', event)">
-                                                                        <span
-                                                                            class="form-check-sign">{{ __('Clone for') }}
-                                                                            <strong
-                                                                                class="text-capitalize text-secondary">{{ $language->name }}</strong>
-                                                                            {{ __('language') }}</span>
-                                                                    </label>
-                                                                </div>
-                                                            @endforeach
-                                                        </div>
-                                                    </div>
+                                            <div class="col-lg-12">
+                                                <div class="form-group">
+                                                    <label>{{ __('Address displayed in the listing') . '*' }}</label>
+                                                     <input type="text" class="form-control"
+                                                         value="{{ old($language->code . '_address') }}"
+                                                         name="{{ $language->code }}_address"
+                                                         placeholder="{{ __('Enter Address') }}">
+                                                    @if ($language->is_default == 1 && $settings->google_map_api_key_status == 1)
+                                                        <a href=""
+                                                            class="btn btn-secondary mt-2 btn-sm"
+                                                            data-toggle="modal" data-target="#GoogleMapModal">
+                                                            <i class="fas fa-eye"></i> {{ __('Show Map') }}
+                                                        </a>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </div>
-                                    @endforeach
+
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="form-group">
+                                                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                                                        <label class="mb-0">{{ __('Description') . '*' }}</label>
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-primary listing-ai-field-btn"
+                                                            data-field="description"
+                                                            data-lang="{{ $language->code }}"
+                                                            data-title="{{ __('Description') }}">
+                                                            <i class="fas fa-magic"></i> {{ __('Generate') }}
+                                                        </button>
+                                                    </div>
+                                                    <textarea id="{{ $language->code }}_description" class="form-control summernote"
+                                                        name="{{ $language->code }}_description" data-height="300"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="form-group">
+                                                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                                                        <label class="mb-0">{{ __('Meta Keywords') }}</label>
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-primary listing-ai-field-btn"
+                                                            data-field="meta_keywords"
+                                                            data-lang="{{ $language->code }}"
+                                                            data-title="{{ __('Meta Keywords') }}">
+                                                            <i class="fas fa-magic"></i> {{ __('Generate') }}
+                                                        </button>
+                                                    </div>
+                                                    <input class="form-control"
+                                                        name="{{ $language->code }}_meta_keyword"
+                                                        placeholder="{{ __('Enter Meta Keywords') }}"
+                                                        data-role="tagsinput">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="form-group">
+                                                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                                                        <label class="mb-0">{{ __('Summary') }}</label>
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-primary listing-ai-field-btn"
+                                                            data-field="summary"
+                                                            data-lang="{{ $language->code }}"
+                                                            data-title="{{ __('Summary') }}">
+                                                            <i class="fas fa-magic"></i> {{ __('Generate') }}
+                                                        </button>
+                                                    </div>
+                                                    <textarea class="form-control" name="{{ $language->code }}_summary" data-height="300"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <div class="form-group">
+                                                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                                                        <label class="mb-0">{{ __('Meta Description') }}</label>
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-primary listing-ai-field-btn"
+                                                            data-field="meta_description"
+                                                            data-lang="{{ $language->code }}"
+                                                            data-title="{{ __('Meta Description') }}">
+                                                            <i class="fas fa-magic"></i> {{ __('Generate') }}
+                                                        </button>
+                                                    </div>
+                                                    <textarea class="form-control" name="{{ $language->code }}_meta_description" rows="5"
+                                                        placeholder="{{ __('Enter Meta Description') }}"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 @if (is_array($permissions) && in_array('Amenities', $permissions))
@@ -559,7 +527,7 @@
                                                                 value="{{ $amenity->id }}"
                                                                 id="{{ $amenity->id }}">
                                                             <label class="amenities-label mr-2"
-                                                                for="{{ $amenity->id }}">{{ $amenity->getTitle($defaultLang->id) }}</label>
+                                                                for="{{ $amenity->id }}">{{ $amenity->getTitle($language->id) }}</label>
                                                         @endforeach
                                                     </div>
                                                 </div>
@@ -628,12 +596,12 @@
         var getStateUrl = "{{ route('vendor.listing_management.get-state') }}";
         var getCityUrl = "{{ route('vendor.listing_management.get-city') }}";
         var galleryImages = {{ $numberoffImages }};
-        var languages = {!! json_encode($languages) !!};
-        var listingAiLanguages = {!! $languages->map(function ($language) {
-            return ['code' => $language->code];
+        var languages = {!! json_encode($langs) !!};
+        var listingAiLanguages = {!! $langs->map(function ($lang) {
+            return ['code' => $lang->code];
         })->values()->toJson() !!};
         const baseURL = "{{ url('/') }}";
-        var defaultLangCode = '{{ $defaultLang->code }}';
+        var defaultLangCode = '{{ $language->code }}';
     </script>
 
     <script>

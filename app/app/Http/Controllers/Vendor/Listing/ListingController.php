@@ -33,6 +33,7 @@ use App\Models\PaymentGateway\OfflineGateway;
 use App\Models\PaymentGateway\OnlineGateway;
 use App\Models\Vendor;
 use App\Models\Visitor;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -188,11 +189,10 @@ class ListingController extends Controller
         }
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $information = [];
-        $languages = Language::get();
-        $information['languages'] = $languages;
+        $information['language'] = $this->resolveLanguage($request);
         $information['vendors'] = Vendor::get();
         return view('vendors.listing.create', $information);
     }
@@ -345,10 +345,11 @@ class ListingController extends Controller
             return Response::json(['status' => 'error'], 200);
         } elseif ($request->can_listing_add == 1) {
 
+            $language = $this->resolveLanguage($request);
+            $code = $language->code;
+
             $featuredImgURL = $request->feature_image;
             $videoImgURL = $request->video_background_image;
-
-            $languages = Language::all();
 
             $in = $request->all();
 
@@ -401,34 +402,22 @@ class ListingController extends Controller
                 }
             }
 
-            foreach ($languages as $language) {
-                $listingContent = new ListingContent();
-
-                $listingContent->language_id = $language->id;
-                $listingContent->listing_id = $listing->id;
-                $listingContent->title = $request[$language->code . '_title'];
-                $listingContent->slug = Str::slug($request['en_title'] ?: $request[$language->code . '_title']);
-                $listingContent->category_id = $request['category_id'];
-                $listingContent->country_id = $request['country_id'];
-                $listingContent->state_id = $request['state_id'];
-                $listingContent->city_id = $request['city_id'];
-                $listingContent->address = $request[$language->code . '_address'];
-                $listingContent->description = Purifier::clean($request[$language->code . '_description'], 'youtube');
-                $listingContent->meta_keyword = $request[$language->code . '_meta_keyword'];
-                $listingContent->summary = $request[$language->code . '_summary'];
-                $listingContent->meta_description = $request[$language->code . '_meta_description'];
-
-                $listingContent->save();
-            }
-
-            $aminities = $request->input('aminities', []);
-            foreach ($languages as $lang) {
-                $lc = ListingContent::where('listing_id', $listing->id)->where('language_id', $lang->id)->first();
-                if ($lc) {
-                    $lc->aminities = json_encode($aminities);
-                    $lc->save();
-                }
-            }
+            $listingContent = new ListingContent();
+            $listingContent->language_id = $language->id;
+            $listingContent->listing_id = $listing->id;
+            $listingContent->title = $request[$code . '_title'];
+            $listingContent->slug = Str::slug($request['en_title'] ?: $request[$code . '_title']);
+            $listingContent->category_id = $request['category_id'];
+            $listingContent->country_id = $request['country_id'];
+            $listingContent->state_id = $request['state_id'];
+            $listingContent->city_id = $request['city_id'];
+            $listingContent->address = $request[$code . '_address'];
+            $listingContent->description = Purifier::clean($request[$code . '_description'], 'youtube');
+            $listingContent->meta_keyword = $request[$code . '_meta_keyword'];
+            $listingContent->summary = $request[$code . '_summary'];
+            $listingContent->meta_description = $request[$code . '_meta_description'];
+            $listingContent->aminities = json_encode($request->input('aminities', []));
+            $listingContent->save();
 
             //adding business hours
             $days = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -631,21 +620,23 @@ Thank you for your attention to this matter.";
         return Response::json(['status' => 'success'], 200);
     }
 
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
         $vendorId = Auth::guard('vendor')->user()->id;
-        $defaultLang = Language::query()->where('is_default', 1)->first();
         $current_package = VendorPermissionHelper::packagePermission($vendorId);
 
         if ($current_package != '[]') {
-            $information['listing'] = Listing::with('galleries')->where('vendor_id', '=', Auth::guard('vendor')->user()->id)->findOrFail($id);
-            $information['languages'] = Language::all();
+            $language = $this->resolveLanguage($request);
+            $listing = Listing::with('galleries')->where('vendor_id', '=', Auth::guard('vendor')->user()->id)->findOrFail($id);
+            $information['listing'] = $listing;
+            $information['language'] = $language;
+            $information['listingContent'] = ListingContent::where([
+                ['listing_id', $id],
+                ['language_id', $language->id],
+            ])->first();
             $information['listingAddress'] = ListingContent::where([
-                ['language_id', $defaultLang->id],
-                [
-                    'listing_id',
-                    $id
-                ]
+                ['language_id', $language->id],
+                ['listing_id', $id],
             ])->pluck('address')->first();
             return view('vendors.listing.edit', $information);
         } else {
@@ -685,7 +676,8 @@ Thank you for your attention to this matter.";
             ];
         }
 
-        $languages = Language::all();
+        $language = $this->resolveLanguage($request);
+        $code = $language->code;
 
         $in = $request->all();
         $listing = Listing::findOrFail($request->listing_id);
@@ -739,34 +731,24 @@ Thank you for your attention to this matter.";
         }
 
 
-        foreach ($languages as $language) {
-            $listingContent =  ListingContent::where('listing_id', $request->listing_id)->where('language_id', $language->id)->first();
-            if (empty($listingContent)) {
-                $listingContent = new ListingContent();
-            }
-            $listingContent->language_id = $language->id;
-            $listingContent->title = $request[$language->code . '_title'];
-            $listingContent->slug = createSlug($request[$language->code . '_title']);
-            $listingContent->category_id = $request['category_id'];
-            $listingContent->country_id = $request['country_id'];
-            $listingContent->state_id = $request['state_id'];
-            $listingContent->city_id = $request['city_id'];
-            $listingContent->address = $request[$language->code . '_address'];
-            $listingContent->description = Purifier::clean($request[$language->code . '_description'], 'youtube');
-            $listingContent->meta_keyword = $request[$language->code . '_meta_keyword'];
-            $listingContent->summary = $request[$language->code . '_summary'];
-            $listingContent->meta_description = $request[$language->code . '_meta_description'];
-            $listingContent->save();
+        $listingContent = ListingContent::where('listing_id', $request->listing_id)->where('language_id', $language->id)->first();
+        if (empty($listingContent)) {
+            $listingContent = new ListingContent();
         }
-
-        $aminities = $request->input('aminities', []);
-        foreach ($languages as $lang) {
-            $lc = ListingContent::where('listing_id', $id)->where('language_id', $lang->id)->first();
-            if ($lc) {
-                $lc->aminities = json_encode($aminities);
-                $lc->save();
-            }
-        }
+        $listingContent->language_id = $language->id;
+        $listingContent->title = $request[$code . '_title'];
+        $listingContent->slug = createSlug($request[$code . '_title']);
+        $listingContent->category_id = $request['category_id'];
+        $listingContent->country_id = $request['country_id'];
+        $listingContent->state_id = $request['state_id'];
+        $listingContent->city_id = $request['city_id'];
+        $listingContent->address = $request[$code . '_address'];
+        $listingContent->description = Purifier::clean($request[$code . '_description'], 'youtube');
+        $listingContent->meta_keyword = $request[$code . '_meta_keyword'];
+        $listingContent->summary = $request[$code . '_summary'];
+        $listingContent->meta_description = $request[$code . '_meta_description'];
+        $listingContent->aminities = json_encode($request->input('aminities', []));
+        $listingContent->save();
 
         Session::flash('success', __('Listing Updated successfully') . '!');
 
@@ -1481,5 +1463,15 @@ Thank you for your attention to this matter.";
         ]);
     }
 
+    private function resolveLanguage(Request $request): Language
+    {
+        if ($request->filled('language')) {
+            $lang = Language::where('code', $request->language)->first();
+            if ($lang) {
+                return $lang;
+            }
+        }
+        return Language::where('is_default', 1)->first() ?? Language::first();
+    }
 
 }

@@ -322,28 +322,24 @@
                 </div>
 
                 @php
-                  $defaultLang = $languages->firstWhere('is_default', 1);
-                  $defaultListingContent = App\Models\Listing\ListingContent::where('listing_id', $listing->id)
-                      ->where('language_id', $defaultLang->id)
-                      ->first();
                   $category = App\Models\ListingCategory::where([
-                      ['id', $defaultListingContent->category_id ?? 0],
+                      ['id', $listingContent->category_id ?? 0],
                       ['status', 1],
                   ])->first();
                 @endphp
 
-                <input type="hidden" id="current_country_id" value="{{ $defaultListingContent->country_id ?? '' }}">
-                <input type="hidden" id="current_state_id" value="{{ $defaultListingContent->state_id ?? '' }}">
-                <input type="hidden" id="current_city_id" value="{{ $defaultListingContent->city_id ?? '' }}">
+                <input type="hidden" id="current_country_id" value="{{ $listingContent->country_id ?? '' }}">
+                <input type="hidden" id="current_state_id" value="{{ $listingContent->state_id ?? '' }}">
+                <input type="hidden" id="current_city_id" value="{{ $listingContent->city_id ?? '' }}">
 
                 <div class="row">
                   <div class="col-lg-4">
                     <div class="form-group">
                       <label>{{ __('Category') . '*' }} </label>
                       <select name="category_id"
-                        data-code="{{ $defaultLang->code }}"
+                        data-code="{{ $language->code }}"
                         class="form-control js-example-basic-single2">
-                        <option selected value="{{ $defaultListingContent->category_id ?? '' }}">{{ $category ? $category->getName($defaultLang->id) : '' }}</option>
+                        <option selected value="{{ $listingContent->category_id ?? '' }}">{{ $category ? $category->getName($language->id) : '' }}</option>
                       </select>
                     </div>
                   </div>
@@ -352,11 +348,11 @@
                       <label>{{ __('Country') . '*' }}</label>
                       <select name="country_id" class="form-control" id="listing_country_id">
                         @php
-                          $currentCountry = $defaultListingContent->country_id ? App\Models\Location\CountryContent::where('country_id', $defaultListingContent->country_id)->where('language_id', $defaultLang->id)->select('name')->first() : null;
+                          $currentCountry = $listingContent->country_id ? App\Models\Location\CountryContent::where('country_id', $listingContent->country_id)->where('language_id', $language->id)->select('name')->first() : null;
                         @endphp
                         <option value="">{{ __('Select a Country') }}</option>
                         @if ($currentCountry)
-                          <option value="{{ $defaultListingContent->country_id }}" selected>{{ $currentCountry->name }}</option>
+                          <option value="{{ $listingContent->country_id }}" selected>{{ $currentCountry->name }}</option>
                         @endif
                       </select>
                     </div>
@@ -379,159 +375,134 @@
                   </div>
                 </div>
 
-                <div id="accordion" class="mt-3">
-                  @foreach ($languages as $language)
-                    @php
-                      $listingContent = App\Models\Listing\ListingContent::where('listing_id', $listing->id)
-                          ->where('language_id', $language->id)
-                          ->first();
-                    @endphp
-                    <div class="version">
-                      <div class="version-header" id="heading{{ $language->id }}">
-                        <h5 class="mb-0">
-                          <button type="button" class="btn btn-link" data-toggle="collapse"
-                            data-target="#collapse{{ $language->id }}"
-                            aria-expanded="{{ $language->is_default == 1 ? 'true' : 'false' }}"
-                            aria-controls="collapse{{ $language->id }}">
-                            {{ $language->name }} {{ $language->is_default == 1 ? '(' . __('Default') . ')' : '' }}
-                          </button>
-                        </h5>
-                      </div>
-
-                      <div id="collapse{{ $language->id }}"
-                        class="collapse {{ $language->is_default == 1 ? 'show' : '' }}"
-                        aria-labelledby="heading{{ $language->id }}" data-parent="#accordion">
-                        <div class="version-body {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                          <div class="row">
-                            <div class="col-lg-6">
-                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
-                                  <label class="mb-0">{{ __('Title') . '*' }}</label>
-                                  <button type="button"
-                                    class="btn btn-sm btn-primary listing-ai-field-btn"
-                                    data-field="title" data-lang="{{ $language->code }}"
-                                    data-title="{{ __('Title') }}">
-                                    <i class="fas fa-magic"></i> {{ __('Generate') }}
-                                  </button>
-                                </div>
-                                <input type="text" class="form-control" name="{{ $language->code }}_title"
-                                  placeholder="{{ __('Enter Title') }}"
-                                  value="{{ $listingContent ? $listingContent->title : '' }}">
-                              </div>
-                            </div>
-
-                            <div class="col-lg-12">
-                              <div class="form-group">
-                                <label>{{ __('Address') . '*' }}</label>
-                                <input type="text" class="form-control"
-                                  name="{{ $language->code }}_address"
-                                  placeholder="{{ __('Enter Address') }}"
-                                  value="{{ $listingContent ? $listingContent->address : '' }}">
-                                @if ($language->is_default == 1 && $settings->google_map_api_key_status == 1)
-                                  <a href="" class="btn btn-secondary mt-2 btn-sm" data-toggle="modal"
-                                    data-target="#GoogleMapModal">
-                                    <i class="fas fa-eye"></i> {{ __('Show Map') }}
-                                  </a>
-                                @endif
-                              </div>
-                            </div>
-
-                          </div>
-
-                          <div class="row">
-                            <div class="col-lg-12">
-                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
-                                  <label class="mb-0">{{ __('Description') . '*' }}</label>
-                                  <button type="button"
-                                    class="btn btn-sm btn-primary listing-ai-field-btn"
-                                    data-field="description" data-lang="{{ $language->code }}"
-                                    data-title="{{ __('Description') }}">
-                                    <i class="fas fa-magic"></i> {{ __('Generate') }}
-                                  </button>
-                                </div>
-                                <textarea id="{{ $language->code }}_description" class="form-control summernote"
-                                  name="{{ $language->code }}_description" data-height="300">{{ @$listingContent->description }}</textarea>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div class="row">
-                            <div class="col-lg-12">
-                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
-                                  <label class="mb-0">{{ __('Meta Keywords') }}</label>
-                                  <button type="button"
-                                    class="btn btn-sm btn-primary listing-ai-field-btn"
-                                    data-field="meta_keywords" data-lang="{{ $language->code }}"
-                                    data-title="{{ __('Meta Keywords') }}">
-                                    <i class="fas fa-magic"></i> {{ __('Generate') }}
-                                  </button>
-                                </div>
-                                <input class="form-control"
-                                  name="{{ $language->code }}_meta_keyword"
-                                  placeholder="{{ __('Enter Meta Keywords') }}"
-                                  data-role="tagsinput"
-                                  value="{{ $listingContent ? @$listingContent->meta_keyword : '' }}">
-                              </div>
-                            </div>
-                          </div>
-
-                          <div class="row">
-                            <div class="col-lg-12">
-                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
-                                  <label class="mb-0">{{ __('Summary') }}</label>
-                                  <button type="button"
-                                    class="btn btn-sm btn-primary listing-ai-field-btn"
-                                    data-field="summary" data-lang="{{ $language->code }}"
-                                    data-title="{{ __('Summary') }}">
-                                    <i class="fas fa-magic"></i> {{ __('Generate') }}
-                                  </button>
-                                </div>
-                                <textarea class="form-control" name="{{ $language->code }}_summary" data-height="300">{{ @$listingContent->summary }}</textarea>
-                              </div>
-                            </div>
-                            <div class="col-lg-12">
-                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
-                                  <label class="mb-0">{{ __('Meta Description') }}</label>
-                                  <button type="button"
-                                    class="btn btn-sm btn-primary listing-ai-field-btn"
-                                    data-field="meta_description" data-lang="{{ $language->code }}"
-                                    data-title="{{ __('Meta Description') }}">
-                                    <i class="fas fa-magic"></i> {{ __('Generate') }}
-                                  </button>
-                                </div>
-                                <textarea class="form-control" name="{{ $language->code }}_meta_description" rows="5"
-                                  placeholder="{{ __('Enter Meta Description') }}">{{ $listingContent ? @$listingContent->meta_description : '' }}</textarea>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div class="row">
-                            <div class="col-lg-12">
-                              @php $currLang = $language; @endphp
-                              @foreach ($languages as $language)
-                                @continue($language->id == $currLang->id)
-                                <div class="form-check py-0">
-                                  <label class="form-check-label">
-                                    <input class="form-check-input" type="checkbox"
-                                      onchange="cloneInput('collapse{{ $currLang->id }}', 'collapse{{ $language->id }}', event)">
-                                    <span
-                                      class="form-check-sign">{{ __('Clone for') }}
-                                      <strong
-                                        class="text-capitalize text-secondary">{{ $language->name }}</strong>
-                                      {{ __('language') }}</span>
-                                  </label>
-                                </div>
-                              @endforeach
-                            </div>
-                          </div>
+                <div class="row mb-3">
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            <label>{{ __('Language') }}</label>
+                            <select class="form-control" name="language"
+                                onchange="window.location='{{ url()->current() }}?language=' + this.value">
+                                @foreach ($langs as $lang)
+                                    <option value="{{ $lang->code }}" {{ $lang->id == $language->id ? 'selected' : '' }}>
+                                        {{ $lang->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
-                      </div>
                     </div>
-                  @endforeach
+                </div>
+
+                <div class="card border mb-3">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">{{ $language->name }} {{ $language->is_default == 1 ? '(' . __('Default') . ')' : '' }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                                        <label class="mb-0">{{ __('Title') . '*' }}</label>
+                                        <button type="button"
+                                            class="btn btn-sm btn-primary listing-ai-field-btn"
+                                            data-field="title" data-lang="{{ $language->code }}"
+                                            data-title="{{ __('Title') }}">
+                                            <i class="fas fa-magic"></i> {{ __('Generate') }}
+                                        </button>
+                                    </div>
+                                    <input type="text" class="form-control"
+                                        name="{{ $language->code }}_title"
+                                        placeholder="{{ __('Enter Title') }}"
+                                        value="{{ $listingContent ? $listingContent->title : '' }}">
+                                </div>
+                            </div>
+
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <label>{{ __('Address') . '*' }}</label>
+                                    <input type="text" class="form-control"
+                                        name="{{ $language->code }}_address"
+                                        placeholder="{{ __('Enter Address') }}"
+                                        value="{{ $listingContent ? $listingContent->address : '' }}">
+                                    @if ($language->is_default == 1 && $settings->google_map_api_key_status == 1)
+                                        <a href="" class="btn btn-secondary mt-2 btn-sm" data-toggle="modal"
+                                            data-target="#GoogleMapModal">
+                                            <i class="fas fa-eye"></i> {{ __('Show Map') }}
+                                        </a>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                                        <label class="mb-0">{{ __('Description') . '*' }}</label>
+                                        <button type="button"
+                                            class="btn btn-sm btn-primary listing-ai-field-btn"
+                                            data-field="description" data-lang="{{ $language->code }}"
+                                            data-title="{{ __('Description') }}">
+                                            <i class="fas fa-magic"></i> {{ __('Generate') }}
+                                        </button>
+                                    </div>
+                                    <textarea id="{{ $language->code }}_description" class="form-control summernote"
+                                        name="{{ $language->code }}_description" data-height="300">{{ @$listingContent->description }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                                        <label class="mb-0">{{ __('Meta Keywords') }}</label>
+                                        <button type="button"
+                                            class="btn btn-sm btn-primary listing-ai-field-btn"
+                                            data-field="meta_keywords" data-lang="{{ $language->code }}"
+                                            data-title="{{ __('Meta Keywords') }}">
+                                            <i class="fas fa-magic"></i> {{ __('Generate') }}
+                                        </button>
+                                    </div>
+                                    <input class="form-control"
+                                        name="{{ $language->code }}_meta_keyword"
+                                        placeholder="{{ __('Enter Meta Keywords') }}"
+                                        data-role="tagsinput"
+                                        value="{{ $listingContent ? @$listingContent->meta_keyword : '' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                                        <label class="mb-0">{{ __('Summary') }}</label>
+                                        <button type="button"
+                                            class="btn btn-sm btn-primary listing-ai-field-btn"
+                                            data-field="summary" data-lang="{{ $language->code }}"
+                                            data-title="{{ __('Summary') }}">
+                                            <i class="fas fa-magic"></i> {{ __('Generate') }}
+                                        </button>
+                                    </div>
+                                    <textarea class="form-control" name="{{ $language->code }}_summary" data-height="300">{{ @$listingContent->summary }}</textarea>
+                                </div>
+                            </div>
+                            <div class="col-lg-12">
+                                <div class="form-group">
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                                        <label class="mb-0">{{ __('Meta Description') }}</label>
+                                        <button type="button"
+                                            class="btn btn-sm btn-primary listing-ai-field-btn"
+                                            data-field="meta_description" data-lang="{{ $language->code }}"
+                                            data-title="{{ __('Meta Description') }}">
+                                            <i class="fas fa-magic"></i> {{ __('Generate') }}
+                                        </button>
+                                    </div>
+                                    <textarea class="form-control" name="{{ $language->code }}_meta_description" rows="5"
+                                        placeholder="{{ __('Enter Meta Description') }}">{{ $listingContent ? @$listingContent->meta_description : '' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 @if (is_array($permissions) && in_array('Amenities', $permissions))
@@ -544,8 +515,8 @@
                                 <div class="col-lg-12">
                                     @php
                                         $aminities = App\Models\Aminite::with('contents')->get();
-                                        $hasaminitie = $defaultListingContent
-                                            ? json_decode($defaultListingContent->aminities)
+                                        $hasaminitie = $listingContent
+                                            ? json_decode($listingContent->aminities)
                                             : [];
                                     @endphp
                                     <div class="dropdown-content" id="checkboxes">
@@ -556,7 +527,7 @@
                                                 id="{{ $amenity->id }}"
                                                 {{ $hasaminitie && in_array($amenity->id, $hasaminitie) ? 'checked' : '' }}>
                                             <label class="amenities-label mr-2"
-                                                for="{{ $amenity->id }}">{{ $amenity->getTitle($defaultLang->id) }}</label>
+                                                for="{{ $amenity->id }}">{{ $amenity->getTitle($language->id) }}</label>
                                         @endforeach
                                     </div>
                                 </div>
@@ -629,13 +600,13 @@
     var featureRmvUrl = "{{ route('vendor.listing_management.feature_delete') }}"
     var updateAminitie = "{{ route('vendor.listing_management.update_aminitie') }}"
     var galleryImages = {{ $current_package->number_of_images_per_listing - count($listing->galleries) }};
-    var languages = {!! json_encode($languages) !!};
-    var listingAiLanguages = {!! $languages->map(function ($language) {
-        return ['code' => $language->code];
+    var languages = {!! json_encode($langs) !!};
+    var listingAiLanguages = {!! $langs->map(function ($lang) {
+        return ['code' => $lang->code];
     })->values()->toJson() !!};
     const baseURL = "{{ url('/') }}";
     var address = "{{ $listingAddress }}";
-    var defaultLangCode = '{{ $defaultLang->code }}';
+    var defaultLangCode = '{{ $language->code }}';
   </script>
 
   <script type="text/javascript" src="{{ asset('assets/admin/js/feature.js') }}"></script>
