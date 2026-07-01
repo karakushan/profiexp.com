@@ -8,9 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('page_headings', function (Blueprint $table) {
-            $table->dropColumn('home_page_title');
-        });
+        if (Schema::hasColumn('page_headings', 'home_page_title')) {
+            Schema::table('page_headings', function (Blueprint $table) {
+                $table->dropColumn('home_page_title');
+            });
+        }
 
         Schema::table('seos', function (Blueprint $table) {
             $table->string('meta_title_home')->nullable()->after('id');
@@ -26,7 +28,7 @@ return new class extends Migration
             $table->string('meta_title_vendor_signup')->nullable()->after('meta_description_forget_password');
             $table->string('meta_title_vendor_login')->nullable()->after('meta_descriptions_vendor_forget_password');
             $table->string('meta_title_vendor_forget_password')->nullable()->after('meta_descriptions_vendor_forget_password');
-            $table->string('meta_title_vendor_page')->nullable()->after('meta_description_vendor_forget_password');
+            $table->string('meta_title_vendor_page')->nullable()->after('meta_descriptions_vendor_forget_password');
             $table->string('meta_title_about_page')->nullable()->after('meta_description_vendor_page');
         });
     }
