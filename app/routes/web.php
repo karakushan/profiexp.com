@@ -223,6 +223,8 @@ Route::prefix('/user')->middleware(['auth:web', 'account.status', 'change.lang']
 Route::get('/sitemap.xml', 'FrontEnd\SitemapController@index');
 Route::get('/sitemap/listings.xml', 'FrontEnd\SitemapController@listings');
 Route::get('/sitemap/categories.xml', 'FrontEnd\SitemapController@categories');
+Route::get('/sitemap/blog-posts.xml', 'FrontEnd\SitemapController@blogPosts');
+Route::get('/sitemap/blog-categories.xml', 'FrontEnd\SitemapController@blogCategories');
 
 // service unavailable route
 Route::get('/service-unavailable', 'FrontEnd\MiscellaneousController@serviceUnavailable')->name('service_unavailable')->middleware('exists.down');
