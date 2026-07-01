@@ -97,7 +97,7 @@
     position: absolute;
     top: calc(100% - 16px);
     left: 0;
-    z-index: 99;
+    z-index: 999;
     opacity: 0;
     width: 200px;
     display: block;
