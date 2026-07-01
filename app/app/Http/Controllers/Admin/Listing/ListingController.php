@@ -982,8 +982,8 @@ class ListingController extends Controller
 
             $businessHours->save();
         }
-        Session::flash('success', __('Business Hours Updated successfully') . '!');
-        return back();
+        Session::flash('success', __('Listing Updated successfully') . '!');
+        return Response::json(['status' => 'success'], 200);
     }
 
     public function delete($id)
