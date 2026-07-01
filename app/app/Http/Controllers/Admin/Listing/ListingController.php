@@ -1154,8 +1154,9 @@ class ListingController extends Controller
 
         $information['features'] = $listing->specifications()->with('contents')->get();
         $information['id'] = $id;
+        $information['listing_id'] = $id;
 
-        return view('admin.listing.specification.index', $information);
+        return view('admin.listing.feature', $information);
     }
 
     public function updateAdditionalSpecification(Request $request, $id)
