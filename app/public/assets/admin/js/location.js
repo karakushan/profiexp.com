@@ -1,67 +1,68 @@
 "use strict";
-$(document).ready(function () {
-  $('select[name="m_language_id"]').on('change', function () {
-    var selectedLanguageId = $(this).val();
+function loadCountries(languageId) {
+  var countrySelect = $('select[name="country_id"]');
+  countrySelect.empty();
+  var StateSelect = $('select[name="state_id"]');
+  StateSelect.empty();
 
-    var countrySelect = $('select[name="country_id"]');
-    countrySelect.empty();
-    var StateSelect = $('select[name="state_id"]');
-    StateSelect.empty();
-
-
-    if (selectedLanguageId) {
-      $.ajax({
-        url: baseUrl + 'admin/listing-specification/location/get-country/' + selectedLanguageId,
-        type: 'GET',
-        data: { language_id: selectedLanguageId },
-        success: function (response) {
-
-
-          if (response.countries && response.countries.length > 0) {
-            $('#hide_country').removeClass('d-none');
-            $('#hide_state').addClass('d-none');
+  if (languageId) {
+    $.ajax({
+      url: baseUrl + 'admin/listing-specification/location/get-country/' + languageId,
+      type: 'GET',
+      data: { language_id: languageId },
+      success: function (response) {
+        if (response.countries && response.countries.length > 0) {
+          $('#hide_country').removeClass('d-none');
+          $('#hide_state').addClass('d-none');
+          countrySelect.append($('<option>', {
+            value: '',
+            text: Selectacountry,
+            disabled: false,
+            selected: true
+          }));
+          $.each(response.countries, function (index, country) {
             countrySelect.append($('<option>', {
+              value: country.id,
+              text: country.name
+            }));
+          });
+        } else {
+          $('#hide_country').addClass('d-none');
+          if (response.states && response.states.length > 0) {
+            $('#hide_state').removeClass('d-none');
+            StateSelect.append($('<option>', {
               value: '',
-              text: Selectacountry,
-              disabled: false,
+              text: Selectastate,
+              disabled: true,
               selected: true
             }));
-
-            $.each(response.countries, function (index, country) {
-              countrySelect.append($('<option>', {
-                value: country.id,
-                text: country.name
+            $.each(response.states, function (index, state) {
+              StateSelect.append($('<option>', {
+                value: state.id,
+                text: state.name
               }));
             });
           } else {
-            $('#hide_country').addClass('d-none');
-            if (response.states && response.states.length > 0) {
-              $('#hide_state').removeClass('d-none');
-              StateSelect.append($('<option>', {
-                value: '',
-                text: Selectastate,
-                disabled: true,
-                selected: true
-              }));
-
-              // Add other options from the response
-              $.each(response.states, function (index, state) {
-                StateSelect.append($('<option>', {
-                  value: state.id,
-                  text: state.name
-                }));
-              });
-            } else {
-              $('#hide_state').addClass('d-none');
-            }
+            $('#hide_state').addClass('d-none');
           }
-
-        },
-        error: function () {
-          console.error('Error fetching Countries');
         }
-      });
+      },
+      error: function () {
+        console.error('Error fetching Countries');
+      }
+    });
+  }
+}
+
+$(document).ready(function () {
+  $('#createModal').on('shown.bs.modal', function () {
+    if (typeof currentLangId !== 'undefined' && currentLangId) {
+      loadCountries(currentLangId);
     }
+  });
+
+  $('select[name="m_language_id"]').on('change', function () {
+    loadCountries($(this).val());
   });
 
   $('#country_id').on('change', function () {

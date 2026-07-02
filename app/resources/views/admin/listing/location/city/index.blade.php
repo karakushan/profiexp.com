@@ -166,6 +166,7 @@
     "use strict";
     const baseURL = "{{ url('/') }}";
     var cityImageRmvUrl = "{{ route('admin.listing_specification.location.city.remove.image') }}";
+    var currentLangId = {{ $language->id }};
   </script>
   <script src="{{ asset('assets/admin/js/location.js') }}"></script>
 @endsection
