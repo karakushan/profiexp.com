@@ -49,13 +49,13 @@
                             <tr>
                               <td>#{{ $loop->iteration }}</td>
                               <td class="title"><a
-                                  href="{{ route('frontend.listing.details', ['slug' => $content->slug, 'id' => $item->listing_id]) }}"
+                                  href="{{ listing_url($content->slug, current_front_locale()) }}"
                                   target="_blank">
                                   {{ strlen(@$content->title) > 50 ? mb_substr(@$content->title, 0, 50, 'utf-8') . '...' : @$content->title }}
                                 </a>
                               </td>
                               <td>
-                                <a href="{{ route('frontend.listing.details', [$content->slug, $item->listing_id]) }}"
+                                <a href="{{ listing_url($content->slug, current_front_locale()) }}"
                                   class="btn icon-start"target="_blank">
                                   <i class="fas fa-eye"></i>
                                   {{ __('View') }}

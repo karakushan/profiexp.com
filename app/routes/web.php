@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 
-Route::get('/profile', 'FrontEnd\ProfileContoller@index')->name('profile');
+Route::get('/change-language', 'FrontEnd\MiscellaneousController@changeLanguage')->name('change_language');
+
 Route::post('/push-notification/store-endpoint', 'FrontEnd\PushNotificationController@store');
 
 // cron job for sending expiry mail
@@ -21,8 +22,6 @@ Route::get('/translate-locations', \App\Http\Controllers\Cron\TranslateLocations
 Route::get('/translate-blog-categories', \App\Http\Controllers\Cron\TranslateBlogCategoriesController::class);
 Route::get('/translate-blogs', \App\Http\Controllers\Cron\TranslateBlogsController::class);
 
-Route::get('/change-language', 'FrontEnd\MiscellaneousController@changeLanguage')->name('change_language');
-
 Route::post('/store-subscriber', 'FrontEnd\MiscellaneousController@storeSubscriber')->name('store_subscriber');
 
 Route::get('myfatoorah/callback', 'FrontEnd\HomeController@myfatoorah_callback')->name('myfatoorah_callback');
@@ -32,9 +31,13 @@ Route::get('/midtrans/bank-notify', 'MidtransBankController@bankNotify')->name('
 Route::get('midtrans/cancel', 'MidtransBankController@cancelPayment')->name('midtrans.cancel');
 
 
-Route::get('/offline', 'FrontEnd\HomeController@offline')->middleware('change.lang');
+Route::prefix('{lang?}')
+  ->where(['lang' => '[A-Za-z]{2}'])
+  ->middleware('change.lang')
+  ->group(function () {
+  Route::get('/profile', 'FrontEnd\ProfileContoller@index')->name('profile');
+  Route::get('/offline', 'FrontEnd\HomeController@offline');
 
-Route::middleware('change.lang')->group(function () {
   //get more categories route
   Route::get('get-more-categories', 'FrontEnd\ListingContoller@moreCategories');
   Route::get('get-home-categories', 'FrontEnd\ListingContoller@homeCategories')->name('frontend.get_home_categories');
@@ -54,8 +57,7 @@ Route::middleware('change.lang')->group(function () {
     Route::post('/get-cities', 'FrontEnd\ListingContoller@getCity')->name('frontend.listings.get-city');
     Route::get('/get-address', 'FrontEnd\ListingContoller@getAddress')->name('frontend.listings.get-address');
 
-
-    Route::get('/{slug}/{id}', 'FrontEnd\ListingContoller@details')->name('frontend.listing.details');
+    Route::get('/{slug}', 'FrontEnd\ListingContoller@showBySlug')->name('frontend.listing.details');
     Route::post('/listing-review/{id}/store-review', 'FrontEnd\ListingContoller@storeReview')->name('listing.listing_details.store_review');
     Route::get('/store-visitor', 'FrontEnd\ListingContoller@store_visitor')->name('frontend.store_visitor');
     Route::get('addto/wishlist/{id}', 'FrontEnd\UserController@add_to_wishlist')->name('addto.wishlist');
@@ -132,7 +134,7 @@ Route::middleware('change.lang')->group(function () {
 
   Route::prefix('/blog')->group(function () {
     Route::get('', 'FrontEnd\BlogController@index')->name('blog');
-
+    Route::get('/category/{slug}', 'FrontEnd\BlogController@category')->name('blog.category');
     Route::get('/{slug}',  'FrontEnd\BlogController@details')->name('blog.details');
   });
 
@@ -147,7 +149,7 @@ Route::middleware('change.lang')->group(function () {
 
 Route::post('/advertisement/{id}/count-view', 'FrontEnd\MiscellaneousController@countAdView');
 
-Route::prefix('login')->middleware(['guest:web', 'change.lang'])->group(function () {
+Route::prefix('{lang?}/login')->where(['lang' => '[A-Za-z]{2}'])->middleware(['guest:web', 'change.lang'])->group(function () {
   // user login via facebook route
   Route::prefix('/user/facebook')->group(function () {
     Route::get('', 'FrontEnd\UserController@redirectToFacebook')->name('user.login.facebook');
@@ -163,7 +165,7 @@ Route::prefix('login')->middleware(['guest:web', 'change.lang'])->group(function
   });
 });
 
-Route::prefix('/user')->middleware(['guest:web', 'change.lang'])->group(function () {
+Route::prefix('{lang?}/user')->where(['lang' => '[A-Za-z]{2}'])->middleware(['guest:web', 'change.lang'])->group(function () {
   Route::prefix('/login')->group(function () {
     // user redirect to login page route
     Route::get('', 'FrontEnd\UserController@login')->name('user.login');
@@ -194,7 +196,7 @@ Route::prefix('/user')->middleware(['guest:web', 'change.lang'])->group(function
   Route::get('/signup-verify/{token}', 'FrontEnd\UserController@signupVerify');
 });
 
-Route::prefix('/user')->middleware(['auth:web', 'account.status', 'change.lang'])->group(function () {
+Route::prefix('{lang?}/user')->where(['lang' => '[A-Za-z]{2}'])->middleware(['auth:web', 'account.status', 'change.lang'])->group(function () {
   // user redirect to dashboard route
   Route::get('/dashboard', 'FrontEnd\UserController@redirectToDashboard')->name('user.dashboard');
   Route::get('/wishlist', 'FrontEnd\UserController@wishlist')->name('user.wishlist');
@@ -225,6 +227,8 @@ Route::get('/sitemap/listings.xml', 'FrontEnd\SitemapController@listings');
 Route::get('/sitemap/categories.xml', 'FrontEnd\SitemapController@categories');
 Route::get('/sitemap/blog-posts.xml', 'FrontEnd\SitemapController@blogPosts');
 Route::get('/sitemap/blog-categories.xml', 'FrontEnd\SitemapController@blogCategories');
+Route::get('/sitemap/pages.xml', 'FrontEnd\SitemapController@pages');
+Route::get('/sitemap/static-pages.xml', 'FrontEnd\SitemapController@staticPages');
 
 // service unavailable route
 Route::get('/service-unavailable', 'FrontEnd\MiscellaneousController@serviceUnavailable')->name('service_unavailable')->middleware('exists.down');
@@ -249,14 +253,15 @@ Route::prefix('/admin')->middleware('guest:admin')->group(function () {
   Route::post('/mail-for-forget-password', 'Admin\AdminController@forgetPasswordMail')->name('admin.mail_for_forget_password');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Custom Page Route For UI
-|--------------------------------------------------------------------------
-*/
-Route::get('/{slug}', 'FrontEnd\PageController@page')->name('dynamic_page')->middleware('change.lang');
+Route::get('/listings/{slug}/{id}', 'FrontEnd\ListingContoller@details')->name('frontend.listing.details.legacy');
+Route::prefix('{lang?}')
+  ->where(['lang' => '[A-Za-z]{2}'])
+  ->middleware('change.lang')
+  ->group(function () {
+    Route::get('/{slug}', 'FrontEnd\PageController@page')->name('dynamic_page');
+  });
 
 // fallback route
 Route::fallback(function () {
   return view('errors.404');
-})->middleware('change.lang');
+});

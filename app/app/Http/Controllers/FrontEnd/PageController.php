@@ -17,7 +17,9 @@ class PageController extends Controller
 
     $information['bgImg'] = $misc->getBreadcrumb();
 
-    $id = PageContent::Where('slug', $slug)->firstorFail();
+    $id = PageContent::where('language_id', $language->id)
+      ->where('slug', $slug)
+      ->firstOrFail();
 
     $information['pageInfo'] = Page::join('page_contents', 'pages.id', '=', 'page_contents.page_id')
       ->where('pages.status', '=', 1)

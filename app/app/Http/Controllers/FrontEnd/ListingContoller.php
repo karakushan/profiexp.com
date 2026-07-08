@@ -136,6 +136,26 @@ class ListingContoller extends Controller
     $view = Basic::query()->pluck('listing_view')->first();
     $misc = new MiscellaneousController();
     $language = $misc->getLanguage();
+    $allowedKeys = ['category_id', 'page', 'view'];
+
+    if ($request->filled('category_id') && !$request->attributes->get('skip_redirect') && collect(array_keys($request->query()))->diff($allowedKeys)->isEmpty()) {
+      $category = ListingCategory::query()->active()->find((int) $request->category_id);
+      $categorySlug = $category?->getSlug($language->id);
+
+      if (!empty($categorySlug)) {
+        $redirectParams = ['lang' => $language->code, 'slug' => $categorySlug];
+
+        if ($request->filled('page')) {
+          $redirectParams['page'] = $request->page;
+        }
+
+        if ($request->filled('view')) {
+          $redirectParams['view'] = $request->view;
+        }
+
+        return redirect()->to(listing_category_url($category, $language->code) . $this->buildCategoryQueryString($request), 301);
+      }
+    }
 
     $information['bgImg'] = $misc->getBreadcrumb();
 
@@ -1680,13 +1700,50 @@ class ListingContoller extends Controller
     return $result;
   }
 
+  public function showBySlug(Request $request, $lang, $slug)
+  {
+    $misc = new MiscellaneousController();
+    $language = $misc->getLanguage();
+
+    $listingContent = ListingContent::query()
+      ->where('language_id', $language->id)
+      ->where('slug', $slug)
+      ->first();
+
+    if ($listingContent) {
+      $request->route()->action['as'] = 'frontend.listing.details';
+      return $this->renderDetails($listingContent->listing_id, $language);
+    }
+
+    $category = ListingCategory::query()->active()->bySlug($language->id, $slug)->first();
+
+    if ($category) {
+      $request->route()->action['as'] = 'frontend.listings.category';
+      $request->merge(['category_id' => $category->id]);
+      $request->attributes->set('skip_redirect', true);
+
+      return $this->index($request);
+    }
+
+    abort(404);
+  }
+
   public function details($slug, $id)
   {
     $misc = new MiscellaneousController();
-
-    $vendorId = Listing::where('id', $id)->pluck('vendor_id')->first();
-
     $language = $misc->getLanguage();
+    $listingContent = ListingContent::query()
+      ->where('language_id', $language->id)
+      ->where('listing_id', $id)
+      ->firstOrFail();
+
+    return redirect()->to(listing_url($listingContent->slug, $language->code), 301);
+  }
+
+  private function renderDetails(int $listingId, $language)
+  {
+    $misc = new MiscellaneousController();
+    $vendorId = Listing::where('id', $listingId)->pluck('vendor_id')->first();
     $information['bs'] = Basic::query()->select('google_recaptcha_status', 'facebook_login_status', 'google_login_status')->first();
 
     $listing = Listing::with(['listing_content' => function ($query) use ($language) {
@@ -1704,28 +1761,29 @@ class ListingContoller extends Controller
         ['listings.status', '=', '1'],
         ['listings.visibility', '=', '1']
       ])
-
       ->select('listings.*')
-      ->where('listings.id', $id)
+      ->where('listings.id', $listingId)
       ->firstOrFail();
 
     $vendor_id = $listing->vendor_id;
 
     $information['bgImg'] = $misc->getBreadcrumb();
     $information['listing'] = $listing;
-    $information['listingImages'] = ListingImage::Where('listing_id', $id)->get();
+    $information['listingImages'] = ListingImage::Where('listing_id', $listingId)->get();
 
-    $listing_content = ListingContent::where('language_id', $language->id)->where('listing_id', $id)->first();
-    $information['socialLinks'] = ListingSocialMedia::where('listing_id', $id)->get();
+    $listing_content = ListingContent::where('language_id', $language->id)->where('listing_id', $listingId)->first();
+    $information['socialLinks'] = ListingSocialMedia::where('listing_id', $listingId)->get();
 
     if (is_null($listing_content)) {
       Session::flash('error', __('No listing information found for') . ' ' . $language->name);
-      return redirect()->route('index');
+
+      return redirect()->route('index', ['lang' => $language->code]);
     }
+
     $information['language'] = $language;
 
     $listing_features = ListingFeature::join('listing_feature_contents', 'listing_features.id', '=', 'listing_feature_contents.listing_feature_id')
-      ->where('listing_id', $id)
+      ->where('listing_id', $listingId)
       ->where('listing_feature_contents.language_id', $language->id)->get();
 
     $information['listing_features'] = $listing_features;
@@ -1740,7 +1798,7 @@ class ListingContoller extends Controller
         ->first();
     }
 
-    $reviews = ListingReview::query()->where('listing_id', '=', $id)->orderByDesc('id')->get();
+    $reviews = ListingReview::query()->where('listing_id', '=', $listingId)->orderByDesc('id')->get();
 
     $reviews->map(function ($review) {
       $review['user'] = $review->userInfo()->first();
@@ -1754,17 +1812,16 @@ class ListingContoller extends Controller
 
     $product_contents = Product::join('product_contents', 'products.id', '=', 'product_contents.product_id')
       ->where('products.status', '=', 'show')
-    //   ->where('products.placement_type', '!=', 1)
-      ->where('products.listing_id',  $id)
+      ->where('products.listing_id',  $listingId)
       ->where('product_contents.language_id', '=', $language->id)
       ->select('products.id', 'products.featured_image', 'products.average_rating', 'product_contents.title', 'product_contents.slug', 'products.current_price', 'products.previous_price', 'products.product_type', 'products.stock')
       ->paginate(9);
     $information['product_contents'] = $product_contents;
 
-    $businessHours = BusinessHour::query()->where('listing_id', '=', $id)->orderBy('id')->get();
+    $businessHours = BusinessHour::query()->where('listing_id', '=', $listingId)->orderBy('id')->get();
     $information['businessHours'] = $businessHours;
 
-    $faqs = ListingFaq::where('listing_id', $id)
+    $faqs = ListingFaq::where('listing_id', $listingId)
       ->where('language_id', $language->id)
       ->orderBy('serial_number', 'asc')
       ->get();
@@ -1772,6 +1829,14 @@ class ListingContoller extends Controller
 
     return view('frontend.listing.listing-details', $information);
   }
+
+  private function buildCategoryQueryString(Request $request): string
+  {
+    $query = $request->only(['page', 'view']);
+
+    return empty($query) ? '' : ('?' . http_build_query($query));
+  }
+
   public function contact(Request $request)
   {
     // Define the validation rules
@@ -1838,7 +1903,7 @@ class ListingContoller extends Controller
 
     $listing_name = $listing->listing_content[0]->title;
     $slug = $listing->listing_content[0]->slug;
-    $url = route('frontend.listing.details', ['slug' => $slug, 'id' => $listing->id]);
+    $url = listing_url($slug, $language->code);
 
 
     if ($listing->vendor_id != 0) {
@@ -2039,7 +2104,7 @@ class ListingContoller extends Controller
       if ($listing && isset($listing->listing_content[0])) {
         $listing_name = $listing->listing_content[0]->title;
         $slug = $listing->listing_content[0]->slug;
-        $url = route('frontend.listing.details', ['slug' => $slug, 'id' => $listing->id]);
+        $url = listing_url($slug, $language->code);
       }
     }
 

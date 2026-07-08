@@ -4,12 +4,16 @@ use App\Http\Helpers\VendorPermissionHelper;
 use App\Models\Advertisement;
 use App\Models\BasicSettings\Basic;
 use App\Models\Car;
+use App\Models\Journal\BlogCategory;
 use App\Models\Language;
 use App\Models\Listing\Listing;
+use App\Models\Listing\ListingContent;
 use App\Models\Listing\ListingProduct;
 use App\Models\Listing\ListingReview;
+use App\Models\ListingCategory;
 use App\Models\PaymentGateway\OnlineGateway;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 if (!function_exists('createSlug')) {
     function createSlug($string)
@@ -193,6 +197,101 @@ if (!function_exists('get_href')) {
         }
 
         return $link_href;
+    }
+}
+
+if (!function_exists('current_front_locale')) {
+    function current_front_locale(): string
+    {
+        $routeLang = request()?->route('lang');
+
+        if (!empty($routeLang)) {
+            return $routeLang;
+        }
+
+        $sessionLang = session('currentLocaleCode');
+        if (!empty($sessionLang)) {
+            return $sessionLang;
+        }
+
+        return Language::query()->where('is_default', 1)->value('code') ?? config('app.locale');
+    }
+}
+
+if (!function_exists('default_front_locale')) {
+    function default_front_locale(): string
+    {
+        return Language::query()->where('is_default', 1)->value('code') ?? config('app.locale');
+    }
+}
+
+if (!function_exists('listing_url')) {
+    function listing_url($listing, ?string $langCode = null): string
+    {
+        $langCode = $langCode ?: current_front_locale();
+        $slug = is_object($listing) ? ($listing->slug ?? null) : $listing;
+
+        return route('frontend.listing.details', ['lang' => $langCode, 'slug' => $slug]);
+    }
+}
+
+if (!function_exists('listing_category_url')) {
+    function listing_category_url($category, ?string $langCode = null): string
+    {
+        static $cache = [];
+
+        $langCode = $langCode ?: current_front_locale();
+        $categoryId = is_object($category) ? ($category->id ?? null) : $category;
+        $cacheKey = $langCode . ':' . $categoryId;
+
+        if (is_object($category) && method_exists($category, 'getSlug')) {
+            $languageId = Language::query()->where('code', $langCode)->value('id');
+            $slug = $category->getSlug($languageId) ?? $category->slug;
+        } elseif (isset($cache[$cacheKey])) {
+            $slug = $cache[$cacheKey];
+        } else {
+            $languageId = Language::query()->where('code', $langCode)->value('id');
+            $categoryModel = ListingCategory::query()->find($categoryId);
+            $slug = $categoryModel?->getSlug($languageId) ?? $categoryModel?->slug;
+            $cache[$cacheKey] = $slug;
+        }
+
+        return url('/' . $langCode . '/listings/' . $slug);
+    }
+}
+
+if (!function_exists('blog_post_url')) {
+    function blog_post_url($blog, ?string $langCode = null): string
+    {
+        $langCode = $langCode ?: current_front_locale();
+        $slug = is_object($blog) ? ($blog->slug ?? null) : $blog;
+
+        return route('blog.details', ['lang' => $langCode, 'slug' => $slug]);
+    }
+}
+
+if (!function_exists('blog_category_url')) {
+    function blog_category_url($category, ?string $langCode = null): string
+    {
+        static $cache = [];
+
+        $langCode = $langCode ?: current_front_locale();
+        $categoryId = is_object($category) ? ($category->id ?? null) : $category;
+        $cacheKey = $langCode . ':' . $categoryId;
+
+        if (is_object($category) && method_exists($category, 'getSlug')) {
+            $languageId = Language::query()->where('code', $langCode)->value('id');
+            $slug = $category->getSlug($languageId);
+        } elseif (isset($cache[$cacheKey])) {
+            $slug = $cache[$cacheKey];
+        } else {
+            $languageId = Language::query()->where('code', $langCode)->value('id');
+            $categoryModel = BlogCategory::query()->find($categoryId);
+            $slug = $categoryModel?->getSlug($languageId);
+            $cache[$cacheKey] = $slug;
+        }
+
+        return route('blog.category', ['lang' => $langCode, 'slug' => $slug]);
     }
 }
 

@@ -83,7 +83,7 @@
 
                 @foreach ($categories as $category)
                   <li class="d-flex align-items-center justify-content-between">
-                    <a href="{{ route('blog', ['category' => $category->slug]) }}"><i class="fal fa-folder"></i>
+                    <a href="{{ blog_category_url($category->id, current_front_locale()) }}"><i class="fal fa-folder"></i>
                       {{ $category->name }}</a>
                     <span class="tqy">({{ $category->blogCount }})</span>
                   </li>
@@ -97,7 +97,7 @@
               @foreach ($recent_blogs as $blog)
                 <article class="article-item mb-30">
                   <div class="image">
-                    <a href="{{ route('blog.details', ['slug' => $blog->slug]) }}"
+                    <a href="{{ blog_post_url($blog->slug, current_front_locale()) }}"
                       class="lazy-container ratio ratio-1-1">
                       <img class="lazyload" src="{{ asset('assets/front/images/placeholder.png') }}"
                         data-src="{{ asset('assets/img/blogs/' . $blog->image) }}" alt="Blog Image">
@@ -105,7 +105,7 @@
                   </div>
                   <div class="content">
                     <h6>
-                      <a href="{{ route('blog.details', ['slug' => $blog->slug]) }}">
+                      <a href="{{ blog_post_url($blog->slug, current_front_locale()) }}">
                         {{ strlen($blog->title) > 40 ? mb_substr($blog->title, 0, 40, 'UTF-8') . '...' : $blog->title }}
                       </a>
                     </h6>

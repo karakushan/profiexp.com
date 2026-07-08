@@ -237,7 +237,7 @@ class OrderRequestController extends Controller
 
         $listing_name = $listing->listing_content[0]->title;
         $slug = $listing->listing_content[0]->slug;
-        $url = route('frontend.listing.details', ['slug' => $slug, 'id' => $listing->id]);
+        $url = listing_url($slug, default_front_locale());
 
 
         $vendor = VendorInfo::Where('vendor_id', $order->vendor_id)->first();
@@ -467,7 +467,7 @@ class OrderRequestController extends Controller
 
         $listing_name = $listing->listing_content[0]->title;
         $slug = $listing->listing_content[0]->slug;
-        $url = route('frontend.listing.details', ['slug' => $slug, 'id' => $listing->id]);
+        $url = listing_url($slug, default_front_locale());
 
         if ($request['order_status'] == 'pending') {
 

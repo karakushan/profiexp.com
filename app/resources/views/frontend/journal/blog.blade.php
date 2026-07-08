@@ -40,7 +40,7 @@
                 <div class="col-md-6 col-lg-4" data-aos="fade-up">
                   <article class="card mb-25">
                     <div class="card-img radius-md">
-                      <a href="{{ route('blog.details', ['slug' => $blog->slug]) }}"
+                      <a href="{{ blog_post_url($blog->slug, current_front_locale()) }}"
                         class="lazy-container ratio ratio-16-10">
                         <img class="lazyload" src="assets/images/placeholder.png"
                           data-src="{{ asset('assets/img/blogs/' . $blog->image) }}" alt="Blog Image">
@@ -48,14 +48,14 @@
                     </div>
                     <div class="content">
                       <h3 class="card-title">
-                        <a href="{{ route('blog.details', ['slug' => $blog->slug]) }}">
+                        <a href="{{ blog_post_url($blog->slug, current_front_locale()) }}">
                           {{ @$blog->title }}
                         </a>
                       </h3>
                       <p class="card-text">
                         {{ strlen(strip_tags(convertUtf8($blog->content))) > 100 ? substr(strip_tags(convertUtf8($blog->content)), 0, 100) . '...' : strip_tags(convertUtf8($blog->content)) }}
                       </p>
-                      <a href="{{ route('blog.details', ['slug' => $blog->slug]) }}"
+                      <a href="{{ blog_post_url($blog->slug, current_front_locale()) }}"
                         class="card-btn">{{ __('Read More') }}</a>
                     </div>
                   </article>

@@ -19,7 +19,14 @@ return new class extends Migration
             $table->unique(['aminite_id', 'language_id']);
         });
 
+        $existingLanguageIds = \DB::table('languages')->pluck('id')->toArray();
+
         foreach (Aminite::all() as $aminite) {
+            if (!in_array($aminite->language_id, $existingLanguageIds)) {
+                $aminite->delete();
+                continue;
+            }
+
             AminiteContent::create([
                 'aminite_id' => $aminite->id,
                 'language_id' => $aminite->language_id,

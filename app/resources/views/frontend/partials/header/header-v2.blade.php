@@ -65,6 +65,7 @@
           <div class="item item-language">
             <div class="language">
               <form action="{{ route('change_language') }}" method="GET">
+                <input type="hidden" name="current_url" value="{{ url()->full() }}">
                 <select class="niceselect" name="lang_code" onchange="this.form.submit()">
                   @foreach ($allLanguageInfos as $languageInfo)
                     <option value="{{ $languageInfo->code }}"
@@ -132,7 +133,7 @@
           @endphp
           @foreach ($displayCategories as $category)
             <li class="category-nav-item {{ $category->children->isNotEmpty() ? 'has-dropdown' : '' }}">
-              <a href="{{ route('frontend.listings', ['category_id' => $category->id]) }}"
+              <a href="{{ listing_category_url($category, $currentLanguageInfo->code) }}"
                 class="category-nav-link {{ $category->children->isNotEmpty() ? 'toggle' : '' }}">
                 <span class="category-icon-box"><i class="{{ $category->icon ?: 'fal fa-folder' }}"></i></span>
                 <span class="category-name">{{ $category->getName($currentLanguageInfo->id) }}</span>
@@ -144,7 +145,7 @@
                 <ul class="category-dropdown">
                   @foreach ($category->children as $child)
                     <li>
-                      <a href="{{ route('frontend.listings', ['category_id' => $child->id]) }}">
+                      <a href="{{ listing_category_url($child, $currentLanguageInfo->code) }}">
                         <span class="category-icon-box sm"><i class="{{ $child->icon ?: 'fal fa-folder' }}"></i></span>
                         {{ $child->getName($currentLanguageInfo->id) }}
                       </a>
@@ -164,7 +165,7 @@
               <ul class="category-dropdown category-dropdown-wide">
                 @foreach ($moreCategories as $category)
                   <li class="{{ $category->children->isNotEmpty() ? 'has-submenu' : '' }}">
-                    <a href="{{ route('frontend.listings', ['category_id' => $category->id]) }}">
+                    <a href="{{ listing_category_url($category, $currentLanguageInfo->code) }}">
                       <span class="category-icon-box sm"><i class="{{ $category->icon ?: 'fal fa-folder' }}"></i></span>
                       {{ $category->getName($currentLanguageInfo->id) }}
                     </a>
@@ -172,7 +173,7 @@
                       <ul class="category-submenu">
                         @foreach ($category->children as $child)
                           <li>
-                            <a href="{{ route('frontend.listings', ['category_id' => $child->id]) }}">
+                            <a href="{{ listing_category_url($child, $currentLanguageInfo->code) }}">
                               <span class="category-icon-box sm"><i class="{{ $child->icon ?: 'fal fa-folder' }}"></i></span>
                               {{ $child->getName($currentLanguageInfo->id) }}
                             </a>

@@ -11,6 +11,12 @@ use Illuminate\Http\Request;
 
 class BlogController extends Controller
 {
+  public function category(Request $request, $slug)
+  {
+    $request->merge(['category' => $slug]);
+
+    return $this->index($request);
+  }
 
   public function index(Request $request)
   {
@@ -56,9 +62,13 @@ class BlogController extends Controller
 
   public function details($slug)
   {
-    $id = BlogInformation::where('slug', $slug)->firstOrFail()->blog_id;
     $misc = new MiscellaneousController();
     $language = $misc->getLanguage();
+    $id = BlogInformation::where('language_id', $language->id)
+      ->where('slug', $slug)
+      ->firstOrFail()
+      ->blog_id;
+
     $information['pageHeading'] = $misc->getPageHeading($language);
 
     $information['bgImg'] = $misc->getBreadcrumb();

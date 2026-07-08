@@ -5,7 +5,12 @@ namespace App\Http\Controllers\FrontEnd;
 use App\Http\Controllers\Controller;
 use App\Models\Advertisement;
 use App\Models\BasicSettings\Basic;
+use App\Models\CustomPage\PageContent;
+use App\Models\Journal\BlogCategory;
+use App\Models\Journal\BlogInformation;
 use App\Models\Language;
+use App\Models\Listing\ListingContent;
+use App\Models\ListingCategory;
 use App\Models\Subscriber;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -19,9 +24,14 @@ class MiscellaneousController extends Controller
 {
   public function getLanguage()
   {
-    // get the current locale of this system
-    if (Session::has('currentLocaleCode')) {
+    $locale = request()->route('lang');
+
+    if (empty($locale) && Session::has('currentLocaleCode')) {
       $locale = Session::get('currentLocaleCode');
+    }
+
+    if (empty($locale)) {
+      $locale = app()->getLocale();
     }
 
     if (empty($locale)) {
@@ -68,18 +78,21 @@ class MiscellaneousController extends Controller
 
   public function changeLanguage(Request $request)
   {
-    // put the selected language in session
-    $langCode = $request['lang_code'];
+    $langCode = $request->string('lang_code')->toString();
+    $targetLanguage = Language::query()->where('code', $langCode)->firstOrFail();
+    $request->session()->put('currentLocaleCode', $targetLanguage->code);
 
-    $request->session()->put('currentLocaleCode', $langCode);
+    $currentUrl = $request->string('current_url')->toString();
+    if (empty($currentUrl)) {
+      $currentUrl = url()->previous();
+    }
 
-    // persist the choice in a cookie (1 year)
-    return redirect()->back()->withCookie(cookie()->forever('user_locale', $langCode));
+    return redirect()->to($this->resolveLocalizedUrl($currentUrl, $targetLanguage->code));
   }
 
   public function getPageHeading($language)
   {
-    if (Route::is('frontend.listings')) {
+    if (Route::is('frontend.listings') || Route::is('frontend.listings.category') || Route::is('frontend.listing.details')) {
       $pageHeading = $language->pageName()->select('listing_page_title')->first();
     } elseif (Route::is('frontend.vendors')) {
       $pageHeading = $language->pageName()->select('vendor_page_title')->first();
@@ -97,7 +110,7 @@ class MiscellaneousController extends Controller
       $pageHeading = $language->pageName()->select('signup_page_title')->first();
     } elseif (Route::is('about_us')) {
       $pageHeading = $language->pageName()->select('about_us_title')->first();
-    } elseif (Route::is('blog') || Route::is('blog.details')) {
+    } elseif (Route::is('blog') || Route::is('blog.details') || Route::is('blog.category')) {
       $pageHeading = $language->pageName()->select('blog_page_title')->first();
     } elseif (Route::is('frontend.pricing')) {
       $pageHeading = $language->pageName()->select('pricing_page_title')->first();
@@ -163,6 +176,226 @@ class MiscellaneousController extends Controller
     $info = Basic::select('maintenance_img', 'maintenance_msg')->first();
 
     return view('errors.503', compact('info'));
+  }
+
+  public function redirectToDefaultLanguage()
+  {
+    return redirect()->to(route('index', ['lang' => default_front_locale()]), 301);
+  }
+
+  public function redirectToLocalizedPath(Request $request, string $path = '')
+  {
+    $supportedCodes = Language::query()->pluck('code')->all();
+    $segments = array_values(array_filter(explode('/', trim($path, '/'))));
+
+    if (!empty($segments[0]) && in_array($segments[0], $supportedCodes, true)) {
+      abort(404);
+    }
+
+    $targetPath = trim($path, '/');
+    $redirectUrl = route('index', ['lang' => default_front_locale()]);
+
+    if (!empty($targetPath)) {
+      $redirectUrl = url('/' . default_front_locale() . '/' . $targetPath);
+    }
+
+    if ($request->getQueryString()) {
+      $redirectUrl .= '?' . $request->getQueryString();
+    }
+
+    return redirect()->to($redirectUrl, 301);
+  }
+
+  private function resolveLocalizedUrl(?string $currentUrl, string $targetLang): string
+  {
+    $fallbackUrl = route('index', ['lang' => $targetLang]);
+
+    if (empty($currentUrl)) {
+      return $fallbackUrl;
+    }
+
+    $normalizedUrl = $this->normalizeUrl($currentUrl);
+    $path = parse_url($normalizedUrl, PHP_URL_PATH) ?: '/';
+    $queryString = parse_url($normalizedUrl, PHP_URL_QUERY) ?: '';
+
+    parse_str($queryString, $queryParams);
+
+    try {
+      $route = app('router')->getRoutes()->match(Request::create($path, 'GET', $queryParams));
+    } catch (\Throwable $exception) {
+      return $fallbackUrl;
+    }
+
+    $routeName = $route->getName();
+    $routeParams = $route->parameters();
+    $currentLang = $routeParams['lang'] ?? current_front_locale();
+
+    if (in_array($routeName, ['frontend.listings.category', 'frontend.listing.details'], true)) {
+      return $this->resolveLocalizedListingPath($routeParams['slug'], $currentLang, $targetLang, $queryParams);
+    }
+
+    if ($routeName === 'blog.details') {
+      return $this->resolveLocalizedBlogPostUrl($routeParams['slug'], $currentLang, $targetLang) ?? $fallbackUrl;
+    }
+
+    if ($routeName === 'blog.category') {
+      return $this->resolveLocalizedBlogCategoryUrl($routeParams['slug'], $currentLang, $targetLang) ?? $fallbackUrl;
+    }
+
+    if ($routeName === 'dynamic_page') {
+      return $this->resolveLocalizedPageUrl($routeParams['slug'], $currentLang, $targetLang) ?? $fallbackUrl;
+    }
+
+    if ($routeName === 'frontend.listings' && !empty($queryParams['category_id']) && $this->isPureCategoryRequest($queryParams)) {
+      return $this->resolveLocalizedCategoryIdUrl((int) $queryParams['category_id'], $targetLang, $queryParams) ?? $fallbackUrl;
+    }
+
+    if (empty($routeName)) {
+      return $fallbackUrl;
+    }
+
+    unset($routeParams['lang']);
+
+    return route($routeName, array_merge(['lang' => $targetLang], $routeParams, $queryParams));
+  }
+
+  private function normalizeUrl(string $url): string
+  {
+    if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
+      return $url;
+    }
+
+    return url('/' . ltrim($url, '/'));
+  }
+
+  private function resolveLocalizedListingPath(string $slug, string $currentLang, string $targetLang, array $queryParams = []): string
+  {
+    $currentLanguageId = Language::query()->where('code', $currentLang)->value('id');
+    $targetLanguageId = Language::query()->where('code', $targetLang)->value('id');
+
+    $listingContent = ListingContent::query()
+      ->where('language_id', $currentLanguageId)
+      ->where('slug', $slug)
+      ->first();
+
+    if ($listingContent) {
+      $targetListingContent = ListingContent::query()
+        ->where('language_id', $targetLanguageId)
+        ->where('listing_id', $listingContent->listing_id)
+        ->first();
+
+      return $targetListingContent
+        ? listing_url($targetListingContent->slug, $targetLang)
+        : route('index', ['lang' => $targetLang]);
+    }
+
+    $category = ListingCategory::query()->bySlug($currentLanguageId, $slug)->active()->first();
+
+    if (!$category) {
+      return route('index', ['lang' => $targetLang]);
+    }
+
+    $targetSlug = $category->getSlug($targetLanguageId);
+
+    return $targetSlug
+      ? $this->appendQueryString(listing_category_url($category->id, $targetLang), $queryParams)
+      : route('index', ['lang' => $targetLang]);
+  }
+
+  private function resolveLocalizedBlogPostUrl(string $slug, string $currentLang, string $targetLang): ?string
+  {
+    $currentLanguageId = Language::query()->where('code', $currentLang)->value('id');
+    $targetLanguageId = Language::query()->where('code', $targetLang)->value('id');
+
+    $blogInfo = BlogInformation::query()
+      ->where('language_id', $currentLanguageId)
+      ->where('slug', $slug)
+      ->first();
+
+    if (!$blogInfo) {
+      return null;
+    }
+
+    $targetBlogInfo = BlogInformation::query()
+      ->where('language_id', $targetLanguageId)
+      ->where('blog_id', $blogInfo->blog_id)
+      ->first();
+
+    return $targetBlogInfo ? blog_post_url($targetBlogInfo->slug, $targetLang) : null;
+  }
+
+  private function resolveLocalizedBlogCategoryUrl(string $slug, string $currentLang, string $targetLang): ?string
+  {
+    $currentLanguageId = Language::query()->where('code', $currentLang)->value('id');
+    $targetLanguageId = Language::query()->where('code', $targetLang)->value('id');
+
+    $category = BlogCategory::query()->active()->bySlug($currentLanguageId, $slug)->first();
+
+    if (!$category) {
+      return null;
+    }
+
+    $targetSlug = $category->getSlug($targetLanguageId);
+
+    return $targetSlug ? route('blog.category', ['lang' => $targetLang, 'slug' => $targetSlug]) : null;
+  }
+
+  private function resolveLocalizedPageUrl(string $slug, string $currentLang, string $targetLang): ?string
+  {
+    $currentLanguageId = Language::query()->where('code', $currentLang)->value('id');
+    $targetLanguageId = Language::query()->where('code', $targetLang)->value('id');
+
+    $pageContent = PageContent::query()
+      ->where('language_id', $currentLanguageId)
+      ->where('slug', $slug)
+      ->first();
+
+    if (!$pageContent) {
+      return null;
+    }
+
+    $targetPageContent = PageContent::query()
+      ->where('language_id', $targetLanguageId)
+      ->where('page_id', $pageContent->page_id)
+      ->first();
+
+    return $targetPageContent
+      ? route('dynamic_page', ['lang' => $targetLang, 'slug' => $targetPageContent->slug])
+      : null;
+  }
+
+  private function resolveLocalizedCategoryIdUrl(int $categoryId, string $targetLang, array $queryParams): ?string
+  {
+    $targetLanguageId = Language::query()->where('code', $targetLang)->value('id');
+    $category = ListingCategory::query()->active()->find($categoryId);
+
+    if (!$category) {
+      return null;
+    }
+
+    $targetSlug = $category->getSlug($targetLanguageId);
+
+    if (empty($targetSlug)) {
+      return null;
+    }
+
+    unset($queryParams['category_id']);
+
+    return $this->appendQueryString(listing_category_url($category->id, $targetLang), $queryParams);
+  }
+
+  private function isPureCategoryRequest(array $queryParams): bool
+  {
+    $allowedKeys = ['category_id', 'page', 'view'];
+
+    return collect(array_keys($queryParams))
+      ->diff($allowedKeys)
+      ->isEmpty();
+  }
+
+  private function appendQueryString(string $url, array $queryParams = []): string
+  {
+    return empty($queryParams) ? $url : ($url . '?' . http_build_query($queryParams));
   }
 
 }

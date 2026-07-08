@@ -76,7 +76,7 @@
                                             $categoryId = $listing->listing_content->first()->category_id ?? null;
                                         @endphp
                                         @if ($categoryId)
-                                        <a href="{{ route('frontend.listings', ['category_id' => $categoryId]) }}"
+                                        <a href="{{ listing_category_url($categoryId, $language->code) }}"
                                             title="Link" class="product-category font-sm icon-start">
                                             <span class="product-category color-primary icon-start">
                                                 <i class="{{ $listing->listing_content->first()->category->icon }}"></i>

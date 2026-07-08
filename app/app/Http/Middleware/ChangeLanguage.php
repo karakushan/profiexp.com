@@ -6,6 +6,7 @@ use App\Models\Language;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\URL;
 
 class ChangeLanguage
 {
@@ -14,59 +15,40 @@ class ChangeLanguage
    */
   public function handle(Request $request, Closure $next)
   {
-    $locale = null;
+    $supportedCodes = Language::query()->pluck('code')->toArray();
+    $defaultLocale = Language::query()->where('is_default', '=', 1)->value('code') ?? config('app.locale');
+    $locale = $request->route('lang');
 
-    // Priority 1: User explicitly switched language (persistent cookie)
-    if ($request->cookie('user_locale')) {
-      $locale = $request->cookie('user_locale');
-    }
-    // Priority 2: No explicit choice — detect browser language on every visit
-    else {
-      $browserLocale = $this->detectBrowserLanguage($request);
-      $supportedCodes = Language::query()->pluck('code')->toArray();
-
-      if ($browserLocale && in_array($browserLocale, $supportedCodes)) {
-        $locale = $browserLocale;
-      } else {
-        $locale = Language::query()->where('is_default', '=', 1)
-          ->pluck('code')
-          ->first();
-      }
+    if (!empty($locale) && in_array($locale, $supportedCodes, true)) {
+      $request->session()->put('currentLocaleCode', $locale);
+    } else {
+      $locale = $defaultLocale;
+      $request->session()->put('currentLocaleCode', $locale);
     }
 
-    $request->session()->put('currentLocaleCode', $locale);
     App::setLocale($locale);
+    URL::defaults(['lang' => $locale]);
 
     return $next($request);
   }
 
-  /**
-   * Detect preferred language from browser Accept-Language header.
-   * Returns a language code like 'ru', 'tr', 'en', 'ar' if supported.
-   */
-  private function detectBrowserLanguage(Request $request): ?string
+  private function stripDefaultLanguagePrefix(Request $request, string $defaultLocale): string
   {
-    $acceptLanguage = $request->header('Accept-Language');
+    $path = ltrim($request->path(), '/');
+    $prefix = $defaultLocale . '/';
 
-    if (empty($acceptLanguage)) {
-      return null;
+    if ($path === $defaultLocale) {
+      $target = '/';
+    } elseif (str_starts_with($path, $prefix)) {
+      $target = '/' . substr($path, strlen($prefix));
+    } else {
+      $target = '/' . $path;
     }
 
-    // Parse Accept-Language header
-    // Format: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7
-    $locales = [];
-    foreach (explode(',', $acceptLanguage) as $part) {
-      $part = trim($part);
-      if (preg_match('/^([a-z]{2})(?:-[A-Z]{2})?(?:;q=([\d.]+))?$/', $part, $matches)) {
-        $code = $matches[1];
-        $quality = isset($matches[2]) ? (float) $matches[2] : 1.0;
-        $locales[$code] = $quality;
-      }
+    if ($request->getQueryString()) {
+      $target .= '?' . $request->getQueryString();
     }
 
-    // Sort by quality, highest first
-    arsort($locales);
-
-    return !empty($locales) ? array_key_first($locales) : null;
+    return url($target);
   }
 }

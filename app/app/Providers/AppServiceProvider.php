@@ -11,10 +11,11 @@ use App\Models\Shop\Product;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -37,6 +38,19 @@ class AppServiceProvider extends ServiceProvider
   {
     Paginator::useBootstrap();
     // URL::forceScheme('https'); // disabled for local dev (no SSL in Docker)
+
+    try {
+      $languagePattern = Language::query()->pluck('code')
+        ->filter()
+        ->map(fn($code) => preg_quote($code, '/'))
+        ->implode('|');
+
+      if (!empty($languagePattern)) {
+        Route::pattern('lang', $languagePattern);
+      }
+    } catch (Throwable $exception) {
+      // DB may be unavailable during bootstrap in some console contexts.
+    }
 
     if (!app()->runningInConsole()) {
       # code...
@@ -120,8 +134,9 @@ class AppServiceProvider extends ServiceProvider
         $allLanguages = Language::all();
         $rateStar = 'assets/front/images/rate-star.png';
 
-        // get the current locale of this website
-        if (Session::has('currentLocaleCode')) {
+        $locale = request()->route('lang');
+
+        if (empty($locale) && Session::has('currentLocaleCode')) {
           $locale = Session::get('currentLocaleCode');
         }
 

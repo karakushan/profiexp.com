@@ -900,7 +900,7 @@ class ListingController extends Controller
 
         $listing_name = $listing->listing_content[0]->title;
         $slug = $listing->listing_content[0]->slug;
-        $url = route('frontend.listing.details', ['slug' => $slug, 'id' => $listing->id]);
+        $url = listing_url($slug, default_front_locale());
         if ($listing->vendor_id != 0) {
             $vendor = Vendor::where('id', $listing->vendor_id)->select('to_mail', 'username', 'email')->first();
             if (isset($vendor->to_mail)) {
@@ -1106,7 +1106,7 @@ class ListingController extends Controller
             if ($listing && isset($listing->listing_content[0])) {
                 $listing_name = $listing->listing_content[0]->title;
                 $slug = $listing->listing_content[0]->slug;
-                $url = route('frontend.listing.details', ['slug' => $slug, 'id' => $listing->id]);
+                $url = listing_url($slug, default_front_locale());
             }
         }
 

@@ -144,7 +144,7 @@
                                                 <div
                                                     class="product-default border radius-md mb-25 @if ($feature) active @endif">
                                                     <figure class="product-img">
-                                                        <a href="{{ route('frontend.listing.details', ['slug' => $listing_content->slug, 'id' => $listing->id]) }}"
+                                                        <a href="{{ listing_url($listing_content->slug, $language->code) }}"
                                                             class="lazy-container ratio ratio-2-3">
                                                             <img class="lazyload"
                                                                 data-src="{{ asset('assets/img/listing/' . $listing->feature_image) }}"
@@ -173,7 +173,7 @@
                                                     </figure>
 
                                                     <div class="product-details">
-                                                            <a href="{{ route('frontend.listings', ['category_id' => $listing_content->category_id]) }}"
+                                                            <a href="{{ listing_category_url($listing_content->category_id, $language->code) }}"
                                                                 title="Link" class="product-category font-sm icon-start">
                                                                 <i
                                                                     class="{{ $listing_content->icon }}"></i>{{ $listing_content->category_name }}
@@ -181,7 +181,7 @@
 
                                                         <h5 class="product-title mb-10 mt-1">
                                                             <a
-                                                                href="{{ route('frontend.listing.details', ['slug' => $listing_content->slug, 'id' => $listing->id]) }}">{{ optional($listing_content)->title }}</a>
+                                                                href="{{ listing_url($listing_content->slug, $language->code) }}">{{ optional($listing_content)->title }}</a>
                                                         </h5>
                                                         <div class="product-ratings mb-10">
                                                             <div class="ratings">
@@ -303,7 +303,7 @@
                                                     <div
                                                         class="product-default border radius-md mb-25 @if ($feature) active @endif">
                                                         <figure class="product-img">
-                                                            <a href="{{ route('frontend.listing.details', ['slug' => $listing_content->slug, 'id' => $listing->id]) }}"
+                                                            <a href="{{ listing_url($listing_content->slug, $language->code) }}"
                                                                 class="lazy-container ratio ratio-2-3">
                                                                 <img class="lazyload"
                                                                     data-src="{{ asset('assets/img/listing/' . $listing->feature_image) }}"
@@ -332,7 +332,7 @@
                                                         </figure>
 
                                                         <div class="product-details">
-                                                            <a href="{{ route('frontend.listings', ['category_id' => $listing_content->category_id]) }}"
+                                                            <a href="{{ listing_category_url($listing_content->category_id, $language->code) }}"
                                                                 title="Link"
                                                                 class="product-category font-sm icon-start">
                                                                 <i
@@ -341,7 +341,7 @@
 
                                                             <h5 class="product-title mb-10 mt-1">
                                                                 <a
-                                                                    href="{{ route('frontend.listing.details', ['slug' => $listing_content->slug, 'id' => $listing->id]) }}">{{ optional($listing_content)->title }}</a>
+                                                                    href="{{ listing_url($listing_content->slug, $language->code) }}">{{ optional($listing_content)->title }}</a>
                                                             </h5>
                                                             <div class="product-ratings mb-10">
                                                                 <div class="ratings">
