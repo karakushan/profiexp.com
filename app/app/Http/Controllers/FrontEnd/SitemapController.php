@@ -52,22 +52,38 @@ class SitemapController extends Controller
                 continue;
             }
 
-            $sitemap->add(
-                $this->withAlternates(
-                    Url::create(route('frontend.listing.details', [
-                        'lang' => $languages[$primary->language_id]->code,
-                        'slug' => $primary->slug,
-                    ]))
-                        ->setLastModificationDate($primary->updated_at)
-                        ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
-                        ->setPriority(0.8),
-                    $translations,
-                    fn($translation, $language) => route('frontend.listing.details', [
-                        'lang' => $language->code,
-                        'slug' => $translation->slug,
-                    ])
-                )
+            $defaultLanguage = $languages->first(fn($l) => $l->is_default);
+
+            $tag = $this->withAlternates(
+                Url::create(route('frontend.listing.details', [
+                    'lang' => $languages[$primary->language_id]->code,
+                    'slug' => $primary->slug,
+                ]))
+                    ->setLastModificationDate($primary->updated_at)
+                    ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
+                    ->setPriority(0.8),
+                $translations,
+                fn($translation, $language) => route('frontend.listing.details', [
+                    'lang' => $language->code,
+                    'slug' => $translation->slug,
+                ])
             );
+
+            $defaultTranslation = $defaultLanguage
+                ? $translations->first(fn($t) => $t->language_id === $defaultLanguage->id)
+                : null;
+
+            $tag->addAlternate(
+                $defaultTranslation
+                    ? route('frontend.listing.details', [
+                        'lang' => $defaultLanguage->code,
+                        'slug' => $defaultTranslation->slug,
+                    ])
+                    : $tag->url,
+                'x-default'
+            );
+
+            $sitemap->add($tag);
         }
 
         return $this->xmlResponse($sitemap->render());
