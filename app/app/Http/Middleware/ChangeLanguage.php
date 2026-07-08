@@ -20,6 +20,10 @@ class ChangeLanguage
     $locale = $request->route('lang');
 
     if (!empty($locale) && in_array($locale, $supportedCodes, true)) {
+      if ($locale === $defaultLocale) {
+        return redirect()->to($this->stripDefaultLanguagePrefix($request, $defaultLocale), 301);
+      }
+
       $request->session()->put('currentLocaleCode', $locale);
     } else {
       $locale = $defaultLocale;
@@ -27,7 +31,7 @@ class ChangeLanguage
     }
 
     App::setLocale($locale);
-    URL::defaults(['lang' => $locale]);
+    URL::defaults($locale === $defaultLocale ? [] : ['lang' => $locale]);
 
     return $next($request);
   }

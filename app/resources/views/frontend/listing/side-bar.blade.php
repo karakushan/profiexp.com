@@ -150,7 +150,7 @@
                                     @php
                                         $aminities = App\Models\Aminite::with('contents')->get();
                                         $vv = request()->input('amenitie');
-                                        $hasaminitie = explode(',', $vv);
+                                        $hasaminitie = !empty($vv) ? explode(',', $vv) : [];
                                     @endphp
 
                                     @foreach ($aminities as $aminitie)

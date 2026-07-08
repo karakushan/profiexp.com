@@ -30,6 +30,50 @@ Route::get('myfatoorah/cancel', 'FrontEnd\HomeController@myfatoorah_cancel')->na
 Route::get('/midtrans/bank-notify', 'MidtransBankController@bankNotify')->name('midtrans.bank.notify');
 Route::get('midtrans/cancel', 'MidtransBankController@cancelPayment')->name('midtrans.cancel');
 
+Route::middleware('change.lang')->group(function () {
+  Route::get('/profile', 'FrontEnd\ProfileContoller@index')->name('profile');
+  Route::get('/offline', 'FrontEnd\HomeController@offline');
+  Route::get('get-more-categories', 'FrontEnd\ListingContoller@moreCategories');
+  Route::get('get-home-categories', 'FrontEnd\ListingContoller@homeCategories')->name('frontend.get_home_categories');
+  Route::get('get-country', 'FrontEnd\ListingContoller@getCountry')->name('frontend.get_country');
+  Route::get('get-city', 'FrontEnd\ListingContoller@getSearchCity')->name('frontend.get_city');
+  Route::get('get-state', 'FrontEnd\ListingContoller@searchSate')->name('frontend.get_state');
+  Route::get('/pricing', 'FrontEnd\HomeController@pricing')->name('frontend.pricing');
+  Route::get('/faq', 'FrontEnd\FaqController@faq')->name('faq');
+  Route::get('/', 'FrontEnd\HomeController@index')->name('index');
+
+  Route::prefix('listings')->group(function () {
+    Route::get('/', 'FrontEnd\ListingContoller@index')->name('frontend.listings');
+    Route::get('/search-listing', 'FrontEnd\ListingContoller@search_listing')->name('frontend.search_listing');
+    Route::get('/get-states', 'FrontEnd\ListingContoller@getState')->name('frontend.listings.get-state');
+    Route::post('/get-cities', 'FrontEnd\ListingContoller@getCity')->name('frontend.listings.get-city');
+    Route::get('/get-address', 'FrontEnd\ListingContoller@getAddress')->name('frontend.listings.get-address');
+    Route::get('/{slug}', 'FrontEnd\ListingContoller@showBySlug')->name('frontend.listing.details');
+    Route::post('/listing-review/{id}/store-review', 'FrontEnd\ListingContoller@storeReview')->name('listing.listing_details.store_review');
+    Route::get('/store-visitor', 'FrontEnd\ListingContoller@store_visitor')->name('frontend.store_visitor');
+    Route::get('addto/wishlist/{id}', 'FrontEnd\UserController@add_to_wishlist')->name('addto.wishlist');
+    Route::get('remove/wishlist/{id}', 'FrontEnd\UserController@remove_wishlist')->name('remove.wishlist');
+    Route::post('/contact-message', 'FrontEnd\ListingContoller@contact')->name('frontend.listings.contact_message');
+    Route::post('/product-contact-message', 'FrontEnd\ListingContoller@productContact')->name('frontend.product.contact_message');
+    Route::post('claim-request', 'FrontEnd\ListingContoller@storeClaimRequestInfo')->name('frontend.listing.claim.request_info.store');
+  });
+
+  Route::prefix('/blog')->group(function () {
+    Route::get('', 'FrontEnd\BlogController@index')->name('blog');
+    Route::get('/category/{slug}', 'FrontEnd\BlogController@category')->name('blog.category');
+    Route::get('/{slug}',  'FrontEnd\BlogController@details')->name('blog.details');
+  });
+
+  Route::get('/about-us', 'FrontEnd\HomeController@about')->name('about_us');
+  Route::get('/products', 'FrontEnd\Shop\ProductController@index')->name('shop.products')->middleware('shop.status');
+  Route::get('/contact', 'FrontEnd\ContactController@contact')->name('contact');
+  Route::get('/vendors', 'FrontEnd\VendorController@index')->name('frontend.vendors');
+  Route::get('/vendor/{username}', 'FrontEnd\VendorController@details')->name('frontend.vendor.details');
+  Route::get('/{slug}', 'FrontEnd\PageController@page')
+    ->where('slug', '^(?!sitemap\.xml$)[^/]+$')
+    ->name('dynamic_page');
+});
+
 
 Route::prefix('{lang?}')
   ->where(['lang' => '[A-Za-z]{2}'])
@@ -258,7 +302,9 @@ Route::prefix('{lang?}')
   ->where(['lang' => '[A-Za-z]{2}'])
   ->middleware('change.lang')
   ->group(function () {
-    Route::get('/{slug}', 'FrontEnd\PageController@page')->name('dynamic_page');
+    Route::get('/{slug}', 'FrontEnd\PageController@page')
+      ->where('slug', '^(?!sitemap\.xml$)[^/]+$')
+      ->name('dynamic_page');
   });
 
 // fallback route

@@ -60,26 +60,41 @@ class BlogController extends Controller
     return view('frontend.journal.blog', $information);
   }
 
-  public function details($slug)
+  public function details($langOrSlug, $slug = null)
   {
+    if ($slug === null) {
+      $slug = $langOrSlug;
+    }
+
     $misc = new MiscellaneousController();
     $language = $misc->getLanguage();
-    $id = BlogInformation::where('language_id', $language->id)
+    $blogInformation = BlogInformation::where('language_id', $language->id)
       ->where('slug', $slug)
-      ->firstOrFail()
-      ->blog_id;
+      ->first();
+
+    if (!$blogInformation) {
+      $fallbackInformation = BlogInformation::where('slug', $slug)->firstOrFail();
+      $localizedInformation = BlogInformation::where('blog_id', $fallbackInformation->blog_id)
+        ->where('language_id', $language->id)
+        ->first();
+
+      if ($localizedInformation && $localizedInformation->slug !== $slug) {
+        return redirect()->route('blog.details', ['lang' => $language->code, 'slug' => $localizedInformation->slug], 301);
+      }
+
+      $blogInformation = $localizedInformation ?: $fallbackInformation;
+    }
 
     $information['pageHeading'] = $misc->getPageHeading($language);
 
     $information['bgImg'] = $misc->getBreadcrumb();
 
     $details = Blog::join('blog_informations', 'blogs.id', '=', 'blog_informations.blog_id')
-      ->join('blog_category_contents', function ($join) use ($language) {
+      ->leftJoin('blog_category_contents', function ($join) use ($language) {
         $join->on('blog_category_contents.blog_category_id', '=', 'blog_informations.blog_category_id')
           ->where('blog_category_contents.language_id', '=', $language->id);
       })
-      ->where('blog_informations.language_id', '=', $language->id)
-      ->where('blog_informations.blog_id', '=', $id)
+      ->where('blog_informations.id', '=', $blogInformation->id)
       ->select('blogs.id', 'blogs.image', 'blogs.created_at', 'blog_informations.title', 'blog_informations.content', 'blog_informations.meta_keywords', 'blog_informations.meta_description', 'blog_category_contents.name as categoryName', 'blog_category_contents.slug as categorySlug')
       ->firstOrFail();
 

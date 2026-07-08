@@ -26,12 +26,8 @@ class MiscellaneousController extends Controller
   {
     $locale = request()->route('lang');
 
-    if (empty($locale) && Session::has('currentLocaleCode')) {
-      $locale = Session::get('currentLocaleCode');
-    }
-
     if (empty($locale)) {
-      $locale = app()->getLocale();
+      $locale = default_front_locale();
     }
 
     if (empty($locale)) {
@@ -180,7 +176,7 @@ class MiscellaneousController extends Controller
 
   public function redirectToDefaultLanguage()
   {
-    return redirect()->to(route('index', ['lang' => default_front_locale()]), 301);
+    return redirect()->to(route('index'), 301);
   }
 
   public function redirectToLocalizedPath(Request $request, string $path = '')
@@ -193,10 +189,10 @@ class MiscellaneousController extends Controller
     }
 
     $targetPath = trim($path, '/');
-    $redirectUrl = route('index', ['lang' => default_front_locale()]);
+    $redirectUrl = route('index');
 
     if (!empty($targetPath)) {
-      $redirectUrl = url('/' . default_front_locale() . '/' . $targetPath);
+      $redirectUrl = url('/' . $targetPath);
     }
 
     if ($request->getQueryString()) {
@@ -208,7 +204,7 @@ class MiscellaneousController extends Controller
 
   private function resolveLocalizedUrl(?string $currentUrl, string $targetLang): string
   {
-    $fallbackUrl = route('index', ['lang' => $targetLang]);
+    $fallbackUrl = localized_route('index', [], $targetLang);
 
     if (empty($currentUrl)) {
       return $fallbackUrl;
@@ -256,7 +252,7 @@ class MiscellaneousController extends Controller
 
     unset($routeParams['lang']);
 
-    return route($routeName, array_merge(['lang' => $targetLang], $routeParams, $queryParams));
+    return localized_route($routeName, array_merge($routeParams, $queryParams), $targetLang);
   }
 
   private function normalizeUrl(string $url): string
@@ -286,20 +282,20 @@ class MiscellaneousController extends Controller
 
       return $targetListingContent
         ? listing_url($targetListingContent->slug, $targetLang)
-        : route('index', ['lang' => $targetLang]);
+        : localized_route('index', [], $targetLang);
     }
 
     $category = ListingCategory::query()->bySlug($currentLanguageId, $slug)->active()->first();
 
     if (!$category) {
-      return route('index', ['lang' => $targetLang]);
+      return localized_route('index', [], $targetLang);
     }
 
     $targetSlug = $category->getSlug($targetLanguageId);
 
     return $targetSlug
       ? $this->appendQueryString(listing_category_url($category->id, $targetLang), $queryParams)
-      : route('index', ['lang' => $targetLang]);
+      : localized_route('index', [], $targetLang);
   }
 
   private function resolveLocalizedBlogPostUrl(string $slug, string $currentLang, string $targetLang): ?string
@@ -337,7 +333,7 @@ class MiscellaneousController extends Controller
 
     $targetSlug = $category->getSlug($targetLanguageId);
 
-    return $targetSlug ? route('blog.category', ['lang' => $targetLang, 'slug' => $targetSlug]) : null;
+    return $targetSlug ? blog_category_url($category->id, $targetLang) : null;
   }
 
   private function resolveLocalizedPageUrl(string $slug, string $currentLang, string $targetLang): ?string
@@ -360,7 +356,7 @@ class MiscellaneousController extends Controller
       ->first();
 
     return $targetPageContent
-      ? route('dynamic_page', ['lang' => $targetLang, 'slug' => $targetPageContent->slug])
+      ? localized_route('dynamic_page', ['slug' => $targetPageContent->slug], $targetLang)
       : null;
   }
 

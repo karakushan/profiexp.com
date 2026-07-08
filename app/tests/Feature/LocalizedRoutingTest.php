@@ -8,60 +8,65 @@ use Tests\TestCase;
 
 class LocalizedRoutingTest extends TestCase
 {
-    public function test_root_redirects_to_default_language(): void
+    public function test_default_language_uses_unprefixed_routes(): void
     {
-        $response = $this->get('/');
+        [$defaultLanguage, $secondaryLanguage] = $this->languages();
+        $this->createCustomPage($defaultLanguage, $secondaryLanguage);
 
-        $response->assertRedirect(route('index', ['lang' => default_front_locale()]));
+        $this->get('/test-page-' . $defaultLanguage['code'])
+            ->assertOk();
+
+        $this->get('/change-language?lang_code=' . $defaultLanguage['code'] . '&current_url=/' . $secondaryLanguage['code'] . '/test-page-' . $secondaryLanguage['code'])
+            ->assertRedirect('http://localhost:8080/test-page-' . $defaultLanguage['code']);
     }
 
     public function test_listing_routes_use_slug_and_legacy_redirects(): void
     {
-        [$ruId, $enId] = $this->languageIds();
-        $categoryId = $this->createListingCategory($ruId, $enId);
-        $listingId = $this->createListing($categoryId, $ruId, $enId);
+        [$defaultLanguage, $secondaryLanguage] = $this->languages();
+        $categoryId = $this->createListingCategory($defaultLanguage, $secondaryLanguage);
+        $listingId = $this->createListing($categoryId, $defaultLanguage, $secondaryLanguage);
 
-        $this->get("/listings/test-listing-ru/{$listingId}")
-            ->assertRedirect('/ru/listings/test-listing-ru');
+        $this->get('/listings/test-listing-' . $defaultLanguage['code'] . '/' . $listingId)
+            ->assertRedirect('/listings/test-listing-' . $defaultLanguage['code']);
 
-        $this->get('/change-language?lang_code=en&current_url=/ru/listings/test-listing-ru')
-            ->assertRedirect('http://localhost:8080/en/listings/test-listing-en');
+        $this->get('/change-language?lang_code=' . $secondaryLanguage['code'] . '&current_url=/listings/test-listing-' . $defaultLanguage['code'])
+            ->assertRedirect('http://localhost:8080/' . $secondaryLanguage['code'] . '/listings/test-listing-' . $secondaryLanguage['code']);
     }
 
     public function test_category_query_redirects_to_slug_url(): void
     {
-        [$ruId, $enId] = $this->languageIds();
-        $categoryId = $this->createListingCategory($ruId, $enId);
+        [$defaultLanguage, $secondaryLanguage] = $this->languages();
+        $categoryId = $this->createListingCategory($defaultLanguage, $secondaryLanguage);
 
-        $this->get("/ru/listings?category_id={$categoryId}")
-            ->assertRedirect('/ru/listings/test-category-ru');
+        $this->get("/listings?category_id={$categoryId}")
+            ->assertRedirect('/listings/test-category-' . $defaultLanguage['code']);
     }
 
     public function test_language_switcher_preserves_blog_and_page_translations(): void
     {
-        [$ruId, $enId] = $this->languageIds();
-        $blogCategoryId = $this->createBlogCategory($ruId, $enId);
-        $this->createBlog($blogCategoryId, $ruId, $enId);
-        $this->createCustomPage($ruId, $enId);
+        [$defaultLanguage, $secondaryLanguage] = $this->languages();
+        $blogCategoryId = $this->createBlogCategory($defaultLanguage, $secondaryLanguage);
+        $this->createBlog($blogCategoryId, $defaultLanguage, $secondaryLanguage);
+        $this->createCustomPage($defaultLanguage, $secondaryLanguage);
 
-        $this->get('/change-language?lang_code=en&current_url=/ru/blog/test-post-ru')
-            ->assertRedirect('http://localhost:8080/en/blog/test-post-en');
+        $this->get('/change-language?lang_code=' . $secondaryLanguage['code'] . '&current_url=/blog/test-post-' . $defaultLanguage['code'])
+            ->assertRedirect('http://localhost:8080/' . $secondaryLanguage['code'] . '/blog/test-post-' . $secondaryLanguage['code']);
 
-        $this->get('/change-language?lang_code=en&current_url=/ru/blog/category/test-blog-category-ru')
-            ->assertRedirect('http://localhost:8080/en/blog/category/test-blog-category-en');
+        $this->get('/change-language?lang_code=' . $secondaryLanguage['code'] . '&current_url=/blog/category/test-blog-category-' . $defaultLanguage['code'])
+            ->assertRedirect('http://localhost:8080/' . $secondaryLanguage['code'] . '/blog/category/test-blog-category-' . $secondaryLanguage['code']);
 
-        $this->get('/change-language?lang_code=en&current_url=/ru/test-page-ru')
-            ->assertRedirect('http://localhost:8080/en/test-page-en');
+        $this->get('/change-language?lang_code=' . $secondaryLanguage['code'] . '&current_url=/test-page-' . $defaultLanguage['code'])
+            ->assertRedirect('http://localhost:8080/' . $secondaryLanguage['code'] . '/test-page-' . $secondaryLanguage['code']);
     }
 
     public function test_sitemap_contains_localized_urls_and_hreflang(): void
     {
-        [$ruId, $enId] = $this->languageIds();
-        $categoryId = $this->createListingCategory($ruId, $enId);
-        $this->createListing($categoryId, $ruId, $enId);
-        $blogCategoryId = $this->createBlogCategory($ruId, $enId);
-        $this->createBlog($blogCategoryId, $ruId, $enId);
-        $this->createCustomPage($ruId, $enId);
+        [$defaultLanguage, $secondaryLanguage] = $this->languages();
+        $categoryId = $this->createListingCategory($defaultLanguage, $secondaryLanguage);
+        $this->createListing($categoryId, $defaultLanguage, $secondaryLanguage);
+        $blogCategoryId = $this->createBlogCategory($defaultLanguage, $secondaryLanguage);
+        $this->createBlog($blogCategoryId, $defaultLanguage, $secondaryLanguage);
+        $this->createCustomPage($defaultLanguage, $secondaryLanguage);
 
         $this->get('/sitemap.xml')
             ->assertOk()
@@ -70,29 +75,41 @@ class LocalizedRoutingTest extends TestCase
 
         $this->get('/sitemap/listings.xml')
             ->assertOk()
-            ->assertSee('/ru/listings/test-listing-ru', false)
-            ->assertSee('hreflang="en"', false);
+            ->assertSee('/listings/test-listing-' . $defaultLanguage['code'], false)
+            ->assertSee('hreflang="' . $secondaryLanguage['code'] . '"', false);
 
         $this->get('/sitemap/pages.xml')
             ->assertOk()
-            ->assertSee('/ru/test-page-ru', false)
-            ->assertSee('hreflang="en"', false);
+            ->assertSee('/test-page-' . $defaultLanguage['code'], false)
+            ->assertSee('hreflang="' . $secondaryLanguage['code'] . '"', false);
     }
 
-    private function languageIds(): array
+    private function languages(): array
     {
+        $defaultLanguage = DB::table('languages')
+            ->select('id', 'code')
+            ->where('is_default', 1)
+            ->first();
+
+        $secondaryLanguage = DB::table('languages')
+            ->select('id', 'code')
+            ->where('code', '!=', $defaultLanguage->code)
+            ->orderByRaw("case when code = 'en' then 0 else 1 end")
+            ->orderBy('id')
+            ->first();
+
         return [
-            DB::table('languages')->where('code', 'ru')->value('id'),
-            DB::table('languages')->where('code', 'en')->value('id'),
+            ['id' => $defaultLanguage->id, 'code' => $defaultLanguage->code],
+            ['id' => $secondaryLanguage->id, 'code' => $secondaryLanguage->code],
         ];
     }
 
-    private function createListingCategory(int $ruId, int $enId): int
+    private function createListingCategory(array $defaultLanguage, array $secondaryLanguage): int
     {
         $now = Carbon::now();
         $categoryId = DB::table('listing_categories')->insertGetId([
             'name' => 'Test Category',
-            'slug' => 'test-category-ru',
+            'slug' => 'test-category-' . $defaultLanguage['code'],
             'serial_number' => 999999,
             'status' => 1,
             'created_at' => $now,
@@ -102,17 +119,17 @@ class LocalizedRoutingTest extends TestCase
         DB::table('listing_category_contents')->insert([
             [
                 'listing_category_id' => $categoryId,
-                'language_id' => $ruId,
+                'language_id' => $defaultLanguage['id'],
                 'name' => 'Тестовая категория',
-                'slug' => 'test-category-ru',
+                'slug' => 'test-category-' . $defaultLanguage['code'],
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
             [
                 'listing_category_id' => $categoryId,
-                'language_id' => $enId,
+                'language_id' => $secondaryLanguage['id'],
                 'name' => 'Test Category',
-                'slug' => 'test-category-en',
+                'slug' => 'test-category-' . $secondaryLanguage['code'],
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -121,7 +138,7 @@ class LocalizedRoutingTest extends TestCase
         return $categoryId;
     }
 
-    private function createListing(int $categoryId, int $ruId, int $enId): int
+    private function createListing(int $categoryId, array $defaultLanguage, array $secondaryLanguage): int
     {
         $now = Carbon::now();
         $listingId = DB::table('listings')->insertGetId([
@@ -134,11 +151,11 @@ class LocalizedRoutingTest extends TestCase
 
         DB::table('listing_contents')->insert([
             [
-                'language_id' => $ruId,
+                'language_id' => $defaultLanguage['id'],
                 'listing_id' => $listingId,
                 'category_id' => $categoryId,
                 'title' => 'Тестовое объявление',
-                'slug' => 'test-listing-ru',
+                'slug' => 'test-listing-' . $defaultLanguage['code'],
                 'description' => 'Описание',
                 'address' => 'Адрес',
                 'summary' => 'Summary',
@@ -146,11 +163,11 @@ class LocalizedRoutingTest extends TestCase
                 'updated_at' => $now,
             ],
             [
-                'language_id' => $enId,
+                'language_id' => $secondaryLanguage['id'],
                 'listing_id' => $listingId,
                 'category_id' => $categoryId,
                 'title' => 'Test listing',
-                'slug' => 'test-listing-en',
+                'slug' => 'test-listing-' . $secondaryLanguage['code'],
                 'description' => 'Description',
                 'address' => 'Address',
                 'summary' => 'Summary',
@@ -162,7 +179,7 @@ class LocalizedRoutingTest extends TestCase
         return $listingId;
     }
 
-    private function createBlogCategory(int $ruId, int $enId): int
+    private function createBlogCategory(array $defaultLanguage, array $secondaryLanguage): int
     {
         $now = Carbon::now();
         $categoryId = DB::table('blog_categories')->insertGetId([
@@ -175,17 +192,17 @@ class LocalizedRoutingTest extends TestCase
         DB::table('blog_category_contents')->insert([
             [
                 'blog_category_id' => $categoryId,
-                'language_id' => $ruId,
+                'language_id' => $defaultLanguage['id'],
                 'name' => 'Тестовая категория блога',
-                'slug' => 'test-blog-category-ru',
+                'slug' => 'test-blog-category-' . $defaultLanguage['code'],
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
             [
                 'blog_category_id' => $categoryId,
-                'language_id' => $enId,
+                'language_id' => $secondaryLanguage['id'],
                 'name' => 'Test Blog Category',
-                'slug' => 'test-blog-category-en',
+                'slug' => 'test-blog-category-' . $secondaryLanguage['code'],
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
@@ -194,7 +211,7 @@ class LocalizedRoutingTest extends TestCase
         return $categoryId;
     }
 
-    private function createBlog(int $blogCategoryId, int $ruId, int $enId): void
+    private function createBlog(int $blogCategoryId, array $defaultLanguage, array $secondaryLanguage): void
     {
         $now = Carbon::now();
         $blogId = DB::table('blogs')->insertGetId([
@@ -206,22 +223,22 @@ class LocalizedRoutingTest extends TestCase
 
         DB::table('blog_informations')->insert([
             [
-                'language_id' => $ruId,
+                'language_id' => $defaultLanguage['id'],
                 'blog_category_id' => $blogCategoryId,
                 'blog_id' => $blogId,
                 'title' => 'Тестовый пост',
-                'slug' => 'test-post-ru',
+                'slug' => 'test-post-' . $defaultLanguage['code'],
                 'author' => 'Tester',
                 'content' => 'Content',
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
             [
-                'language_id' => $enId,
+                'language_id' => $secondaryLanguage['id'],
                 'blog_category_id' => $blogCategoryId,
                 'blog_id' => $blogId,
                 'title' => 'Test post',
-                'slug' => 'test-post-en',
+                'slug' => 'test-post-' . $secondaryLanguage['code'],
                 'author' => 'Tester',
                 'content' => 'Content',
                 'created_at' => $now,
@@ -230,7 +247,7 @@ class LocalizedRoutingTest extends TestCase
         ]);
     }
 
-    private function createCustomPage(int $ruId, int $enId): void
+    private function createCustomPage(array $defaultLanguage, array $secondaryLanguage): void
     {
         $now = Carbon::now();
         $pageId = DB::table('pages')->insertGetId([
@@ -241,19 +258,19 @@ class LocalizedRoutingTest extends TestCase
 
         DB::table('page_contents')->insert([
             [
-                'language_id' => $ruId,
+                'language_id' => $defaultLanguage['id'],
                 'page_id' => $pageId,
                 'title' => 'Тестовая страница',
-                'slug' => 'test-page-ru',
+                'slug' => 'test-page-' . $defaultLanguage['code'],
                 'content' => 'Content',
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
             [
-                'language_id' => $enId,
+                'language_id' => $secondaryLanguage['id'],
                 'page_id' => $pageId,
                 'title' => 'Test page',
-                'slug' => 'test-page-en',
+                'slug' => 'test-page-' . $secondaryLanguage['code'],
                 'content' => 'Content',
                 'created_at' => $now,
                 'updated_at' => $now,

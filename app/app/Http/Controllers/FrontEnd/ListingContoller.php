@@ -143,16 +143,6 @@ class ListingContoller extends Controller
       $categorySlug = $category?->getSlug($language->id);
 
       if (!empty($categorySlug)) {
-        $redirectParams = ['lang' => $language->code, 'slug' => $categorySlug];
-
-        if ($request->filled('page')) {
-          $redirectParams['page'] = $request->page;
-        }
-
-        if ($request->filled('view')) {
-          $redirectParams['view'] = $request->view;
-        }
-
         return redirect()->to(listing_category_url($category, $language->code) . $this->buildCategoryQueryString($request), 301);
       }
     }
@@ -1700,8 +1690,12 @@ class ListingContoller extends Controller
     return $result;
   }
 
-  public function showBySlug(Request $request, $lang, $slug)
+  public function showBySlug(Request $request, $langOrSlug, $slug = null)
   {
+    if ($slug === null) {
+      $slug = $langOrSlug;
+    }
+
     $misc = new MiscellaneousController();
     $language = $misc->getLanguage();
 
@@ -1777,7 +1771,7 @@ class ListingContoller extends Controller
     if (is_null($listing_content)) {
       Session::flash('error', __('No listing information found for') . ' ' . $language->name);
 
-      return redirect()->route('index', ['lang' => $language->code]);
+      return redirect()->route('index');
     }
 
     $information['language'] = $language;

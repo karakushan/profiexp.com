@@ -18,12 +18,35 @@
           </a>
         @endif
       </div>
-      <!-- Menu toggle button -->
-      <button class="menu-toggler" type="button">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
+      <div class="mobile-right-group">
+        <!-- Mobile Language Switcher -->
+        <div class="mobile-lang">
+          <button class="mobile-lang-btn" type="button">
+            <span class="lang-code">{{ strtoupper($currentLanguageInfo->code) }}</span>
+            <i class="fal fa-angle-down"></i>
+          </button>
+          <ul class="mobile-lang-dropdown">
+            @foreach ($allLanguageInfos as $languageInfo)
+              <li>
+                <a href="#" data-lang="{{ $languageInfo->code }}"
+                  class="{{ $languageInfo->code == $currentLanguageInfo->code ? 'active' : '' }}">
+                  {{ $languageInfo->name }}
+                </a>
+              </li>
+            @endforeach
+          </ul>
+          <form action="{{ route('change_language') }}" method="GET" class="d-none">
+            <input type="hidden" name="current_url" value="{{ url()->full() }}">
+            <input type="hidden" name="lang_code" value="">
+          </form>
+        </div>
+        <!-- Menu toggle button -->
+        <button class="menu-toggler" type="button">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
     </div>
   </div>
   <div class="main-navbar">

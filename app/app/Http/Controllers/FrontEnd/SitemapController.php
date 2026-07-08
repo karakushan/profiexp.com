@@ -55,18 +55,12 @@ class SitemapController extends Controller
             $defaultLanguage = $languages->first(fn($l) => $l->is_default);
 
             $tag = $this->withAlternates(
-                Url::create(route('frontend.listing.details', [
-                    'lang' => $languages[$primary->language_id]->code,
-                    'slug' => $primary->slug,
-                ]))
+                Url::create(listing_url($primary->slug, $languages[$primary->language_id]->code))
                     ->setLastModificationDate($primary->updated_at)
                     ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
                     ->setPriority(0.8),
                 $translations,
-                fn($translation, $language) => route('frontend.listing.details', [
-                    'lang' => $language->code,
-                    'slug' => $translation->slug,
-                ])
+                fn($translation, $language) => listing_url($translation->slug, $language->code)
             );
 
             $defaultTranslation = $defaultLanguage
@@ -75,10 +69,7 @@ class SitemapController extends Controller
 
             $tag->addAlternate(
                 $defaultTranslation
-                    ? route('frontend.listing.details', [
-                        'lang' => $defaultLanguage->code,
-                        'slug' => $defaultTranslation->slug,
-                    ])
+                    ? listing_url($defaultTranslation->slug, $defaultLanguage->code)
                     : $tag->url,
                 'x-default'
             );
@@ -107,12 +98,12 @@ class SitemapController extends Controller
 
             $sitemap->add(
                 $this->withAlternates(
-                    Url::create(url('/' . $languages[$primary->language_id]->code . '/listings/' . $primary->slug))
+                    Url::create(listing_category_url($category->id, $languages[$primary->language_id]->code))
                         ->setLastModificationDate($primary->updated_at ?? $category->updated_at)
                         ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
                         ->setPriority(0.6),
                     $translations,
-                    fn($translation, $language) => url('/' . $language->code . '/listings/' . $translation->slug)
+                    fn($translation, $language) => listing_category_url($category->id, $language->code)
                 )
             );
         }
@@ -143,18 +134,12 @@ class SitemapController extends Controller
 
             $sitemap->add(
                 $this->withAlternates(
-                    Url::create(route('blog.details', [
-                        'lang' => $languages[$primary->language_id]->code,
-                        'slug' => $primary->slug,
-                    ]))
+                    Url::create(blog_post_url($primary->slug, $languages[$primary->language_id]->code))
                         ->setLastModificationDate($primary->updated_at)
                         ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
                         ->setPriority(0.7),
                     $translations,
-                    fn($translation, $language) => route('blog.details', [
-                        'lang' => $language->code,
-                        'slug' => $translation->slug,
-                    ])
+                    fn($translation, $language) => blog_post_url($translation->slug, $language->code)
                 )
             );
         }
@@ -180,18 +165,12 @@ class SitemapController extends Controller
 
             $sitemap->add(
                 $this->withAlternates(
-                    Url::create(route('blog.category', [
-                        'lang' => $languages[$primary->language_id]->code,
-                        'slug' => $primary->slug,
-                    ]))
+                    Url::create(blog_category_url($category->id, $languages[$primary->language_id]->code))
                         ->setLastModificationDate($primary->updated_at ?? $category->updated_at)
                         ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
                         ->setPriority(0.5),
                     $translations,
-                    fn($translation, $language) => route('blog.category', [
-                        'lang' => $language->code,
-                        'slug' => $translation->slug,
-                    ])
+                    fn($translation, $language) => blog_category_url($category->id, $language->code)
                 )
             );
         }
@@ -222,18 +201,12 @@ class SitemapController extends Controller
 
             $sitemap->add(
                 $this->withAlternates(
-                    Url::create(route('dynamic_page', [
-                        'lang' => $languages[$primary->language_id]->code,
-                        'slug' => $primary->slug,
-                    ]))
+                    Url::create(localized_route('dynamic_page', ['slug' => $primary->slug], $languages[$primary->language_id]->code))
                         ->setLastModificationDate($primary->updated_at)
                         ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
                         ->setPriority(0.6),
                     $translations,
-                    fn($translation, $language) => route('dynamic_page', [
-                        'lang' => $language->code,
-                        'slug' => $translation->slug,
-                    ])
+                    fn($translation, $language) => localized_route('dynamic_page', ['slug' => $translation->slug], $language->code)
                 )
             );
         }
@@ -263,13 +236,13 @@ class SitemapController extends Controller
                 continue;
             }
 
-            $tag = Url::create(route($route['name'], ['lang' => $primaryLanguage->code]))
+            $tag = Url::create(localized_route($route['name'], [], $primaryLanguage->code))
                 ->setLastModificationDate(now())
                 ->setChangeFrequency($route['frequency'])
                 ->setPriority($route['priority']);
 
             foreach ($languages as $language) {
-                $tag->addAlternate(route($route['name'], ['lang' => $language->code]), $language->code);
+                $tag->addAlternate(localized_route($route['name'], [], $language->code), $language->code);
             }
 
             $sitemap->add($tag);

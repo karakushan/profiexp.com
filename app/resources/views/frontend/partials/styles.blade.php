@@ -47,9 +47,11 @@
 @php
   $primaryColor = $basicInfo->primary_color;
   // check, whether color has '#' or not, will return 0 or 1
-  function checkColorCode($color)
-  {
-      return preg_match('/^#[a-f0-9]{6}/i', $color);
+  if (!function_exists('checkColorCode')) {
+      function checkColorCode($color)
+      {
+          return preg_match('/^#[a-f0-9]{6}/i', $color);
+      }
   }
 
   // if, primary color value does not contain '#', then add '#' before color value
@@ -58,14 +60,16 @@
   }
 
   // change decimal point into hex value for opacity
-  function rgb($color = null)
-  {
-      if (!$color) {
-          echo '';
+  if (!function_exists('rgb')) {
+      function rgb($color = null)
+      {
+          if (!$color) {
+              echo '';
+          }
+          $hex = htmlspecialchars($color);
+          [$r, $g, $b] = sscanf($hex, '#%02x%02x%02x');
+          echo "$r, $g, $b";
       }
-      $hex = htmlspecialchars($color);
-      [$r, $g, $b] = sscanf($hex, '#%02x%02x%02x');
-      echo "$r, $g, $b";
   }
 @endphp
 <style>

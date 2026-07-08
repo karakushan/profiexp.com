@@ -52,7 +52,7 @@ class AppServiceProvider extends ServiceProvider
       // DB may be unavailable during bootstrap in some console contexts.
     }
 
-    if (!app()->runningInConsole()) {
+    if (!app()->runningInConsole() || app()->runningUnitTests()) {
       # code...
       $data = DB::table('basic_settings')->select('favicon', 'website_title', 'logo', 'base_currency_text', 'base_currency_text_position', 'maintenance_img', 'maintenance_msg')->first();
       $langs = Language::all();
@@ -124,7 +124,7 @@ class AppServiceProvider extends ServiceProvider
       });
 
       // send this information to only front-end view files
-      View::composer('frontend.*', function ($view) {
+      View::composer(['frontend.*', 'errors.*'], function ($view) {
         // get basic info
         $basicData = DB::table('basic_settings')
           ->select('theme_version', 'footer_logo', 'footer_background_image', 'email_address', 'contact_number', 'address', 'primary_color', 'whatsapp_status', 'whatsapp_number', 'whatsapp_header_title', 'whatsapp_popup_status', 'whatsapp_popup_message', 'tawkto_status', 'tawkto_direct_chat_link', 'base_currency_symbol', 'base_currency_symbol_position', 'base_currency_text', 'base_currency_text_position', 'hero_section_video_url', 'preloader_status', 'preloader', 'shop_status', 'time_format', 'google_map_api_key_status', 'google_map_api_key', 'listing_view', 'website_title')
@@ -135,10 +135,6 @@ class AppServiceProvider extends ServiceProvider
         $rateStar = 'assets/front/images/rate-star.png';
 
         $locale = request()->route('lang');
-
-        if (empty($locale) && Session::has('currentLocaleCode')) {
-          $locale = Session::get('currentLocaleCode');
-        }
 
         if (empty($locale)) {
           $language = Language::query()->where('is_default', '=', 1)->first();

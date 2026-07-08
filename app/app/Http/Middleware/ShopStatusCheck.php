@@ -19,7 +19,7 @@ class ShopStatusCheck
     {
         $info = DB::table('basic_settings')->select('shop_status')->first();
         if ($info->shop_status != 1) {
-            return redirect()->route('index', ['lang' => default_front_locale()]);
+            return redirect()->route('index');
         }
         return $next($request);
     }

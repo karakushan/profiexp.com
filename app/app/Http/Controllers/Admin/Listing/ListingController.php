@@ -619,7 +619,7 @@ class ListingController extends Controller
                     $listingContent->language_id = $language->id;
                     $listingContent->listing_id = $listing->id;
                     $listingContent->title = $title;
-                    $listingContent->slug = Str::slug($request['en_title'] ?: $title);
+                    $listingContent->slug = unique_listing_slug($title, $language->id);
                     $listingContent->category_id = $request->category_id;
                     $listingContent->country_id = $request->country_id;
                     $listingContent->state_id = $request->state_id;
@@ -937,7 +937,7 @@ class ListingController extends Controller
             }
             $listingContent->language_id = $language->id;
             $listingContent->title = $title;
-            $listingContent->slug = Str::slug($request['en_title'] ?: $title);
+            $listingContent->slug = unique_listing_slug($title, $language->id, $listingContent->id);
             $listingContent->category_id = $request->category_id;
             $listingContent->country_id = $request->country_id;
             $listingContent->state_id = $request->state_id;

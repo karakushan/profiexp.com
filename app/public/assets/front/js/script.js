@@ -801,4 +801,25 @@ $(document).ready(function () {
             }
         });
     });
+
+
+    /*============================================
+        Mobile Language Switcher
+    ============================================*/
+    $(document).on('click', '.mobile-lang-btn', function (e) {
+        e.stopPropagation();
+        $(this).parent('.mobile-lang').toggleClass('open');
+    });
+
+    $(document).on('click', function () {
+        $('.mobile-lang').removeClass('open');
+    });
+
+    $(document).on('click', '.mobile-lang-dropdown a', function (e) {
+        e.preventDefault();
+        var langCode = $(this).data('lang');
+        var $form = $(this).closest('.mobile-lang').find('form');
+        $form.find('input[name="lang_code"]').val(langCode);
+        $form.submit();
+    });
 });

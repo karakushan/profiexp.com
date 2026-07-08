@@ -298,7 +298,7 @@ class ProductController extends Controller
         if (Auth::guard('vendor')->user()) {
             $vendor = Vendor::find(Auth::guard('vendor')->user()->id);
         } elseif (Auth::guard('agent')->user()) {
-            return redirect()->route('index', ['lang' => default_front_locale()]);
+            return redirect()->route('index');
         }
 
         $package = VendorPermissionHelper::currentPackagePermission($vendor->id);

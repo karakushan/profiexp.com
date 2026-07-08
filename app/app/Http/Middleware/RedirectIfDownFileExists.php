@@ -19,7 +19,7 @@ class RedirectIfDownFileExists
     if (file_exists(base_path('/storage/framework/down'))) {
       return $next($request);
     } else {
-      return redirect()->route('index', ['lang' => default_front_locale()]);
+      return redirect()->route('index');
     }
   }
 }

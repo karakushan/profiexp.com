@@ -18,12 +18,35 @@
           </a>
         @endif
       </div>
-      <!-- Menu toggle button -->
-      <button class="menu-toggler" type="button">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
+      <div class="mobile-right-group">
+        <!-- Mobile Language Switcher -->
+        <div class="mobile-lang">
+          <button class="mobile-lang-btn" type="button">
+            <span class="lang-code">{{ strtoupper($currentLanguageInfo->code) }}</span>
+            <i class="fal fa-angle-down"></i>
+          </button>
+          <ul class="mobile-lang-dropdown">
+            @foreach ($allLanguageInfos as $languageInfo)
+              <li>
+                <a href="#" data-lang="{{ $languageInfo->code }}"
+                  class="{{ $languageInfo->code == $currentLanguageInfo->code ? 'active' : '' }}">
+                  {{ $languageInfo->name }}
+                </a>
+              </li>
+            @endforeach
+          </ul>
+          <form action="{{ route('change_language') }}" method="GET" class="d-none">
+            <input type="hidden" name="current_url" value="{{ url()->full() }}">
+            <input type="hidden" name="lang_code" value="">
+          </form>
+        </div>
+        <!-- Menu toggle button -->
+        <button class="menu-toggler" type="button">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
     </div>
   </div>
   <div class="main-navbar">
@@ -142,13 +165,19 @@
                 @endif
               </a>
               @if ($category->children->isNotEmpty())
-                <ul class="category-dropdown">
-                  @foreach ($category->children as $child)
-                    <li>
-                      <a href="{{ listing_category_url($child, $currentLanguageInfo->code) }}">
-                        <span class="category-icon-box sm"><i class="{{ $child->icon ?: 'fal fa-folder' }}"></i></span>
-                        {{ $child->getName($currentLanguageInfo->id) }}
-                      </a>
+                <ul class="category-dropdown multi-column">
+                  @foreach ($category->children->chunk(5) as $chunk)
+                    <li class="dropdown-column">
+                      <ul>
+                        @foreach ($chunk as $child)
+                          <li>
+                            <a href="{{ listing_category_url($child, $currentLanguageInfo->code) }}">
+                              <span class="category-icon-box sm"><i class="{{ $child->icon ?: 'fal fa-folder' }}"></i></span>
+                              {{ $child->getName($currentLanguageInfo->id) }}
+                            </a>
+                          </li>
+                        @endforeach
+                      </ul>
                     </li>
                   @endforeach
                 </ul>
@@ -162,25 +191,31 @@
                 <span class="category-name">{{ __('More Categories') }}</span>
                 <i class="fal fa-angle-down category-arrow"></i>
               </a>
-              <ul class="category-dropdown category-dropdown-wide">
-                @foreach ($moreCategories as $category)
-                  <li class="{{ $category->children->isNotEmpty() ? 'has-submenu' : '' }}">
-                    <a href="{{ listing_category_url($category, $currentLanguageInfo->code) }}">
-                      <span class="category-icon-box sm"><i class="{{ $category->icon ?: 'fal fa-folder' }}"></i></span>
-                      {{ $category->getName($currentLanguageInfo->id) }}
-                    </a>
-                    @if ($category->children->isNotEmpty())
-                      <ul class="category-submenu">
-                        @foreach ($category->children as $child)
-                          <li>
-                            <a href="{{ listing_category_url($child, $currentLanguageInfo->code) }}">
-                              <span class="category-icon-box sm"><i class="{{ $child->icon ?: 'fal fa-folder' }}"></i></span>
-                              {{ $child->getName($currentLanguageInfo->id) }}
-                            </a>
-                          </li>
-                        @endforeach
-                      </ul>
-                    @endif
+              <ul class="category-dropdown category-dropdown-wide multi-column">
+                @foreach ($moreCategories->chunk(5) as $chunk)
+                  <li class="dropdown-column">
+                    <ul>
+                      @foreach ($chunk as $category)
+                        <li class="{{ $category->children->isNotEmpty() ? 'has-submenu' : '' }}">
+                          <a href="{{ listing_category_url($category, $currentLanguageInfo->code) }}">
+                            <span class="category-icon-box sm"><i class="{{ $category->icon ?: 'fal fa-folder' }}"></i></span>
+                            {{ $category->getName($currentLanguageInfo->id) }}
+                          </a>
+                          @if ($category->children->isNotEmpty())
+                            <ul class="category-submenu">
+                              @foreach ($category->children as $child)
+                                <li>
+                                  <a href="{{ listing_category_url($child, $currentLanguageInfo->code) }}">
+                                    <span class="category-icon-box sm"><i class="{{ $child->icon ?: 'fal fa-folder' }}"></i></span>
+                                    {{ $child->getName($currentLanguageInfo->id) }}
+                                  </a>
+                                </li>
+                              @endforeach
+                            </ul>
+                          @endif
+                        </li>
+                      @endforeach
+                    </ul>
                   </li>
                 @endforeach
               </ul>

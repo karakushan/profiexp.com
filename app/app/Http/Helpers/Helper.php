@@ -209,11 +209,6 @@ if (!function_exists('current_front_locale')) {
             return $routeLang;
         }
 
-        $sessionLang = session('currentLocaleCode');
-        if (!empty($sessionLang)) {
-            return $sessionLang;
-        }
-
         return Language::query()->where('is_default', 1)->value('code') ?? config('app.locale');
     }
 }
@@ -231,7 +226,28 @@ if (!function_exists('listing_url')) {
         $langCode = $langCode ?: current_front_locale();
         $slug = is_object($listing) ? ($listing->slug ?? null) : $listing;
 
-        return route('frontend.listing.details', ['lang' => $langCode, 'slug' => $slug]);
+        if (blank($slug) && is_object($listing)) {
+            $listingId = $listing->listing_id ?? $listing->id ?? null;
+
+            if (!empty($listingId)) {
+                $languageId = Language::query()->where('code', $langCode)->value('id');
+
+                $slug = ListingContent::query()
+                    ->when($languageId, fn($query) => $query->where('language_id', $languageId))
+                    ->where('listing_id', $listingId)
+                    ->value('slug');
+
+                if (blank($slug)) {
+                    $slug = ListingContent::query()
+                        ->where('listing_id', $listingId)
+                        ->whereNotNull('slug')
+                        ->where('slug', '!=', '')
+                        ->value('slug');
+                }
+            }
+        }
+
+        return localized_route('frontend.listing.details', ['slug' => $slug], $langCode);
     }
 }
 
@@ -247,16 +263,32 @@ if (!function_exists('listing_category_url')) {
         if (is_object($category) && method_exists($category, 'getSlug')) {
             $languageId = Language::query()->where('code', $langCode)->value('id');
             $slug = $category->getSlug($languageId) ?? $category->slug;
+            $categoryModel = $category;
         } elseif (isset($cache[$cacheKey])) {
             $slug = $cache[$cacheKey];
+            $categoryModel = null;
         } else {
             $languageId = Language::query()->where('code', $langCode)->value('id');
             $categoryModel = ListingCategory::query()->find($categoryId);
             $slug = $categoryModel?->getSlug($languageId) ?? $categoryModel?->slug;
-            $cache[$cacheKey] = $slug;
         }
 
-        return url('/' . $langCode . '/listings/' . $slug);
+        if (blank($slug) && !empty($categoryId)) {
+            $categoryModel = $categoryModel ?? ListingCategory::query()->find($categoryId);
+
+            $slug = $categoryModel?->contents()
+                ->whereNotNull('slug')
+                ->where('slug', '!=', '')
+                ->value('slug') ?? $categoryModel?->slug;
+        }
+
+        if (blank($slug)) {
+            return localized_route('frontend.listings', [], $langCode);
+        }
+
+        $cache[$cacheKey] = $slug;
+
+        return localized_route('frontend.listing.details', ['slug' => $slug], $langCode);
     }
 }
 
@@ -266,7 +298,7 @@ if (!function_exists('blog_post_url')) {
         $langCode = $langCode ?: current_front_locale();
         $slug = is_object($blog) ? ($blog->slug ?? null) : $blog;
 
-        return route('blog.details', ['lang' => $langCode, 'slug' => $slug]);
+        return localized_route('blog.details', ['slug' => $slug], $langCode);
     }
 }
 
@@ -291,7 +323,53 @@ if (!function_exists('blog_category_url')) {
             $cache[$cacheKey] = $slug;
         }
 
-        return route('blog.category', ['lang' => $langCode, 'slug' => $slug]);
+        return localized_route('blog.category', ['slug' => $slug], $langCode);
+    }
+}
+
+if (!function_exists('localized_route')) {
+    function localized_route(string $name, array $parameters = [], ?string $langCode = null): string
+    {
+        $langCode = $langCode ?: current_front_locale();
+        $defaultLang = default_front_locale();
+
+        if (!empty($langCode) && $langCode !== $defaultLang) {
+            $parameters['lang'] = $langCode;
+        } else {
+            unset($parameters['lang']);
+        }
+
+        return route($name, $parameters);
+    }
+}
+
+if (!function_exists('unique_listing_slug')) {
+    function unique_listing_slug(?string $title, int $languageId, ?int $ignoreListingContentId = null): string
+    {
+        $baseSlug = createSlug((string) $title);
+        if ($baseSlug === '') {
+            $baseSlug = 'listing';
+        }
+
+        $slug = $baseSlug;
+        $suffix = 2;
+
+        while (true) {
+            $query = ListingContent::query()
+                ->where('language_id', $languageId)
+                ->where('slug', $slug);
+
+            if (!empty($ignoreListingContentId)) {
+                $query->where('id', '!=', $ignoreListingContentId);
+            }
+
+            if (!$query->exists()) {
+                return $slug;
+            }
+
+            $slug = $baseSlug . '-' . $suffix;
+            $suffix++;
+        }
     }
 }
 
