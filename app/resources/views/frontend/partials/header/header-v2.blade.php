@@ -22,8 +22,9 @@
         <!-- Mobile Language Switcher -->
         <div class="mobile-lang">
           <button class="mobile-lang-btn" type="button">
+            <i class="fal fa-globe mobile-lang-icon" aria-hidden="true"></i>
             <span class="lang-code">{{ strtoupper($currentLanguageInfo->code) }}</span>
-            <i class="fal fa-angle-down"></i>
+            <i class="fal fa-angle-down mobile-lang-arrow" aria-hidden="true"></i>
           </button>
           <ul class="mobile-lang-dropdown">
             @foreach ($allLanguageInfos as $languageInfo)
@@ -82,6 +83,22 @@
                 </li>
               @endif
             @endforeach
+          </ul>
+
+          <ul class="mobile-category-menu mobile-item">
+            <li class="nav-item">
+              <a class="nav-link toggle" href="javascript:void(0)">{{ __('Categories') }}<i class="fal fa-plus"></i></a>
+              <ul class="category-nav-list mobile-category-nav-list">
+                @foreach ($headerCategories as $category)
+                  <li class="category-nav-item">
+                    <a href="{{ listing_category_url($category, $currentLanguageInfo->code) }}" class="category-nav-link">
+                      <span class="category-icon-box"><i class="{{ $category->icon ?: 'fal fa-folder' }}"></i></span>
+                      <span class="category-name">{{ $category->getName($currentLanguageInfo->id) }}</span>
+                    </a>
+                  </li>
+                @endforeach
+              </ul>
+            </li>
           </ul>
         </div>
         <div class="more-option mobile-item">
@@ -147,7 +164,7 @@
         </div>
       </nav>
     </div>
-    <div class="category-navbar mobile-item">
+    <div class="category-navbar">
       <div class="container">
         <ul class="category-nav-list">
           @php
