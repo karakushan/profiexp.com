@@ -78,10 +78,31 @@ class LocalizedRoutingTest extends TestCase
             ->assertSee('/listings/test-listing-' . $defaultLanguage['code'], false)
             ->assertSee('hreflang="' . $secondaryLanguage['code'] . '"', false);
 
+        $this->get('/sitemap/categories.xml')
+            ->assertOk()
+            ->assertSee('/listings/test-category-' . $defaultLanguage['code'], false)
+            ->assertDontSee('/' . $defaultLanguage['code'] . '/listings/test-category-' . $defaultLanguage['code'], false);
+
+        $this->get('/sitemap/blog-posts.xml')
+            ->assertOk()
+            ->assertSee('/blog/test-post-' . $defaultLanguage['code'], false)
+            ->assertDontSee('/' . $defaultLanguage['code'] . '/blog/test-post-' . $defaultLanguage['code'], false);
+
+        $this->get('/sitemap/blog-categories.xml')
+            ->assertOk()
+            ->assertSee('/blog/category/test-blog-category-' . $defaultLanguage['code'], false)
+            ->assertDontSee('/' . $defaultLanguage['code'] . '/blog/category/test-blog-category-' . $defaultLanguage['code'], false);
+
         $this->get('/sitemap/pages.xml')
             ->assertOk()
             ->assertSee('/test-page-' . $defaultLanguage['code'], false)
-            ->assertSee('hreflang="' . $secondaryLanguage['code'] . '"', false);
+            ->assertSee('hreflang="' . $secondaryLanguage['code'] . '"', false)
+            ->assertDontSee('/' . $defaultLanguage['code'] . '/test-page-' . $defaultLanguage['code'], false);
+
+        $this->get('/sitemap/static-pages.xml')
+            ->assertOk()
+            ->assertSee('http://localhost:8080/', false)
+            ->assertDontSee('http://localhost:8080/' . $defaultLanguage['code'] . '/', false);
     }
 
     private function languages(): array

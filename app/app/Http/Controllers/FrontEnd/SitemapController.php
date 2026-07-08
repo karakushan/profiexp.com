@@ -31,6 +31,7 @@ class SitemapController extends Controller
     public function listings()
     {
         $languages = Language::query()->get()->keyBy('id');
+        $defaultLanguage = $this->defaultLanguage($languages);
         $groups = ListingContent::query()
             ->whereHas('listing', function ($query) {
                 $query->where('status', 1)->where('visibility', 1);
@@ -47,12 +48,10 @@ class SitemapController extends Controller
                 ->get()
                 ->filter(fn($item) => !empty($item->slug) && isset($languages[$item->language_id]));
 
-            $primary = $translations->first();
+            $primary = $this->primaryTranslation($translations, $defaultLanguage);
             if (!$primary) {
                 continue;
             }
-
-            $defaultLanguage = $languages->first(fn($l) => $l->is_default);
 
             $tag = $this->withAlternates(
                 Url::create(listing_url($primary->slug, $languages[$primary->language_id]->code))
@@ -83,6 +82,7 @@ class SitemapController extends Controller
     public function categories()
     {
         $languages = Language::query()->get()->keyBy('id');
+        $defaultLanguage = $this->defaultLanguage($languages);
         $categories = ListingCategory::query()->active()->get();
         $sitemap = Sitemap::create();
 
@@ -91,7 +91,7 @@ class SitemapController extends Controller
                 ->get()
                 ->filter(fn($item) => !empty($item->slug) && isset($languages[$item->language_id]));
 
-            $primary = $translations->first();
+            $primary = $this->primaryTranslation($translations, $defaultLanguage);
             if (!$primary) {
                 continue;
             }
@@ -114,6 +114,7 @@ class SitemapController extends Controller
     public function blogPosts()
     {
         $languages = Language::query()->get()->keyBy('id');
+        $defaultLanguage = $this->defaultLanguage($languages);
         $groups = BlogInformation::query()
             ->select('blog_id')
             ->distinct()
@@ -127,7 +128,7 @@ class SitemapController extends Controller
                 ->get()
                 ->filter(fn($item) => !empty($item->slug) && isset($languages[$item->language_id]));
 
-            $primary = $translations->first();
+            $primary = $this->primaryTranslation($translations, $defaultLanguage);
             if (!$primary) {
                 continue;
             }
@@ -150,6 +151,7 @@ class SitemapController extends Controller
     public function blogCategories()
     {
         $languages = Language::query()->get()->keyBy('id');
+        $defaultLanguage = $this->defaultLanguage($languages);
         $categories = BlogCategory::query()->active()->get();
         $sitemap = Sitemap::create();
 
@@ -158,7 +160,7 @@ class SitemapController extends Controller
                 ->get()
                 ->filter(fn($item) => !empty($item->slug) && isset($languages[$item->language_id]));
 
-            $primary = $translations->first();
+            $primary = $this->primaryTranslation($translations, $defaultLanguage);
             if (!$primary) {
                 continue;
             }
@@ -181,6 +183,7 @@ class SitemapController extends Controller
     public function pages()
     {
         $languages = Language::query()->get()->keyBy('id');
+        $defaultLanguage = $this->defaultLanguage($languages);
         $groups = PageContent::query()
             ->select('page_id')
             ->distinct()
@@ -194,7 +197,7 @@ class SitemapController extends Controller
                 ->get()
                 ->filter(fn($item) => !empty($item->slug) && isset($languages[$item->language_id]));
 
-            $primary = $translations->first();
+            $primary = $this->primaryTranslation($translations, $defaultLanguage);
             if (!$primary) {
                 continue;
             }
@@ -231,7 +234,7 @@ class SitemapController extends Controller
         $sitemap = Sitemap::create();
 
         foreach ($routes as $route) {
-            $primaryLanguage = $languages->first();
+            $primaryLanguage = $languages->first(fn($language) => (bool) $language->is_default) ?? $languages->first();
             if (!$primaryLanguage) {
                 continue;
             }
@@ -265,6 +268,21 @@ class SitemapController extends Controller
         }
 
         return $tag;
+    }
+
+    private function defaultLanguage($languages)
+    {
+        return $languages->first(fn($language) => (bool) $language->is_default) ?? $languages->first();
+    }
+
+    private function primaryTranslation($translations, $defaultLanguage)
+    {
+        if (!$defaultLanguage) {
+            return $translations->first();
+        }
+
+        return $translations->first(fn($translation) => (int) $translation->language_id === (int) $defaultLanguage->id)
+            ?? $translations->first();
     }
 
     private function xmlResponse(string $content)
