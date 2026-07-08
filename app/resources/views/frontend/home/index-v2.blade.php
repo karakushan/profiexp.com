@@ -160,7 +160,7 @@
                         @else
                             <div class="row category-grid gy-4" data-aos="fade-up" data-aos-delay="100">
                                 @foreach ($categories as $key => $category)
-                                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 category-grid-item {{ $key >= 8 ? 'd-none' : '' }}">
+                                    <div class="col-xl-3 col-lg-4 col-md-4 col-sm-6 col-6 category-grid-item {{ $key >= 8 ? 'd-none' : '' }}">
                                         <a
                                             href="{{ listing_category_url($category, $language->code) }}">
                                             <div class="category-item border radius-md text-center">
