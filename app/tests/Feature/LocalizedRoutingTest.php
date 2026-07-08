@@ -8,6 +8,18 @@ use Tests\TestCase;
 
 class LocalizedRoutingTest extends TestCase
 {
+    public function test_secondary_language_homepage_uses_localized_index_route(): void
+    {
+        [$defaultLanguage, $secondaryLanguage] = $this->languages();
+
+        $this->get('/change-language?lang_code=' . $secondaryLanguage['code'] . '&current_url=/')
+            ->assertRedirect('http://localhost:8080/' . $secondaryLanguage['code']);
+
+        $this->get('/' . $secondaryLanguage['code'])
+            ->assertOk()
+            ->assertDontSee('404 not found');
+    }
+
     public function test_default_language_uses_unprefixed_routes(): void
     {
         [$defaultLanguage, $secondaryLanguage] = $this->languages();

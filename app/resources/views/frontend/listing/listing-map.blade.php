@@ -34,6 +34,13 @@
 @endsection
 @section('content')
 
+    @includeIf('frontend.partials.breadcrumb', [
+        'breadcrumb' => $bgImg->breadcrumb,
+        'title' => !empty($categoryContent) && !empty($categoryContent->name)
+            ? $categoryContent->name
+            : (!empty($pageHeading) ? $pageHeading->listing_page_title : __('Listings')),
+    ])
+
     <!-- Page title start-->
     <div class="listing-map  d-none d-lg-block">
         <div class="container">

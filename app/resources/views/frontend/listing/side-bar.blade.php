@@ -1,8 +1,16 @@
+<style>
+    @media (min-width: 1200px) {
+        #categories.collapse {
+            display: block !important;
+            visibility: visible !important;
+        }
+    }
+</style>
 <div id="zx">
     <div class="widget-offcanvas offcanvas-xl offcanvas-start" tabindex="-1" id="widgetOffcanvas"
         aria-labelledby="widgetOffcanvas">
         <div class="offcanvas-header px-20">
-            <h4 class="offcanvas-title">Filter</h4>
+            <h4 class="offcanvas-title">{{ __('Filter') }}</h4>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#widgetOffcanvas"
                 aria-label="Close"></button>
         </div>
@@ -10,12 +18,12 @@
             <aside class="widget-area pb-10">
                 <div class="widget widget-categories radius-md mb-30">
                     <h5 class="title">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#categories" aria-expanded="true" aria-controls="categories">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#categories" aria-expanded="false" aria-controls="categories">
                             {{ __('Categories') }}
                         </button>
                     </h5>
-                    <div id="categories" class="collapse show">
+                    <div id="categories" class="collapse">
                         <div class="accordion-body">
                             <ul class="list-group" id="categoriesList" data-toggle-list="categoriesToggle">
                                 <li class="list-item open">
@@ -154,13 +162,14 @@
                                     @endphp
 
                                     @foreach ($aminities as $aminitie)
+                                        @continue(!$aminitie->getTitle($language->id))
                                         @if (in_array($aminitie->id, $hasaminitie))
                                             <li>
                                                 <input class="input-checkbox" type="checkbox" name="checkbox"
                                                     id="checkbox_{{ $aminitie->id }}" value="{{ $aminitie->id }}"
                                                     checked>
                                                 <label class="form-check-label"
-                                                    for="checkbox_{{ $aminitie->id }}"><span>{{ $aminitie->getTitle($language->id) }}</label>
+                                                    for="checkbox_{{ $aminitie->id }}"><span>{{ $aminitie->getTitle($language->id) }}</span></label>
                                             </li>
                                         @else
                                             <li>

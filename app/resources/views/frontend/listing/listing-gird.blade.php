@@ -23,6 +23,13 @@
 
 @section('content')
 
+    @includeIf('frontend.partials.breadcrumb', [
+        'breadcrumb' => $bgImg->breadcrumb,
+        'title' => !empty($categoryContent) && !empty($categoryContent->name)
+            ? $categoryContent->name
+            : (!empty($pageHeading) ? $pageHeading->listing_page_title : __('Listings')),
+    ])
+
     <!-- Listing-map-area start -->
     <div class="listing-map-area header-next border-top pt-40">
         <div class="container">

@@ -34,8 +34,16 @@
 @endsection
 
 @section('content')
+
+    @includeIf('frontend.partials.breadcrumb', [
+        'breadcrumb' => $bgImg->breadcrumb,
+        'title' => !empty($categoryContent) && !empty($categoryContent->name)
+            ? $categoryContent->name
+            : (!empty($pageHeading) ? $pageHeading->listing_page_title : __('Listings')),
+    ])
+
     <!-- Listing-column-area start -->
-    <div class="listing-column-area pt-100 pb-60">
+    <div class="listing-column-area pt-60 pb-60">
         <div class="container">
             <div class="row gx-xl-5">
                 <div class="col-lg-3">

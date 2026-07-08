@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Language;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -7,6 +8,18 @@ use Illuminate\Support\Facades\Route;
 | User Interface Routes
 |--------------------------------------------------------------------------
 */
+
+$languageRoutePattern = Language::query()->pluck('code')
+  ->filter()
+  ->map(fn($code) => preg_quote($code, '/'))
+  ->implode('|');
+
+$languageRoutePattern = $languageRoutePattern !== '' ? $languageRoutePattern : '[A-Za-z]{2}';
+$dynamicPageSlugPattern = '^(?!sitemap\.xml$)[^/]+$';
+
+if ($languageRoutePattern !== '[A-Za-z]{2}') {
+  $dynamicPageSlugPattern = '^(?!(?:sitemap\.xml|' . $languageRoutePattern . ')$)[^/]+$';
+}
 
 
 Route::get('/change-language', 'FrontEnd\MiscellaneousController@changeLanguage')->name('change_language');
@@ -30,7 +43,7 @@ Route::get('myfatoorah/cancel', 'FrontEnd\HomeController@myfatoorah_cancel')->na
 Route::get('/midtrans/bank-notify', 'MidtransBankController@bankNotify')->name('midtrans.bank.notify');
 Route::get('midtrans/cancel', 'MidtransBankController@cancelPayment')->name('midtrans.cancel');
 
-Route::middleware('change.lang')->group(function () {
+Route::middleware('change.lang')->group(function () use ($dynamicPageSlugPattern) {
   Route::get('/profile', 'FrontEnd\ProfileContoller@index')->name('profile');
   Route::get('/offline', 'FrontEnd\HomeController@offline');
   Route::get('get-more-categories', 'FrontEnd\ListingContoller@moreCategories');
@@ -70,15 +83,15 @@ Route::middleware('change.lang')->group(function () {
   Route::get('/vendors', 'FrontEnd\VendorController@index')->name('frontend.vendors');
   Route::get('/vendor/{username}', 'FrontEnd\VendorController@details')->name('frontend.vendor.details');
   Route::get('/{slug}', 'FrontEnd\PageController@page')
-    ->where('slug', '^(?!sitemap\.xml$)[^/]+$')
+    ->where('slug', $dynamicPageSlugPattern)
     ->name('dynamic_page');
 });
 
 
 Route::prefix('{lang?}')
-  ->where(['lang' => '[A-Za-z]{2}'])
+  ->where(['lang' => $languageRoutePattern])
   ->middleware('change.lang')
-  ->group(function () {
+  ->group(function () use ($dynamicPageSlugPattern) {
   Route::get('/profile', 'FrontEnd\ProfileContoller@index')->name('profile');
   Route::get('/offline', 'FrontEnd\HomeController@offline');
 
@@ -193,7 +206,7 @@ Route::prefix('{lang?}')
 
 Route::post('/advertisement/{id}/count-view', 'FrontEnd\MiscellaneousController@countAdView');
 
-Route::prefix('{lang?}/login')->where(['lang' => '[A-Za-z]{2}'])->middleware(['guest:web', 'change.lang'])->group(function () {
+Route::prefix('{lang?}/login')->where(['lang' => $languageRoutePattern])->middleware(['guest:web', 'change.lang'])->group(function () {
   // user login via facebook route
   Route::prefix('/user/facebook')->group(function () {
     Route::get('', 'FrontEnd\UserController@redirectToFacebook')->name('user.login.facebook');
@@ -209,7 +222,7 @@ Route::prefix('{lang?}/login')->where(['lang' => '[A-Za-z]{2}'])->middleware(['g
   });
 });
 
-Route::prefix('{lang?}/user')->where(['lang' => '[A-Za-z]{2}'])->middleware(['guest:web', 'change.lang'])->group(function () {
+Route::prefix('{lang?}/user')->where(['lang' => $languageRoutePattern])->middleware(['guest:web', 'change.lang'])->group(function () {
   Route::prefix('/login')->group(function () {
     // user redirect to login page route
     Route::get('', 'FrontEnd\UserController@login')->name('user.login');
@@ -240,7 +253,7 @@ Route::prefix('{lang?}/user')->where(['lang' => '[A-Za-z]{2}'])->middleware(['gu
   Route::get('/signup-verify/{token}', 'FrontEnd\UserController@signupVerify');
 });
 
-Route::prefix('{lang?}/user')->where(['lang' => '[A-Za-z]{2}'])->middleware(['auth:web', 'account.status', 'change.lang'])->group(function () {
+Route::prefix('{lang?}/user')->where(['lang' => $languageRoutePattern])->middleware(['auth:web', 'account.status', 'change.lang'])->group(function () {
   // user redirect to dashboard route
   Route::get('/dashboard', 'FrontEnd\UserController@redirectToDashboard')->name('user.dashboard');
   Route::get('/wishlist', 'FrontEnd\UserController@wishlist')->name('user.wishlist');
@@ -299,11 +312,11 @@ Route::prefix('/admin')->middleware('guest:admin')->group(function () {
 
 Route::get('/listings/{slug}/{id}', 'FrontEnd\ListingContoller@details')->name('frontend.listing.details.legacy');
 Route::prefix('{lang?}')
-  ->where(['lang' => '[A-Za-z]{2}'])
+  ->where(['lang' => $languageRoutePattern])
   ->middleware('change.lang')
-  ->group(function () {
+  ->group(function () use ($dynamicPageSlugPattern) {
     Route::get('/{slug}', 'FrontEnd\PageController@page')
-      ->where('slug', '^(?!sitemap\.xml$)[^/]+$')
+      ->where('slug', $dynamicPageSlugPattern)
       ->name('dynamic_page');
   });
 
