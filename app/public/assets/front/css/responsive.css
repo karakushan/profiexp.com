@@ -135,7 +135,7 @@
     .hero-banner .banner-filter-form .btn {
         width: 100%;
         font-size: 18px;
-        margin-top: 10px;
+        margin-top: 28px;
     }
 
     .product-column .product-details {
@@ -441,6 +441,15 @@
         border-bottom: 1px solid var(--border-color) !important;
         padding-bottom: 10px;
         margin-bottom: 10px;
+    }
+
+    .hero-banner .banner-filter-form .current-location-btn {
+        margin-top: 6px !important;
+        margin-bottom: 6px !important;
+    }
+
+    .hero-banner.hero-banner-2 .banner-filter-form .mobile-location-field {
+        margin-bottom: 12px;
     }
 
     .hero-banner .banner-filter-form .btn-icon {

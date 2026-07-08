@@ -59,19 +59,19 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-lg-4 col-md-6 position-relative">
+                                    <div class="col-lg-4 col-md-6 mobile-location-field">
                                         <div class="input-group">
                                             <label for="location"><i class="ico-location-pin"></i></label>
                                             <input type="text" name="location" id="search-address" class="form-control"
                                                 placeholder="{{ __('Location') }}">
+                                            @if ($basicInfo->google_map_api_key_status == 1)
+                                                <button type="button"
+                                                    class="btn btn-primary current-location-btn mt-2 btn-sm float-right"
+                                                    onclick="getCurrentLocationHome()">
+                                                    <i class="fas fa-location"></i>
+                                                </button>
+                                            @endif
                                         </div>
-                                        @if ($basicInfo->google_map_api_key_status == 1)
-                                            <button type="button"
-                                                class="current-location-btn"
-                                                onclick="getCurrentLocationHome()">
-                                                <i class="fas fa-location"></i>
-                                            </button>
-                                        @endif
                                     </div>
                                     <div class="col-lg-2 col-md-6">
                                         <button type="button" id="searchBtn2"

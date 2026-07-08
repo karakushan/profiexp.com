@@ -324,10 +324,7 @@ div.table-responsive>div.dataTables_wrapper>div.row>div[class^=col-]:last-child 
   left: 0;
 }
 
-.hero-banner .banner-filter-form .current-location-btn {
-  right: unset;
-  left: 5px;
-}
+
 
 .pricing-item .pricing-feature-label,
 .pricing-item .pricing-sublist li {
