@@ -7,6 +7,24 @@ use Tests\TestCase;
 
 class UserSignupPageTest extends TestCase
 {
+  public function test_unprefixed_user_login_route_renders_login_form(): void
+  {
+    $this->get('/user/login')
+      ->assertOk()
+      ->assertDontSee('404 not found')
+      ->assertSee('name="username"', false)
+      ->assertSee('name="password"', false);
+  }
+
+  public function test_unprefixed_user_signup_route_renders_signup_form(): void
+  {
+    $this->get('/user/signup')
+      ->assertOk()
+      ->assertDontSee('404 not found')
+      ->assertSee('name="username"', false)
+      ->assertSee('name="password_confirmation"', false);
+  }
+
   public function test_frontend_scripts_skip_invalid_tawkto_script(): void
   {
     $html = View::make('frontend.partials.scripts', [

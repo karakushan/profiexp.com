@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="xxx" dir="{{ $currentLanguageInfo->direction == 1 ? 'rtl' : '' }}">
+<html lang="{{ $currentLanguageInfo->code }}" dir="{{ $currentLanguageInfo->direction == 1 ? 'rtl' : '' }}">
 
 <head>
     <meta charset="utf-8">

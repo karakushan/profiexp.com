@@ -25,7 +25,7 @@
                         <div class="content-left mb-40">
                             <div class="content">
                                 <h1 class="title mb-20 w-75" data-aos="fade-up">
-                                    {{ !empty($heroSection->title) ? $heroSection->title : 'Are You Looking For A business?' }}
+                                    {{ !empty($heroSection->title) ? $heroSection->title : __('Are You Looking For A business?') }}
                                 </h1>
                                 <p class="text mb-30" data-aos="fade-up" data-aos-delay="100">
                                     {{ !empty($heroSection->text) ? $heroSection->text : '' }}</p>
@@ -155,7 +155,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="section-title title-center mb-30" data-aos="fade-up">
-                            <h2 class="title mb-20">{{ $catgorySecInfo ? $catgorySecInfo->title : 'CATEGORIES' }}</h2>
+                            <h2 class="title mb-20">{{ $catgorySecInfo ? $catgorySecInfo->title : __('CATEGORIES') }}</h2>
                         </div>
                     </div>
                     <div class="col-lg-12">
@@ -432,7 +432,7 @@ $listing_content->category_id
                 <div class="row">
                     <div class="col-12">
                         <div class="section-title title-center mb-40" data-aos="fade-up">
-                            <h2 class="title">{{ $packageSecInfo ? $packageSecInfo->title : 'Most Affordable Package' }}
+                            <h2 class="title">{{ $packageSecInfo ? $packageSecInfo->title : __('Most Affordable Package') }}
                             </h2>
                         </div>
                         <div class="tabs-navigation tabs-navigation-2 text-center mb-40" data-aos="fade-up">
@@ -586,7 +586,7 @@ $listing_content->category_id
                     <div class="col-12">
                         <div class="section-title title-inline mb-30" data-aos="fade-up">
                             <h2 class="title mb-20">
-                                {{ !empty($blogSecInfo->title) ? $blogSecInfo->title : 'Read Our Latest Blog' }}
+                                {{ !empty($blogSecInfo->title) ? $blogSecInfo->title : __('Read Our Latest Blog') }}
                             </h2>
                             @if (count($blog_count) > count($blogs))
                                 <a href="{{ route('blog') }}"

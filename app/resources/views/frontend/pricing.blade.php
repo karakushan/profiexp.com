@@ -33,7 +33,7 @@
       <div class="row">
         <div class="col-12">
           <div class="section-title title-center mb-40" data-aos="fade-up">
-            <h2 class="title">{{ $packageSecInfo ? $packageSecInfo->title : 'Most Affordable Package' }}</h2>
+            <h2 class="title">{{ $packageSecInfo ? $packageSecInfo->title : __('Most Affordable Package') }}</h2>
           </div>
           <div class="tabs-navigation tabs-navigation-2 text-center mb-40" data-aos="fade-up">
             <ul class="nav nav-tabs rounded-pill bg-light" data-hover="fancyHover">
@@ -101,11 +101,11 @@
                         </ul>
                         @auth('vendor')
                           <a href="{{ route('vendor.plan.extend.checkout', $package->id) }}" class="btn btn-outline btn-lg"
-                            title="Purchase" target="_self">{{ __('Purchase') }}</a>
+                            title="{{ __('Purchase') }}" target="_self">{{ __('Purchase') }}</a>
                         @endauth
                         @guest('vendor')
                           <a href="{{ route('vendor.login', ['redirectPath' => 'buy_plan', 'package' => $package->id]) }}"
-                            class="btn btn-outline btn-lg" title="Purchase" target="_self">{{ __('Purchase') }}</a>
+                            class="btn btn-outline btn-lg" title="{{ __('Purchase') }}" target="_self">{{ __('Purchase') }}</a>
                         @endguest
                       </div>
                     </div>

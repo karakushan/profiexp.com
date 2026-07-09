@@ -212,6 +212,48 @@ Route::prefix('{lang?}')
 
 Route::post('/advertisement/{id}/count-view', 'FrontEnd\MiscellaneousController@countAdView');
 
+// Explicit unprefixed user routes are required because `{lang?}/...` does not
+// match URLs like `/user/signup` when the first segment is omitted.
+Route::prefix('login')->middleware(['guest:web', 'change.lang'])->group(function () {
+  Route::prefix('/user/facebook')->group(function () {
+    Route::get('', 'FrontEnd\UserController@redirectToFacebook');
+    Route::get('/callback', 'FrontEnd\UserController@handleFacebookCallback');
+  });
+
+  Route::prefix('/google')->group(function () {
+    Route::get('', 'FrontEnd\UserController@redirectToGoogle');
+    Route::get('/callback', 'FrontEnd\UserController@handleGoogleCallback');
+  });
+});
+
+Route::prefix('user')->middleware(['guest:web', 'change.lang'])->group(function () {
+  Route::prefix('/login')->group(function () {
+    Route::get('', 'FrontEnd\UserController@login');
+  });
+
+  Route::post('/login-submit', 'FrontEnd\UserController@loginSubmit')->withoutMiddleware('change.lang');
+  Route::get('/forget-password', 'FrontEnd\UserController@forgetPassword');
+  Route::post('/send-forget-password-mail', 'FrontEnd\UserController@forgetPasswordMail')->withoutMiddleware('change.lang');
+  Route::get('/reset-password', 'FrontEnd\UserController@resetPassword');
+  Route::post('/reset-password-submit', 'FrontEnd\UserController@resetPasswordSubmit')->withoutMiddleware('change.lang');
+  Route::get('/signup', 'FrontEnd\UserController@signup');
+  Route::post('/signup-submit', 'FrontEnd\UserController@signupSubmit');
+  Route::get('/signup-verify/{token}', 'FrontEnd\UserController@signupVerify');
+});
+
+Route::prefix('user')->middleware(['auth:web', 'account.status', 'change.lang'])->group(function () {
+  Route::get('/dashboard', 'FrontEnd\UserController@redirectToDashboard');
+  Route::get('/wishlist', 'FrontEnd\UserController@wishlist');
+  Route::get('order', 'FrontEnd\OrderController@index')->middleware('shop.status');
+  Route::get('/order/details/{id}', 'FrontEnd\OrderController@details')->middleware('shop.status');
+  Route::post('/product/{id}/download', 'FrontEnd\OrderController@downloadProduct');
+  Route::get('/edit-profile', 'FrontEnd\UserController@editProfile');
+  Route::post('/update-profile', 'FrontEnd\UserController@updateProfile')->middleware('Demo')->withoutMiddleware('change.lang');
+  Route::get('/change-password', 'FrontEnd\UserController@changePassword');
+  Route::post('/update-password', 'FrontEnd\UserController@updatePassword')->middleware('Demo')->withoutMiddleware('change.lang');
+  Route::get('/logout', 'FrontEnd\UserController@logoutSubmit')->withoutMiddleware('change.lang');
+});
+
 Route::prefix('{lang?}/login')->where(['lang' => $languageRoutePattern])->middleware(['guest:web', 'change.lang'])->group(function () {
   // user login via facebook route
   Route::prefix('/user/facebook')->group(function () {
