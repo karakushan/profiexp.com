@@ -75,7 +75,7 @@
 
             <div class="col-12">
               <div class="link">
-                {{ __('Already have an account') . '?' }} <a
+                {{ __('Already have an account') }} <a
                   href="{{ route('user.login') }}">{{ __('Click Here') }}</a>
                 {{ __('to Login') }}
               </div>
