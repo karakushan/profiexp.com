@@ -87,12 +87,17 @@ class CustomPageController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit($id, Request $request)
     {
         $information['page'] = Page::query()->findOrFail($id);
 
-        // get all the languages from db
         $information['languages'] = Language::all();
+
+        if ($request->has('language')) {
+            $information['currentLanguage'] = Language::where('code', $request->language)->firstOrFail();
+        } else {
+            $information['currentLanguage'] = Language::where('is_default', 1)->first();
+        }
 
         return view('admin.custom-page.edit', $information);
     }
@@ -112,25 +117,54 @@ class CustomPageController extends Controller
             'status' => $request->status
         ]);
 
-        $languages = Language::all();
+        foreach (Language::all() as $language) {
+            if (!$this->hasTranslationInput($request, $language->code)) {
+                continue;
+            }
 
-        foreach ($languages as $language) {
-            $pageContent = PageContent::query()->where('page_id', '=', $id)
-                ->where('language_id', '=', $language->id)
-                ->first();
+            $pageContent = PageContent::query()->firstOrNew([
+                'page_id' => $id,
+                'language_id' => $language->id
+            ]);
 
-            $pageContent->update([
+            $slug = $request[$language->code . '_slug'];
+            if (empty($slug)) {
+                $slug = createSlug($request[$language->code . '_title']);
+            } else {
+                $slug = createSlug($slug);
+            }
+
+            $pageContent->fill([
                 'title' => $request[$language->code . '_title'],
-                'slug' => createSlug($request[$language->code . '_title']),
+                'slug' => $slug,
                 'content' => Purifier::clean($request[$language->code . '_content'], 'youtube'),
                 'meta_keywords' => $request[$language->code . '_meta_keywords'],
                 'meta_description' => $request[$language->code . '_meta_description']
-            ]);
+            ])->save();
         }
 
         Session::flash('success', __('Page updated successfully') . '!');
 
         return response()->json(['status' => 'success'], 200);
+    }
+
+    private function hasTranslationInput(Request $request, string $code): bool
+    {
+        $fields = [
+            $code . '_title',
+            $code . '_slug',
+            $code . '_content',
+            $code . '_meta_keywords',
+            $code . '_meta_description',
+        ];
+
+        foreach ($fields as $field) {
+            if (trim((string) $request->input($field, '')) !== '') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

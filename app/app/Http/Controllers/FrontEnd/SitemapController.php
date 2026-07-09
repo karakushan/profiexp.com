@@ -204,12 +204,12 @@ class SitemapController extends Controller
 
             $sitemap->add(
                 $this->withAlternates(
-                    Url::create(localized_route('dynamic_page', ['slug' => $primary->slug], $languages[$primary->language_id]->code))
+                    Url::create(page_url($primary->slug, $languages[$primary->language_id]->code))
                         ->setLastModificationDate($primary->updated_at)
                         ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
                         ->setPriority(0.6),
                     $translations,
-                    fn($translation, $language) => localized_route('dynamic_page', ['slug' => $translation->slug], $language->code)
+                    fn($translation, $language) => page_url($translation->slug, $language->code)
                 )
             );
         }

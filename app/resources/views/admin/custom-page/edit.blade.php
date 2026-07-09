@@ -49,6 +49,7 @@
               <form id="pageForm" action="{{ route('admin.custom_pages.update_page', ['id' => $page->id]) }}"
                 method="POST">
                 @csrf
+                <input type="hidden" name="language" value="{{ $currentLanguage->code }}">
                 <div class="row">
                   <div class="col-lg-12">
                     <div class="form-group p-0">
@@ -81,7 +82,7 @@
                           <button type="button"
                             class="btn btn-link {{ $language->direction == 1 ? 'rtl text-right' : '' }}"
                             data-toggle="collapse" data-target="#collapse{{ $language->id }}"
-                            aria-expanded="{{ $language->is_default == 1 ? 'true' : 'false' }}"
+                            aria-expanded="{{ $currentLanguage->id === $language->id ? 'true' : 'false' }}"
                             aria-controls="collapse{{ $language->id }}">
                             {{ $language->name . __(' Language') }} {{ $language->is_default == 1 ? '(Default)' : '' }}
                           </button>
@@ -89,15 +90,26 @@
                       </div>
 
                       <div id="collapse{{ $language->id }}"
-                        class="collapse {{ $language->is_default == 1 ? 'show' : '' }}"
+                        class="collapse {{ $currentLanguage->id === $language->id ? 'show' : '' }}"
                         aria-labelledby="heading{{ $language->id }}" data-parent="#accordion">
                         <div class="version-body">
                           <div class="row">
                             <div class="col-lg-12">
-                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">l
-                               <label>{{ __('Title') . '*' }}</label>
+                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
+                                <label>{{ __('Title') . '*' }}</label>
                                 <input type="text" class="form-control" name="{{ $language->code }}_title"
                                   placeholder="{{ __('Enter Title') }}" value="{{ is_null($pageData) ? '' : $pageData->title }}">
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="row">
+                            <div class="col-lg-12">
+                              <div class="form-group {{ $language->direction == 1 ? 'rtl text-right' : '' }}">
+                                <label>{{ __('Slug') }}</label>
+                                <input type="text" class="form-control" name="{{ $language->code }}_slug"
+                                  placeholder="{{ __('Enter Slug') }}" value="{{ is_null($pageData) ? '' : $pageData->slug }}">
+                                <p class="text-muted mt-1 small">{{ __('If empty, slug will be auto-generated from the title') }}</p>
                               </div>
                             </div>
                           </div>

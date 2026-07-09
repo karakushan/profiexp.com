@@ -56,6 +56,7 @@
                           <input type="checkbox" class="bulk-check" data-val="all">
                         </th>
                         <th scope="col">{{ __('Title') }}</th>
+                        <th scope="col">{{ __('Slug') }}</th>
                         <th scope="col">{{ __('Status') }}</th>
                         <th scope="col">{{ __('Actions') }}</th>
                       </tr>
@@ -67,6 +68,7 @@
                             <input type="checkbox" class="bulk-check" data-val="{{ $page->page_id }}">
                           </td>
                           <td>{{ $page->title }}</td>
+                          <td>{{ $page->slug }}</td>
                           <td>
                             @if ($page->status == 1)
                               <h2 class="d-inline-block"><span class="badge badge-success">{{ __('Active') }}</span>
@@ -77,8 +79,15 @@
                             @endif
                           </td>
                           <td>
+                            <a class="btn btn-primary btn-sm mt-1 mr-1" target="_blank"
+                              href="{{ page_url($page->slug, $language->code) }}">
+                              <span class="btn-label">
+                                <i class="fas fa-eye"></i>
+                              </span>
+                            </a>
+
                             <a class="btn btn-secondary btn-sm  mt-1 mr-1"
-                              href="{{ route('admin.custom_pages.edit_page', ['id' => $page->page_id]) }}">
+                              href="{{ route('admin.custom_pages.edit_page', ['id' => $page->page_id, 'language' => $language->code]) }}">
                               <span class="btn-label">
                                 <i class="fas fa-edit"></i>
                               </span>

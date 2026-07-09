@@ -9,23 +9,22 @@ use App\Models\CustomPage\PageContent;
 
 class PageController extends Controller
 {
-  public function page($slug)
+  public function page($langOrSlug, $slug = null)
   {
+    $slug = $slug ?? $langOrSlug;
+
     $misc = new MiscellaneousController();
 
     $language = $misc->getLanguage();
 
     $information['bgImg'] = $misc->getBreadcrumb();
-
-    $id = PageContent::where('language_id', $language->id)
-      ->where('slug', $slug)
-      ->firstOrFail();
-
-    $information['pageInfo'] = Page::join('page_contents', 'pages.id', '=', 'page_contents.page_id')
+    $information['pageInfo'] = Page::query()
+      ->join('page_contents', 'pages.id', '=', 'page_contents.page_id')
       ->where('pages.status', '=', 1)
       ->where('page_contents.language_id', '=', $language->id)
-      ->where('page_contents.page_id', '=', $id->page_id)
-      ->findOrFail($id->page_id);
+      ->where('page_contents.slug', '=', $slug)
+      ->firstOrFail();
+
     return view('frontend.custom-page', $information);
   }
 }

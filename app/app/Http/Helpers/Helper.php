@@ -193,7 +193,7 @@ if (!function_exists('get_href')) {
             }
         } else {
             // this menu is for the custom page which has been created from the admin panel.
-            $link_href = route('dynamic_page', ['slug' => $data->type]);
+            $link_href = page_url($data->type);
         }
 
         return $link_href;
@@ -299,6 +299,25 @@ if (!function_exists('blog_post_url')) {
         $slug = is_object($blog) ? ($blog->slug ?? null) : $blog;
 
         return localized_route('blog.details', ['slug' => $slug], $langCode);
+    }
+}
+
+if (!function_exists('page_url')) {
+    function page_url($page, ?string $langCode = null): string
+    {
+        $langCode = $langCode ?: current_front_locale();
+        $slug = is_object($page) ? ($page->slug ?? null) : $page;
+        $slug = ltrim((string) $slug, '/');
+
+        if ($slug === '') {
+            return localized_route('index', [], $langCode);
+        }
+
+        $defaultLang = default_front_locale();
+
+        return $langCode === $defaultLang
+            ? url('/' . $slug)
+            : url('/' . $langCode . '/' . $slug);
     }
 }
 

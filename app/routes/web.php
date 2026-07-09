@@ -15,11 +15,17 @@ $languageRoutePattern = Language::query()->pluck('code')
   ->implode('|');
 
 $languageRoutePattern = $languageRoutePattern !== '' ? $languageRoutePattern : '[A-Za-z]{2}';
-$dynamicPageSlugPattern = '^(?!sitemap\.xml$)[^/]+$';
+$reservedDynamicPageSlugs = ['admin', 'sitemap.xml'];
+$dynamicPageSlugExclusions = array_map(
+  fn($slug) => preg_quote($slug, '/'),
+  $reservedDynamicPageSlugs
+);
 
 if ($languageRoutePattern !== '[A-Za-z]{2}') {
-  $dynamicPageSlugPattern = '^(?!(?:sitemap\.xml|' . $languageRoutePattern . ')$)[^/]+$';
+  $dynamicPageSlugExclusions[] = $languageRoutePattern;
 }
+
+$dynamicPageSlugPattern = '^(?!(?:' . implode('|', $dynamicPageSlugExclusions) . ')$)[^/]+$';
 
 
 Route::get('/change-language', 'FrontEnd\MiscellaneousController@changeLanguage')->name('change_language');

@@ -355,9 +355,7 @@ class MiscellaneousController extends Controller
       ->where('page_id', $pageContent->page_id)
       ->first();
 
-    return $targetPageContent
-      ? localized_route('dynamic_page', ['slug' => $targetPageContent->slug], $targetLang)
-      : null;
+    return $targetPageContent ? page_url($targetPageContent->slug, $targetLang) : null;
   }
 
   private function resolveLocalizedCategoryIdUrl(int $categoryId, string $targetLang, array $queryParams): ?string

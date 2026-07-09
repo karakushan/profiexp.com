@@ -28,6 +28,9 @@ class LocalizedRoutingTest extends TestCase
         $this->get('/test-page-' . $defaultLanguage['code'])
             ->assertOk();
 
+        $this->get('/' . $secondaryLanguage['code'] . '/test-page-' . $secondaryLanguage['code'])
+            ->assertOk();
+
         $this->get('/change-language?lang_code=' . $defaultLanguage['code'] . '&current_url=/' . $secondaryLanguage['code'] . '/test-page-' . $secondaryLanguage['code'])
             ->assertRedirect('http://localhost:8080/test-page-' . $defaultLanguage['code']);
     }
