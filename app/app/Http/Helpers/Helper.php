@@ -14,16 +14,12 @@ use App\Models\ListingCategory;
 use App\Models\PaymentGateway\OnlineGateway;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 if (!function_exists('createSlug')) {
     function createSlug($string)
     {
-        $slug = preg_replace('/\s+/u', '-', trim($string));
-        $slug = str_replace('/', '', $slug);
-        $slug = str_replace('?', '', $slug);
-        $slug = str_replace(',', '', $slug);
-
-        return mb_strtolower($slug);
+        return Str::slug((string) $string);
     }
 }
 if (!function_exists('make_input_name')) {
