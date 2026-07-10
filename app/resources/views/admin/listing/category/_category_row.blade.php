@@ -57,9 +57,11 @@
             data-serial_number="{{ $category->serial_number }}"
             @foreach ($category->contents as $content)
             data-{{ $content->language->code }}_name="{{ $content->name }}"
+            data-{{ $content->language->code }}_slug="{{ $content->slug }}"
             data-{{ $content->language->code }}_meta_title="{{ $content->meta_title }}"
             data-{{ $content->language->code }}_meta_description="{{ $content->meta_description }}"
             data-{{ $content->language->code }}_seo_text="{{ $content->seo_text }}"
+            data-{{ $content->language->code }}_other_cities_title="{{ $content->other_cities_title }}"
             @endforeach>
             <span class="btn-label">
                 <i class="fas fa-edit"></i>

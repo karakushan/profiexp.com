@@ -34,7 +34,7 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $langs = Language::all();
-        $defaultLang = Language::where('is_default', 1)->first() ?? Language::first();
+        $adminLangCode = Auth::guard('admin')->user()->code ?? $this->getAdminLanguage()->code;
 
         $rules = [
             'icon' => 'required',
@@ -45,10 +45,12 @@ class CategoryController extends Controller
         ];
 
         foreach ($langs as $lang) {
-            $rules[$lang->code . '_name'] = ($lang->code === $defaultLang->code ? 'required|max:255' : 'nullable|max:255');
+            $rules[$lang->code . '_name'] = ($lang->code === $adminLangCode ? 'required|max:255' : 'nullable|max:255');
+            $rules[$lang->code . '_slug'] = 'nullable|max:255';
             $rules[$lang->code . '_meta_title'] = 'nullable|string|max:255';
             $rules[$lang->code . '_meta_description'] = 'nullable|string';
             $rules[$lang->code . '_seo_text'] = 'nullable|string';
+            $rules[$lang->code . '_other_cities_title'] = 'nullable|string|max:255';
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -80,10 +82,11 @@ class CategoryController extends Controller
                 'listing_category_id' => $category->id,
                 'language_id' => $lang->id,
                 'name' => $name,
-                'slug' => createSlug($name),
+                'slug' => createSlug($request->{$lang->code . '_slug'} ?: $name),
                 'meta_title' => $request->{$lang->code . '_meta_title'},
                 'meta_description' => $request->{$lang->code . '_meta_description'},
                 'seo_text' => $request->{$lang->code . '_seo_text'},
+                'other_cities_title' => $request->{$lang->code . '_other_cities_title'},
             ]);
         }
 
@@ -95,7 +98,7 @@ class CategoryController extends Controller
     public function update(Request $request)
     {
         $langs = Language::all();
-        $defaultLang = Language::where('is_default', 1)->first() ?? Language::first();
+        $adminLangCode = Auth::guard('admin')->user()->code ?? $this->getAdminLanguage()->code;
 
         $rules = [
             'icon' => 'required',
@@ -105,10 +108,12 @@ class CategoryController extends Controller
         ];
 
         foreach ($langs as $lang) {
-            $rules[$lang->code . '_name'] = ($lang->code === $defaultLang->code ? 'required|max:255' : 'nullable|max:255');
+            $rules[$lang->code . '_name'] = ($lang->code === $adminLangCode ? 'required|max:255' : 'nullable|max:255');
+            $rules[$lang->code . '_slug'] = 'nullable|max:255';
             $rules[$lang->code . '_meta_title'] = 'nullable|string|max:255';
             $rules[$lang->code . '_meta_description'] = 'nullable|string';
             $rules[$lang->code . '_seo_text'] = 'nullable|string';
+            $rules[$lang->code . '_other_cities_title'] = 'nullable|string|max:255';
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -148,10 +153,11 @@ class CategoryController extends Controller
                 ],
                 [
                     'name' => $name,
-                    'slug' => createSlug($name),
+                    'slug' => createSlug($request->{$lang->code . '_slug'} ?: $name),
                     'meta_title' => $request->{$lang->code . '_meta_title'},
                     'meta_description' => $request->{$lang->code . '_meta_description'},
                     'seo_text' => $request->{$lang->code . '_seo_text'},
+                    'other_cities_title' => $request->{$lang->code . '_other_cities_title'},
                 ]
             );
         }
@@ -212,10 +218,20 @@ class CategoryController extends Controller
 
     private function getAdminLanguage(): Language
     {
-        $adminLangCode = Auth::guard('admin')->user()->lang_code ?? null;
+        $admin = Auth::guard('admin')->user();
+        $code = $admin->code ?? null;
 
-        if ($adminLangCode) {
-            $lang = Language::where('code', $adminLangCode)->first();
+        if ($code) {
+            $lang = Language::where('code', $code)->first();
+            if ($lang) {
+                return $lang;
+            }
+        }
+
+        $langCode = $admin->lang_code ?? null;
+        if ($langCode) {
+            $code = str_replace('admin_', '', $langCode);
+            $lang = Language::where('code', $code)->first();
             if ($lang) {
                 return $lang;
             }

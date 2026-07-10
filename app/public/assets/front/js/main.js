@@ -127,3 +127,22 @@ function adView($id) {
     if ('success' in response) { } else { }
   });
 }
+
+//===== SEO Text Toggle
+$(function () {
+  $('.seo-text-collapse').each(function () {
+    var $collapse = $(this);
+    if ($collapse.prop('scrollHeight') > $collapse.outerHeight()) {
+      $collapse.closest('.seo-text-content').addClass('collapsible');
+    }
+  });
+
+  $(document).on('click', '.seo-text-toggle', function () {
+    var $content = $(this).closest('.seo-text-content');
+    var $collapse = $content.find('.seo-text-collapse');
+    var isExpanded = $collapse.hasClass('expanded');
+
+    $collapse.toggleClass('expanded');
+    $(this).attr('aria-expanded', !isExpanded);
+  });
+});

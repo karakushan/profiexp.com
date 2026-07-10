@@ -18,6 +18,7 @@ class ListingCategoryContent extends Model
         'meta_title',
         'meta_description',
         'seo_text',
+        'other_cities_title',
     ];
 
     public function category(): BelongsTo

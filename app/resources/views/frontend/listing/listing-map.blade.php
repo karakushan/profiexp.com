@@ -1,9 +1,9 @@
 @extends('frontend.layout')
 @section('pageHeading')
-    @if (!empty($cityCategoryH1))
-        {{ $cityCategoryH1 }}
-    @elseif (!empty($cityMetaTitle))
+    @if (!empty($cityMetaTitle))
         {{ $cityMetaTitle }}
+    @elseif (!empty($cityCategoryH1))
+        {{ $cityCategoryH1 }}
     @elseif (!empty($categoryContent) && !empty($categoryContent->meta_title))
         {{ $categoryContent->meta_title }}
     @elseif (!empty($categoryContent) && !empty($categoryContent->name))
@@ -491,13 +491,33 @@ $listing_content->category_id
     </div>
     <!-- Listing-map-area end -->
 
+    @if ($otherCities->isNotEmpty())
+        <section class="other-cities pt-30 pb-30 bg-primary-light">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-10 offset-lg-1">
+                        <h2 class="other-cities-title mb-20 text-center">{{ $categoryContent->other_cities_title ?: __(':category in cities', ['category' => $categoryContent->name]) }}</h2>
+                        <ul class="other-cities-list">
+                            @foreach ($otherCities as $otherCity)
+                                <li><a href="{{ $otherCity['url'] }}">{{ $otherCity['name'] }}</a></li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
+
     @if (!empty($categoryContent) && !empty($categoryContent->seo_text))
         <section class="category-seo-text pt-30 pb-40">
             <div class="container">
                 <div class="row">
-                    <div class="col-12">
+                    <div class="col-lg-10 offset-lg-1">
                         <div class="seo-text-content">
-                            {!! $categoryContent->seo_text !!}
+                            <div class="seo-text-collapse">
+                                {!! $categoryContent->seo_text !!}
+                            </div>
+                            <button class="seo-text-toggle btn btn-primary btn-xs mt-2" type="button">{{ __('Read More') }} <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
                         </div>
                     </div>
                 </div>

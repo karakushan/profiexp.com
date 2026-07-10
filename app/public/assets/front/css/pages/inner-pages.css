@@ -2149,3 +2149,146 @@ Shop Single CSS
 .shop-single-area .product-desc ul {
     padding-inline-start: 1.2rem;
 }
+
+/* -----------------------------------------
+Other cities section
+----------------------------------------- */
+.other-cities {
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.other-cities-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin-bottom: 20px;
+}
+
+.other-cities-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.other-cities-list li {
+    margin: 0;
+}
+
+.other-cities-list li a {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #ffffff;
+    border: 1px solid var(--color-primary);
+    border-radius: 25px;
+    color: var(--color-dark);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.other-cities-list li a:hover {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #ffffff;
+}
+
+@media (max-width: 767px) {
+    .other-cities-title {
+        font-size: 20px;
+    }
+
+    .other-cities-list li a {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+}
+
+/* -----------------------------------------
+Category SEO text section
+----------------------------------------- */
+.category-seo-text {
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.category-seo-text .seo-text-content {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #555;
+}
+
+.seo-text-collapse {
+    max-height: 200px;
+    overflow: hidden;
+    position: relative;
+    transition: max-height 0.3s ease;
+}
+
+.seo-text-collapse::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(transparent, #f8f9fa);
+    pointer-events: none;
+}
+
+.seo-text-collapse.expanded {
+    max-height: none;
+}
+
+.seo-text-collapse.expanded::after {
+    display: none;
+}
+
+.seo-text-content .seo-text-toggle {
+    display: none;
+    text-transform: lowercase;
+    font-weight: 400 !important;
+}
+
+.seo-text-content.collapsible .seo-text-toggle {
+    display: inline-block;
+}
+
+.btn-xs {
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.3;
+    border-radius: 20px !important;
+}
+
+.category-seo-text .seo-text-content h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin-bottom: 20px;
+}
+
+.category-seo-text .seo-text-content h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--color-dark);
+    margin-bottom: 16px;
+}
+
+.category-seo-text .seo-text-content h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-dark);
+    margin-bottom: 12px;
+}
+
+.category-seo-text .seo-text-content p:last-child {
+    margin-bottom: 0;
+}

@@ -52,6 +52,13 @@
                                                 placeholder="{{ __('Enter Category Name') }}">
                                             <p id="editErr_{{ $language->code }}_name" class="mt-2 mb-0 text-danger em"></p>
                                         </div>
+                                        <div class="form-group">
+                                            <label>{{ __('Slug') }}</label>
+                                            <input type="text" id="in_{{ $language->code }}_slug" class="form-control"
+                                                name="{{ $language->code }}_slug"
+                                                placeholder="{{ __('Enter Slug') }}">
+                                            <p id="editErr_{{ $language->code }}_slug" class="mt-2 mb-0 text-danger em"></p>
+                                        </div>
                                         <div class="d-flex justify-content-between align-items-center">
                                             <label>{{ __('Meta Title') }}</label>
                                             <button type="button" class="btn btn-sm btn-info generate-seo-btn mb-2"
@@ -79,6 +86,13 @@
                                                 name="{{ $language->code }}_seo_text" rows="4"
                                                 placeholder="{{ __('Enter SEO Text') }}"></textarea>
                                             <p id="editErr_{{ $language->code }}_seo_text" class="mt-2 mb-0 text-danger em"></p>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>{{ __('Other cities title') }}</label>
+                                            <input type="text" id="in_{{ $language->code }}_other_cities_title" class="form-control"
+                                                name="{{ $language->code }}_other_cities_title"
+                                                placeholder="{{ __('e.g. Listings in other cities') }}">
+                                            <p id="editErr_{{ $language->code }}_other_cities_title" class="mt-2 mb-0 text-danger em"></p>
                                         </div>
                                     </div>
                                 </div>

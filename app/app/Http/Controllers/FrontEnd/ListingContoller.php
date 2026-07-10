@@ -33,6 +33,7 @@ use App\Models\Location\CityContent;
 use App\Models\Location\Country;
 use App\Models\Location\State;
 use App\Models\Location\StateContent;
+use App\Models\Location\ListingCityCategory;
 use App\Models\Location\ListingCityCategoryContent;
 use App\Models\Shop\Product;
 use App\Models\Vendor;
@@ -974,6 +975,21 @@ class ListingContoller extends Controller
       $information['cityCategoryH1'] = $information['cityCategoryContent']->name;
       $information['cityMetaTitle'] = $information['cityCategoryContent']->meta_title ?: $information['cityCategoryContent']->name;
       $information['cityMetaDescription'] = $information['cityCategoryContent']->meta_description;
+    }
+
+    $information['otherCities'] = collect();
+    if ($category_content && !$information['cityCategoryContent']) {
+      $otherCities = ListingCityCategory::with(['contents' => fn($q) => $q->where('language_id', $language->id), 'city.contents' => fn($q) => $q->where('language_id', $language->id)])
+        ->where('listing_category_id', $category_content->id)
+        ->get();
+
+      $information['otherCities'] = $otherCities->map(function ($item) use ($language) {
+        $content = $item->getTranslation($language->id);
+        return [
+          'name' => $item->city->getName($language->id),
+          'url' => $content?->slug ? localized_route('frontend.listing.city_category', ['slug' => $content->slug], $language->code) : null,
+        ];
+      })->filter(fn($item) => $item['url'] && $item['name'])->values();
     }
 
     if ($view == 0) {
