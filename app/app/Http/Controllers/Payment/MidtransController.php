@@ -19,7 +19,6 @@ use App\Http\Helpers\VendorPermissionHelper;
 use App\Models\PaymentGateway\OnlineGateway;
 use App\Http\Controllers\Vendor\VendorCheckoutController;
 use App\Services\ClaimAttachService;
-use Illuminate\Support\Facades\Auth;
 
 class MidtransController extends Controller
 {

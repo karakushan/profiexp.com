@@ -167,7 +167,7 @@
                                                 $checkWishList = false;
                                             @endphp
                                         @endif
-                                        <a href="{{ $checkWishList == false ? route('addto.wishlist', $listing->id) : route('remove.wishlist', $listing->id) }}"
+                                        <a href="{{ $checkWishList == false ? route('addto.wishlist', ['id' => $listing->id]) : route('remove.wishlist', ['id' => $listing->id]) }}"
                                             class="btn btn-icon icon-start {{ $checkWishList == false ? '' : 'wishlist-active' }}"
                                             data-tooltip="tooltip" data-bs-placement="right"
                                             title="{{ $checkWishList == false ? __('Save to Wishlist') : __('Saved') }}">

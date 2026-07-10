@@ -138,6 +138,22 @@
         margin-top: 28px;
     }
 
+    .hero-banner.hero-banner-2 .banner-filter-form .mobile-location-field .input-group {
+        height: auto;
+        flex-wrap: wrap;
+        row-gap: 12px;
+    }
+
+    .hero-banner.hero-banner-2 .banner-filter-form .mobile-location-field .current-location-btn {
+        flex: 0 0 100%;
+        width: 100%;
+        margin: 0 !important;
+    }
+
+    .hero-banner.hero-banner-2 .banner-filter-form #searchBtn2 {
+        margin-top: 12px !important;
+    }
+
     .product-column .product-details {
         -webkit-padding-start: 0;
         padding-inline-start: 0;

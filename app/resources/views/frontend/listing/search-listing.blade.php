@@ -25,7 +25,7 @@
                                 $checkWishList = false;
                             @endphp
                         @endif
-                        <a href="{{ $checkWishList == false ? route('addto.wishlist', $listing_content->id) : route('remove.wishlist', $listing_content->id) }}"
+                        <a href="{{ $checkWishList == false ? route('addto.wishlist', ['id' => $listing_content->id]) : route('remove.wishlist', ['id' => $listing_content->id]) }}"
                             class="btn-icon {{ $checkWishList == false ? '' : 'wishlist-active' }}"
                             data-tooltip="tooltip" data-bs-placement="top"
                             title="{{ $checkWishList == false ? __('Save to Wishlist') : __('Saved') }}">
@@ -184,7 +184,7 @@
                                 $checkWishList = false;
                             @endphp
                         @endif
-                        <a href="{{ $checkWishList == false ? route('addto.wishlist', $listing_content->id) : route('remove.wishlist', $listing_content->id) }}"
+                        <a href="{{ $checkWishList == false ? route('addto.wishlist', ['id' => $listing_content->id]) : route('remove.wishlist', ['id' => $listing_content->id]) }}"
                             class="btn-icon {{ $checkWishList == false ? '' : 'wishlist-active' }}"
                             data-tooltip="tooltip" data-bs-placement="top"
                             title="{{ $checkWishList == false ? __('Save to Wishlist') : __('Saved') }}">

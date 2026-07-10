@@ -97,6 +97,7 @@ class CategoryController extends Controller
     return response()->json(['status' => 'success', 'message' => 'Categories deleted successfully.']);
   }
 }
+/*
         // first, get the language info from db
         $language = Language::where('code', $request->language)->firstOrFail();
         $information['language'] = $language;
@@ -211,3 +212,4 @@ class CategoryController extends Controller
         return Response::json(['status' => 'success'], 200);
     }
 }
+*/

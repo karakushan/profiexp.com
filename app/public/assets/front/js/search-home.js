@@ -17,7 +17,7 @@ $("#searchBtn2").on('click', function (e) {
   });
 
   var queryString = queryParams.join('&');
-  var newUrl = baseURL + '/listings';
+  var newUrl = $('#searchForm2').attr('action') || (baseURL + '/listings');
 
   if (queryString !== '') {
     newUrl += '?' + queryString;

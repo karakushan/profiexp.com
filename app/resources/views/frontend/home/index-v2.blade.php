@@ -41,7 +41,7 @@
                     </div>
                     <div class="banner-filter-form" data-aos="fade-up" data-aos-delay="150">
                         <div class="form-wrapper radius-xl">
-                            <form action="{{ route('frontend.listings') }}" id="searchForm2" method="GET">
+                            <form action="{{ route('frontend.listings', ['lang' => $currentLanguageInfo->code]) }}" id="searchForm2" method="GET">
                                 <div class="row align-items-center gx-xl-3">
                                     <div class="col-lg-3 col-md-6">
                                         <div class="input-group border-end">
@@ -877,5 +877,5 @@
             src="https://maps.googleapis.com/maps/api/js?key={{ $basicInfo->google_map_api_key }}&libraries=places&callback=initMap"
             async defer></script>
     @endif
-    <script src="{{ asset('assets/front/js/search-home.js') }}"></script>
+    <script src="{{ asset('assets/front/js/search-home.js') }}?v=20260710-2"></script>
 @endsection

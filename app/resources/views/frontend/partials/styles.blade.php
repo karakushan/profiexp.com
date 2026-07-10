@@ -31,14 +31,14 @@
 <!-- Tinymce-content CSS  -->
 <link rel="stylesheet" href="{{ asset('assets/front/css/tinymce-content.css') }}">
 <!-- Header CSS -->
-<link rel="stylesheet" href="{{ asset('assets/front/css/header/header.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/front/css/header/header.css') }}?v=20260710-2">
 @if (in_array($basicInfo->theme_version, [2, 3]))
-<link rel="stylesheet" href="{{ asset('assets/front/css/header/header-2.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/front/css/header/header-2.css') }}?v=20260710-9">
 @endif
 <!-- Main Style CSS -->
 <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
 <!-- Responsive CSS -->
-<link rel="stylesheet" href="{{ asset('assets/front/css/responsive.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/front/css/responsive.css') }}?v=20260710-2">
 {{-- rtl css are goes here --}}
 @if ($currentLanguageInfo->direction == 1)
   <link rel="stylesheet" href="{{ asset('assets/front/css/rtl.css') }}">

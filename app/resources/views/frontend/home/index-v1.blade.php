@@ -33,7 +33,7 @@
                             </div>
                             <div class="banner-filter-form mb-20">
                                 <div class="form-wrapper radius-xl">
-                                    <form action="{{ route('frontend.listings') }}" id="searchForm2" method="GET">
+                                    <form action="{{ route('frontend.listings', ['lang' => $currentLanguageInfo->code]) }}" id="searchForm2" method="GET">
                                         <div class="row align-items-center gx-xl-3">
                                             <div class="col-lg-3 col-md-6">
                                                 <div class="input-group border-end">
@@ -201,7 +201,7 @@
                                                                 $checkWishList = false;
                                                             @endphp
                                                         @endif
-                                                        <a href="{{ $checkWishList == false ? route('addto.wishlist', $listing_content->id) : route('remove.wishlist', $listing_content->id) }}"
+                                                        <a href="{{ $checkWishList == false ? route('addto.wishlist', ['id' => $listing_content->id]) : route('remove.wishlist', ['id' => $listing_content->id]) }}"
                                                             class="btn-icon {{ $checkWishList == false ? '' : 'wishlist-active' }}"
                                                             data-tooltip="tooltip" data-bs-placement="top"
                                                             title="{{ $checkWishList == false ? __('Save to Wishlist') : __('Saved') }}">
@@ -648,5 +648,5 @@ $listing_content->category_id
             src="https://maps.googleapis.com/maps/api/js?key={{ $basicInfo->google_map_api_key }}&libraries=places&callback=initMap"
             async defer></script>
     @endif
-    <script src="{{ asset('assets/front/js/search-home.js') }}"></script>
+    <script src="{{ asset('assets/front/js/search-home.js') }}?v=20260710-2"></script>
 @endsection

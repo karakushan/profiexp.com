@@ -15,7 +15,7 @@ Route::prefix('/admin')->middleware('auth:admin', 'Demo', 'adminLang')->group(fu
 
     Route::get('/dashboard', 'Admin\AdminController@redirectToDashboard')->name('admin.dashboard');
     Route::get('/membership-request', 'Admin\AdminController@membershipRequest')->name('admin.membership-request');
-    Route::post('/membership-request/update/{id}', 'Admin\AdminController@membershipRequestUpdate')->name('admin.payment-log.update');
+    Route::post('/membership-request/update/{id}', 'Admin\AdminController@membershipRequestUpdate')->name('admin.membership-request.update');
     Route::get('/monthly-profit', 'Admin\AdminController@monthly_profit')->name('admin.monthly_profit');
     Route::get('/monthly-earning', 'Admin\AdminController@monthly_earning')->name('admin.monthly_earning');
 
@@ -50,7 +50,7 @@ Route::prefix('/admin')->middleware('auth:admin', 'Demo', 'adminLang')->group(fu
     Route::prefix('packages')->group(function () {
         // Package Settings routes
         Route::get('/settings', 'Admin\PackageController@settings')->name('admin.package.settings');
-        Route::post('/settings', 'Admin\PackageController@updateSettings')->name('admin.package.settings');
+        Route::post('/settings', 'Admin\PackageController@updateSettings')->name('admin.package.settings.update');
         // Package routes
 
         Route::get('', 'Admin\PackageController@index')->name('admin.package.index');
