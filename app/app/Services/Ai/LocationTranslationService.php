@@ -33,7 +33,13 @@ class LocationTranslationService
             'name' => $source->name ?? '',
         ];
 
-        return $this->doTranslate($fields, $targetLangName);
+        $result = $this->doTranslate($fields, $targetLangName);
+
+        if (!empty($result['name'])) {
+            $result['slug'] = createSlug($result['name']);
+        }
+
+        return $result;
     }
 
     public function translateCity(

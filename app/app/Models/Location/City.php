@@ -34,6 +34,11 @@ class City extends Model
         return $this->hasMany(CityContent::class, 'city_id');
     }
 
+    public function listingCityCategories(): HasMany
+    {
+        return $this->hasMany(ListingCityCategory::class);
+    }
+
     public function scopeForLanguage(Builder $query, int $languageId): Builder
     {
         return $query->whereHas('contents', function ($q) use ($languageId) {

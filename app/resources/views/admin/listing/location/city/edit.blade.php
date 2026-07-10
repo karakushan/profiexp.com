@@ -60,6 +60,12 @@
                         name="{{ $language->code }}_name" placeholder="{{ __('Enter City Name') }}">
                       <p id="editErr_{{ $language->code }}_name" class="mt-2 mb-0 text-danger em"></p>
                     </div>
+                    <div class="form-group">
+                      <label>{{ __('Slug') }}</label>
+                      <input type="text" id="in_{{ $language->code }}_slug" class="form-control"
+                        name="{{ $language->code }}_slug"
+                        placeholder="{{ __('Generated automatically') }}">
+                    </div>
                   </div>
                 </div>
               </div>

@@ -308,8 +308,16 @@ $(function ($) {
                     $(this).html('');
                 });
 
-                for (let x in error.responseJSON.errors) {
-                    document.getElementById('err_' + x).innerHTML = error.responseJSON.errors[x][0];
+                let responseErrors = error.responseJSON && error.responseJSON.errors
+                    ? error.responseJSON.errors
+                    : { form: [error.responseJSON && error.responseJSON.message ? error.responseJSON.message : 'Request failed.'] };
+                for (let x in responseErrors) {
+                    let errorElement = document.getElementById('err_' + x) || document.getElementById('editErr_' + x);
+                    if (errorElement) {
+                        errorElement.innerHTML = responseErrors[x][0];
+                    } else if (typeof bootnotify === 'function') {
+                        bootnotify(responseErrors[x][0], 'Error', 'danger');
+                    }
                 }
 
                 $('.request-loader').removeClass('show');

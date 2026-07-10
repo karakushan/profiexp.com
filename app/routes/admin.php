@@ -152,6 +152,12 @@ Route::prefix('/admin')->middleware('auth:admin', 'Demo', 'adminLang')->group(fu
             Route::post('/update-city', 'Admin\Listing\Location\CityController@update')->name('admin.listing_specification.location.update_city');
             Route::post('/delete-city/{id}', 'Admin\Listing\Location\CityController@destroy')->name('admin.listing_specification.location.delete_city');
             Route::post('/bulk-delete-city', 'Admin\Listing\Location\CityController@bulkDestroy')->name('admin.listing_specification.location.bulk_delete_city');
+
+            Route::get('/city-categories', 'Admin\Listing\Location\ListingCityCategoryController@index')->name('admin.listing_specification.location.city_categories');
+            Route::post('/store-city-category', 'Admin\Listing\Location\ListingCityCategoryController@store')->name('admin.listing_specification.location.store_city_category');
+            Route::post('/update-city-category', 'Admin\Listing\Location\ListingCityCategoryController@update')->name('admin.listing_specification.location.update_city_category');
+            Route::post('/delete-city-category/{id}', 'Admin\Listing\Location\ListingCityCategoryController@destroy')->name('admin.listing_specification.location.delete_city_category');
+            Route::post('/bulk-delete-city-category', 'Admin\Listing\Location\ListingCityCategoryController@bulkDestroy')->name('admin.listing_specification.location.bulk_delete_city_category');
         });
     });
 

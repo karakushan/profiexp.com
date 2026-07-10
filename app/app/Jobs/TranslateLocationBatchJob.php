@@ -16,7 +16,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class TranslateLocationBatchJob implements ShouldQueue
 {
@@ -89,17 +88,8 @@ class TranslateLocationBatchJob implements ShouldQueue
 
                 $data = ['name' => $translated['name']];
 
-                if ($this->entityType === 'city') {
-                    $slug = $translated['slug'] ?? Str::slug($translated['name']);
-                    if ($targetLang->code !== 'en') {
-                        $enLang = Language::where('code', 'en')->first();
-                        if ($enLang) {
-                            $enContent = CityContent::where('city_id', $this->entityId)
-                                ->where('language_id', $enLang->id)->first();
-                            if ($enContent && !empty($enContent->slug)) $slug = $enContent->slug;
-                        }
-                    }
-                    $data['slug'] = $slug;
+                if (in_array($this->entityType, ['city', 'state'], true)) {
+                    $data['slug'] = createSlug($translated['name']);
                 }
 
                 try {

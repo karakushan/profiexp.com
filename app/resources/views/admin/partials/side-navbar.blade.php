@@ -119,7 +119,7 @@
                                 </li>
                                 <li class="submenu">
                                     <a data-toggle="collapse"
-                                        href="#set-location"aria-expanded="{{ request()->routeIs('admin.listing_specification.location.countries') || request()->routeIs('admin.listing_specification.location.city') || request()->routeIs('admin.listing_specification.location.states') ? 'true' : 'false' }}">
+                                        href="#set-location"aria-expanded="{{ request()->routeIs('admin.listing_specification.location.countries') || request()->routeIs('admin.listing_specification.location.city') || request()->routeIs('admin.listing_specification.location.states') || request()->routeIs('admin.listing_specification.location.city_categories') ? 'true' : 'false' }}">
                                         <span class="sub-item">{{ __('Location') }}</span>
                                         <span class="caret"></span>
                                     </a>
@@ -128,7 +128,8 @@
                                         class="collapse
                     @if (request()->routeIs('admin.listing_specification.location.countries')) show
                     @elseif (request()->routeIs('admin.listing_specification.location.city')) show
-                    @elseif (request()->routeIs('admin.listing_specification.location.states')) show @endif">
+                    @elseif (request()->routeIs('admin.listing_specification.location.states')) show
+                    @elseif (request()->routeIs('admin.listing_specification.location.city_categories')) show @endif">
                                         <ul class="nav nav-collapse subnav">
                                             <li
                                                 class="{{ request()->routeIs('admin.listing_specification.location.countries') ? 'active' : '' }}">
@@ -151,6 +152,14 @@
                                                 <a
                                                     href="{{ route('admin.listing_specification.location.city', ['language' => $defaultLang->code]) }}">
                                                     <span class="sub-item">{{ __('Cities') }}</span>
+                                                </a>
+                                            </li>
+
+                                            <li
+                                                class="{{ request()->routeIs('admin.listing_specification.location.city_categories') ? 'active' : '' }}">
+                                                <a
+                                                    href="{{ route('admin.listing_specification.location.city_categories', ['language' => $defaultLang->code]) }}">
+                                                    <span class="sub-item">{{ __('City Categories') }}</span>
                                                 </a>
                                             </li>
                                         </ul>

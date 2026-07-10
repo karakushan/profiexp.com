@@ -60,6 +60,9 @@ Route::middleware('change.lang')->group(function () use ($dynamicPageSlugPattern
   Route::get('/pricing', 'FrontEnd\HomeController@pricing')->name('frontend.pricing');
   Route::get('/faq', 'FrontEnd\FaqController@faq')->name('faq');
   Route::get('/', 'FrontEnd\HomeController@index')->name('index');
+  Route::get('/listing-city-category/{slug}', 'FrontEnd\ListingContoller@cityCategoryListings')->name('frontend.listing.city_category');
+  Route::get('/listing-city/{slug}', 'FrontEnd\ListingContoller@cityListings')->name('frontend.listing.city');
+  Route::get('/listing-state/{slug}', 'FrontEnd\ListingContoller@stateListings')->name('frontend.listing.state');
 
   Route::prefix('listings')->group(function () {
     Route::get('/', 'FrontEnd\ListingContoller@index')->name('frontend.listings');
@@ -112,6 +115,9 @@ Route::prefix('{lang?}')
   Route::get('/faq', 'FrontEnd\FaqController@faq')->name('faq');
 
   Route::get('/', 'FrontEnd\HomeController@index')->name('index');
+  Route::get('/listing-city-category/{slug}', 'FrontEnd\ListingContoller@cityCategoryListings')->name('frontend.listing.city_category');
+  Route::get('/listing-city/{slug}', 'FrontEnd\ListingContoller@cityListings')->name('frontend.listing.city');
+  Route::get('/listing-state/{slug}', 'FrontEnd\ListingContoller@stateListings')->name('frontend.listing.state');
 
   Route::prefix('listings')->group(function () {
     Route::get('/', 'FrontEnd\ListingContoller@index')->name('frontend.listings');

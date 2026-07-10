@@ -116,6 +116,13 @@
                                   ->count();
                               $okValue = $x != 0 ? 'OK' : null;
                             @endphp
+                            <a class="btn btn-primary btn-sm mr-1 mt-1"
+                              href="{{ listing_city_url($city, $language->code) }}" target="_blank"
+                              title="{{ __('View Listings') }}">
+                              <span class="btn-label">
+                                <i class="fas fa-list"></i>
+                              </span>
+                            </a>
                             <a class="btn btn-secondary btn-sm mr-1 mt-1 editBtn" href="#" data-toggle="modal"
                               data-target="#editModal" data-id="{{ $city->id }}"
                               data-country_id="{{ $city->country_id }}" data-state_id="{{ $city->state_id }}"
@@ -124,6 +131,7 @@
                               data-image="{{ is_null($city->feature_image) ? asset('assets/img/noimage.jpg') : asset('assets/img/location/city/' . $city->feature_image) }}"
                               @foreach ($city->contents as $content)
                               data-{{ $content->language->code }}_name="{{ $content->name }}"
+                              data-{{ $content->language->code }}_slug="{{ $content->slug }}"
                               @endforeach>
                               <span class="btn-label">
                                 <i class="fas fa-edit"></i>

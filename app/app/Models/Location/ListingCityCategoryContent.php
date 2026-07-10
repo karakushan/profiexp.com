@@ -7,20 +7,23 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class StateContent extends Model
+class ListingCityCategoryContent extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'state_id',
+        'listing_city_category_id',
         'language_id',
         'name',
         'slug',
+        'meta_title',
+        'meta_description',
+        'seo_text',
     ];
 
-    public function state(): BelongsTo
+    public function listingCityCategory(): BelongsTo
     {
-        return $this->belongsTo(State::class);
+        return $this->belongsTo(ListingCityCategory::class);
     }
 
     public function language(): BelongsTo

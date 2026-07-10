@@ -1,6 +1,8 @@
 @extends('frontend.layout')
 @section('pageHeading')
-    @if (!empty($cityMetaTitle))
+    @if (!empty($cityCategoryH1))
+        {{ $cityCategoryH1 }}
+    @elseif (!empty($cityMetaTitle))
         {{ $cityMetaTitle }}
     @elseif (!empty($categoryContent) && !empty($categoryContent->meta_title))
         {{ $categoryContent->meta_title }}
@@ -36,9 +38,11 @@
 
     @includeIf('frontend.partials.breadcrumb', [
         'breadcrumb' => $bgImg->breadcrumb,
-        'title' => !empty($categoryContent) && !empty($categoryContent->name)
+        'title' => !empty($cityCategoryH1)
+            ? $cityCategoryH1
+            : (!empty($categoryContent) && !empty($categoryContent->name)
             ? $categoryContent->name
-            : (!empty($pageHeading) ? $pageHeading->listing_page_title : __('Listings')),
+            : (!empty($pageHeading) ? $pageHeading->listing_page_title : __('Listings'))),
     ])
 
     <!-- Page title start-->

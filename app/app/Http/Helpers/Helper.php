@@ -11,6 +11,7 @@ use App\Models\Listing\ListingContent;
 use App\Models\Listing\ListingProduct;
 use App\Models\Listing\ListingReview;
 use App\Models\ListingCategory;
+use App\Models\Location\ListingCityCategory;
 use App\Models\PaymentGateway\OnlineGateway;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -285,6 +286,40 @@ if (!function_exists('listing_category_url')) {
         $cache[$cacheKey] = $slug;
 
         return localized_route('frontend.listing.details', ['slug' => $slug], $langCode);
+    }
+}
+
+if (!function_exists('listing_city_url')) {
+    function listing_city_url($city, ?string $langCode = null): string
+    {
+        $langCode = $langCode ?: current_front_locale();
+        $cityId = is_object($city) ? ($city->id ?? null) : $city;
+
+        return localized_route('frontend.listings', ['city' => $cityId], $langCode);
+    }
+}
+
+if (!function_exists('listing_state_url')) {
+    function listing_state_url($state, ?string $langCode = null): string
+    {
+        $langCode = $langCode ?: current_front_locale();
+        $stateId = is_object($state) ? ($state->id ?? null) : $state;
+
+        return localized_route('frontend.listings', ['state' => $stateId], $langCode);
+    }
+}
+
+if (!function_exists('listing_city_category_url')) {
+    function listing_city_category_url($item, ?string $langCode = null): string
+    {
+        $langCode = $langCode ?: current_front_locale();
+        $content = is_object($item) && method_exists($item, 'getTranslation')
+            ? $item->getTranslation((int) Language::query()->where('code', $langCode)->value('id'))
+            : ListingCityCategory::query()->find($item)?->getTranslation((int) Language::query()->where('code', $langCode)->value('id'));
+
+        return $content?->slug
+            ? localized_route('frontend.listing.city_category', ['slug' => $content->slug], $langCode)
+            : localized_route('frontend.listings', [], $langCode);
     }
 }
 

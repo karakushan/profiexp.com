@@ -108,6 +108,7 @@
                               data-id="{{ $state->id }}"data-country_id="{{ $state->country_id }}"
                               @foreach ($state->contents as $content)
                               data-{{ $content->language->code }}_name="{{ $content->name }}"
+                              data-{{ $content->language->code }}_slug="{{ $content->slug }}"
                               @endforeach>
                               <span class="btn-label">
                                 <i class="fas fa-edit"></i>

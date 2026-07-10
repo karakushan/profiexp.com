@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Listing\ListingContent;
+use App\Models\Location\ListingCityCategory;
 
 class ListingCategory extends Model
 {
@@ -53,6 +54,11 @@ class ListingCategory extends Model
     public function listing_contents(): HasMany
     {
         return $this->hasMany(ListingContent::class, 'category_id');
+    }
+
+    public function listingCityCategories(): HasMany
+    {
+        return $this->hasMany(ListingCityCategory::class, 'listing_category_id');
     }
 
     public function scopeForLanguage(Builder $query, int $languageId): Builder

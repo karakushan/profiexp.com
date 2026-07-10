@@ -68,6 +68,7 @@ class StateController extends Controller
         $rules = [];
         foreach ($langs as $lang) {
             $rules[$lang->code . '_name'] = ($lang->code === $defaultLang->code ? 'required|max:255' : 'nullable|max:255');
+            $rules[$lang->code . '_slug'] = 'nullable|max:255';
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -86,6 +87,7 @@ class StateController extends Controller
                 'state_id' => $state->id,
                 'language_id' => $lang->id,
                 'name' => $name,
+                'slug' => createSlug($name),
             ]);
         }
 
@@ -101,6 +103,7 @@ class StateController extends Controller
         $rules = [];
         foreach ($langs as $lang) {
             $rules[$lang->code . '_name'] = ($lang->code === $defaultLang->code ? 'required|max:255' : 'nullable|max:255');
+            $rules[$lang->code . '_slug'] = 'nullable|max:255';
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -118,7 +121,7 @@ class StateController extends Controller
 
             StateContent::updateOrCreate(
                 ['state_id' => $state->id, 'language_id' => $lang->id],
-                ['name' => $name]
+                ['name' => $name, 'slug' => createSlug($request->{$lang->code . '_slug'} ?: $name)]
             );
         }
 

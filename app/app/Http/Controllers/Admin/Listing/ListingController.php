@@ -35,6 +35,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
@@ -791,6 +792,11 @@ class ListingController extends Controller
     {
         $vendorId = Listing::where('id', $id)->pluck('vendor_id')->first();
         $defaultLang = Language::query()->where('is_default', 1)->first();
+        $selectedLanguageCode = Auth::guard('admin')->user()->code ?? null;
+        $selectedLang = $selectedLanguageCode
+            ? Language::query()->where('code', $selectedLanguageCode)->first()
+            : null;
+        $selectedLang ??= $defaultLang;
         if ($vendorId != 0) {
             $current_package = VendorPermissionHelper::packagePermission($vendorId);
 
@@ -800,7 +806,7 @@ class ListingController extends Controller
                 $information['languages'] = Language::all();
                 $information['vendors'] = Vendor::get();
                 $information['listingAddress'] = ListingContent::where([
-                    ['language_id', $defaultLang->id],
+                    ['language_id', $selectedLang->id],
                     [
                         'listing_id',
                         $id
@@ -819,7 +825,7 @@ class ListingController extends Controller
             $information['languages'] = Language::all();
             $information['vendors'] = Vendor::get();
             $information['listingAddress'] = ListingContent::where([
-                ['language_id', $defaultLang->id],
+                ['language_id', $selectedLang->id],
                 [
                     'listing_id',
                     $id

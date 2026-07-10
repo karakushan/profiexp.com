@@ -14,7 +14,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class CityController extends Controller
@@ -94,6 +93,7 @@ class CityController extends Controller
 
         foreach ($langs as $lang) {
             $rules[$lang->code . '_name'] = ($lang->code === $defaultLang->code ? 'required|max:255' : 'nullable|max:255');
+            $rules[$lang->code . '_slug'] = 'nullable|max:255';
         }
 
         $stateExists = State::where('country_id', $request->country_id)->exists();
@@ -137,7 +137,7 @@ class CityController extends Controller
                 'city_id' => $city->id,
                 'language_id' => $lang->id,
                 'name' => $name,
-                'slug' => Str::slug($name),
+                'slug' => createSlug($name),
             ]);
         }
 
@@ -156,6 +156,7 @@ class CityController extends Controller
 
         foreach ($langs as $lang) {
             $rules[$lang->code . '_name'] = ($lang->code === $defaultLang->code ? 'required|max:255' : 'nullable|max:255');
+            $rules[$lang->code . '_slug'] = 'nullable|max:255';
         }
 
         $stateExists = State::where('country_id', $request->country_id)->exists();
@@ -198,7 +199,7 @@ class CityController extends Controller
 
             CityContent::updateOrCreate(
                 ['city_id' => $city->id, 'language_id' => $lang->id],
-                ['name' => $name, 'slug' => Str::slug($name)]
+                ['name' => $name, 'slug' => createSlug($request->{$lang->code . '_slug'} ?: $name)]
             );
         }
 

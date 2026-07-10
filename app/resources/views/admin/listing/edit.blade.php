@@ -274,7 +274,8 @@
                                     </div>
 
                                     @php
-                                        $defaultLang = $languages->firstWhere('is_default', 1);
+                                        // The admin language comes from the admin locale view composer.
+                                        // Keep it intact so location data is loaded in the selected language.
                                         $defaultListingContent = App\Models\Listing\ListingContent::where('listing_id', $listing->id)
                                             ->where('language_id', $defaultLang->id)
                                             ->first();
@@ -450,7 +451,7 @@
                                                 <h5 class="mb-0">
                                                     <button type="button" class="btn btn-link" data-toggle="collapse"
                                                         data-target="#collapse{{ $language->id }}"
-                                                        aria-expanded="{{ $language->is_default == 1 ? 'true' : 'false' }}"
+                                                        aria-expanded="{{ $language->id == $defaultLang->id ? 'true' : 'false' }}"
                                                         aria-controls="collapse{{ $language->id }}">
                                                         {{ $language->name . __(' Language') }}
                                                         {{ $language->is_default == 1 ? '(Default)' : '' }}
@@ -459,7 +460,7 @@
                                             </div>
 
                                             <div id="collapse{{ $language->id }}"
-                                                class="collapse {{ $language->is_default == 1 ? 'show' : '' }}"
+                                                class="collapse {{ $language->id == $defaultLang->id ? 'show' : '' }}"
                                                 aria-labelledby="heading{{ $language->id }}" data-parent="#accordion">
                                                 <div
                                                     class="version-body {{ $language->direction == 1 ? 'rtl text-right' : '' }}">

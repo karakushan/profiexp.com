@@ -16,7 +16,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class TranslateLocationJob implements ShouldQueue
 {
@@ -110,18 +109,8 @@ class TranslateLocationJob implements ShouldQueue
 
             $data = ['name' => $translated['name']];
 
-            if ($this->entityType === 'city') {
-                $slug = $translated['slug'] ?? '';
-                if (empty($slug)) {
-                    $slug = Str::slug($translated['name']);
-                }
-                if ($this->targetLangCode !== 'en') {
-                    $transliterated = $this->transliterateSlug($translated['name']);
-                    if (!empty($transliterated)) {
-                        $slug = $transliterated;
-                    }
-                }
-                $data['slug'] = $slug;
+            if (in_array($this->entityType, ['city', 'state'], true)) {
+                $data['slug'] = createSlug($translated['name']);
             }
 
             match ($this->entityType) {
@@ -145,26 +134,6 @@ class TranslateLocationJob implements ShouldQueue
             Log::channel('translate')->error("TranslateLocationJob [{$this->entityType}#{$this->entityId}] error to {$this->targetLangCode}: " . $e->getMessage() . "\n" . $e->getTraceAsString());
             throw $e;
         }
-    }
-
-    private function transliterateSlug(string $text): string
-    {
-        $slug = Str::slug($text);
-        if (!empty($slug)) {
-            return $slug;
-        }
-
-        $enLanguage = Language::where('code', 'en')->first();
-        if ($enLanguage) {
-            $enContent = CityContent::where('city_id', $this->entityId)
-                ->where('language_id', $enLanguage->id)
-                ->first();
-            if ($enContent && !empty($enContent->slug)) {
-                return $enContent->slug;
-            }
-        }
-
-        return '';
     }
 
     public function failed(\Throwable $e): void

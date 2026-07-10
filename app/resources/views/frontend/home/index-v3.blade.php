@@ -106,7 +106,7 @@
                                 @foreach ($cities as $city)
                                     <div class="swiper-slide">
                                         <div class="card radius-md">
-                                            <a href="{{ route('frontend.listings', ['city' => $city->id]) }}">
+                                            <a href="{{ listing_city_url($city, $currentLanguageInfo->code) }}">
                                                 <div class="card-img">
                                                     <div class="lazy-container ratio ratio-2-3">
                                                         <img class=" lazyload"

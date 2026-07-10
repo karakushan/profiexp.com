@@ -29,8 +29,11 @@ use App\Models\Listing\ProductMessage;
 use App\Models\ListingCategory;
 use App\Models\ListingCategoryContent;
 use App\Models\Location\City;
+use App\Models\Location\CityContent;
 use App\Models\Location\Country;
 use App\Models\Location\State;
+use App\Models\Location\StateContent;
+use App\Models\Location\ListingCityCategoryContent;
 use App\Models\Shop\Product;
 use App\Models\Vendor;
 use App\Models\VendorInfo;
@@ -50,6 +53,50 @@ use Illuminate\Validation\Rule;
 
 class ListingContoller extends Controller
 {
+  public function cityCategoryListings(Request $request, string $langOrSlug, ?string $localizedSlug = null)
+  {
+    $slug = $localizedSlug ?? $langOrSlug;
+    $language = (new MiscellaneousController())->getLanguage();
+    $content = ListingCityCategoryContent::with('listingCityCategory')
+      ->where('language_id', $language->id)->where('slug', $slug)->first();
+
+    if (!$content) {
+      $content = ListingCityCategoryContent::with('listingCityCategory')
+        ->where('slug', $slug)->firstOrFail();
+    }
+
+    $request->merge([
+      'city' => $content->listingCityCategory->city_id,
+      'category_id' => $content->listingCityCategory->listing_category_id,
+    ]);
+    $request->attributes->set('city_category_content', $content);
+    $request->attributes->set('skip_redirect', true);
+
+    return $this->index($request);
+  }
+
+  public function cityListings(Request $request, string $langOrSlug, ?string $localizedSlug = null)
+  {
+    $slug = $localizedSlug ?? $langOrSlug;
+    $language = (new MiscellaneousController())->getLanguage();
+    $city = CityContent::where('language_id', $language->id)->where('slug', $slug)->firstOrFail();
+
+    $request->merge(['city' => $city->city_id]);
+
+    return $this->index($request);
+  }
+
+  public function stateListings(Request $request, string $langOrSlug, ?string $localizedSlug = null)
+  {
+    $slug = $localizedSlug ?? $langOrSlug;
+    $language = (new MiscellaneousController())->getLanguage();
+    $state = StateContent::where('language_id', $language->id)->where('slug', $slug)->firstOrFail();
+
+    $request->merge(['state' => $state->state_id]);
+
+    return $this->index($request);
+  }
+
   public function getState(Request $request)
   {
     $misc = new MiscellaneousController();
@@ -921,6 +968,13 @@ class ListingContoller extends Controller
     $information['featured_contents'] = $featured_contents;
     $information['categoryInfo'] = $category_content;
     $information['categoryContent'] = $category_content ? $category_content->getTranslation($language->id) : null;
+    $information['cityCategoryContent'] = $request->attributes->get('city_category_content');
+    if ($information['cityCategoryContent']) {
+      $information['categoryContent'] = $information['cityCategoryContent'];
+      $information['cityCategoryH1'] = $information['cityCategoryContent']->name;
+      $information['cityMetaTitle'] = $information['cityCategoryContent']->meta_title ?: $information['cityCategoryContent']->name;
+      $information['cityMetaDescription'] = $information['cityCategoryContent']->meta_description;
+    }
 
     if ($view == 0) {
       return view('frontend.listing.listing-map', $information);
