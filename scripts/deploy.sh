@@ -3,7 +3,11 @@ set -e
 
 REPO_DIR="$HOME/profiexp-repo"
 WEB_ROOT="/var/www/profiexp_com_usr/data/www/profiexp.com"
-EXCLUDES=".env .env.backup storage vendor node_modules public/storage public/hot bootstrap/cache/*.php"
+# User uploads are stored under public/assets as well as storage.  Keep them
+# outside the destructive rsync mirror: they are not reproducible from Git.
+# Tracked CSS/JS/fonts remain deployable because only upload directories are
+# excluded.
+EXCLUDES=".env .env.backup storage vendor node_modules public/storage public/hot bootstrap/cache/*.php public/assets/admin/file public/assets/admin/img public/assets/file public/assets/front/invoices public/assets/img"
 
 echo "=== Pulling latest from git ==="
 cd "$REPO_DIR"
