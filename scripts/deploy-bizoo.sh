@@ -22,6 +22,12 @@ rsync -a --delete \
   --exclude='/queue-worker.sh' \
   "$REPO_DIR/app/" "$WEB_ROOT/"
 
+# Deploy tracked frontend assets while preserving uploaded files under
+# public/assets/img and public/assets/storage.
+rsync -a "$REPO_DIR/app/public/assets/front/css/" "$WEB_ROOT/public/assets/front/css/"
+rsync -a "$REPO_DIR/app/public/assets/front/js/" "$WEB_ROOT/public/assets/front/js/"
+rsync -a "$REPO_DIR/app/public/assets/admin/js/" "$WEB_ROOT/public/assets/admin/js/"
+
 chown -R bizoo_es_usr:bizoo_es_usr "$WEB_ROOT"
 chmod -R 775 "$WEB_ROOT/storage" "$WEB_ROOT/bootstrap/cache"
 
