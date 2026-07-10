@@ -341,6 +341,7 @@
 }
 
 .mobile-menu .mobile-category-menu > .nav-item > .nav-link {
+  color: var(--color-dark);
   padding: 10px 0;
   border-bottom: 1px solid var(--border-color);
 }
@@ -402,6 +403,17 @@
 .mobile-menu .mobile-category-menu .category-nav-link,
 .mobile-menu .mobile-category-menu .category-name {
   text-align: left;
+}
+
+.header-area.header-2 .mobile-menu .mobile-category-menu .category-nav-link,
+.header-area.header-2 .mobile-menu .mobile-category-menu .category-name {
+  color: var(--color-dark);
+}
+
+.header-area.header-2 .mobile-menu .mobile-category-menu .category-icon-box,
+.header-area.header-2 .mobile-menu .mobile-category-menu .category-icon-box i {
+  background-color: rgba(var(--color-primary-rgb), 0.1);
+  color: var(--color-primary);
 }
 
 .mobile-menu .mobile-category-menu .category-nav-link {
