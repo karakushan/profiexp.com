@@ -8,7 +8,7 @@
           <div class="col-md-4 form-group"><label>{{ __('Country') }}*</label><select class="form-control city-category-country" id="in_country_id"><option value="">{{ __('Select a country') }}</option>@foreach ($countries as $country)<option value="{{ $country->id }}">{{ $country->getName($language->id) }}</option>@endforeach</select></div>
           <div class="col-md-4 form-group"><label>{{ __('State') }}</label><select class="form-control city-category-state" id="in_state_id"><option value="">{{ __('All states') }}</option>@foreach ($states as $state)<option value="{{ $state->id }}">{{ $state->getName($language->id) }}</option>@endforeach</select></div>
           <div class="col-md-4 form-group"><label>{{ __('City') }}*</label><select class="form-control city-category-city" name="city_id" id="in_city_id"><option value="">{{ __('Select a city') }}</option></select></div>
-          <div class="col-md-6 form-group"><label>{{ __('Category') }}*</label><select class="form-control" name="listing_category_id" id="in_listing_category_id"><option value="">{{ __('Select a category') }}</option>@foreach ($categories as $category)<option value="{{ $category->id }}">{{ $category->getName($language->id) }}</option>@endforeach</select></div>
+          <div class="col-md-6 form-group"><label>{{ __('Category') }}*</label><select class="form-control" name="listing_category_id" id="in_listing_category_id"><option value="">{{ __('Select a category') }}</option>@foreach ($categoryOptions as $option)<option value="{{ $option['id'] }}">{{ str_repeat('— ', $option['level']) }}{{ $option['name'] }}</option>@endforeach</select></div>
         </div>
         <div id="editCityCategoryAccordion" class="mt-3">
           @foreach ($langs as $lang)

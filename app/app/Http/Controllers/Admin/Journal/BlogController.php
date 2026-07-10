@@ -30,6 +30,10 @@ class BlogController extends Controller
             ->select('blogs.id', 'blogs.serial_number', 'blogs.created_at', 'blog_informations.title', 'blog_informations.slug', 'blog_category_contents.name AS categoryName')
             ->orderByDesc('blogs.id')
             ->get();
+
+        // The listing is filtered to the selected admin language, but the
+        // language badges must reflect all translations of each blog.
+        $information['blogs']->load('information.language');
         $information['langs'] = Language::all();
 
         return view('admin.journal.blog.index', $information);

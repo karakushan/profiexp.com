@@ -40,13 +40,34 @@ class ListingCityCategoryController extends Controller
             'state_id' => $city->state_id,
             'name' => $city->getName($language->id),
         ])->values();
-        $information['categories'] = ListingCategory::active()
+        $categories = ListingCategory::active()
             ->with(['contents' => fn($q) => $q->where('language_id', $language->id)])
             ->orderBy('serial_number')->get();
+        $information['categoryOptions'] = $this->flattenCategoryOptions($categories, $language->id);
         $information['items'] = ListingCityCategory::with(['contents.language', 'city.contents', 'city.country.contents', 'city.state.contents', 'category.contents'])
             ->orderByDesc('id')->get();
 
         return view('admin.listing.location.city-category.index', $information);
+    }
+
+    private function flattenCategoryOptions($categories, int $languageId, ?int $parentId = null, int $level = 0): array
+    {
+        $options = [];
+
+        foreach ($categories->where('parent_id', $parentId)->sortBy('serial_number') as $category) {
+            $content = $category->contents->firstWhere('language_id', $languageId);
+            $options[] = [
+                'id' => $category->id,
+                'name' => $content?->name ?: $category->name,
+                'level' => $level,
+            ];
+            $options = array_merge(
+                $options,
+                $this->flattenCategoryOptions($categories, $languageId, $category->id, $level + 1)
+            );
+        }
+
+        return $options;
     }
 
     public function store(Request $request)

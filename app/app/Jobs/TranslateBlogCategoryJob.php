@@ -37,8 +37,26 @@ class TranslateBlogCategoryJob implements ShouldQueue
                 ->first();
 
             if (!$sourceContent || empty($sourceContent->name)) {
-                Log::channel('translate')->warning("TranslateBlogCategoryJob [cat_id={$this->categoryId}]: source content not found for lang #{$this->sourceLangId}");
-                return;
+                $sourceContent = BlogCategoryContent::where('blog_category_id', $this->categoryId)
+                    ->where('language_id', '!=', $this->targetLangId)
+                    ->whereNotNull('name')
+                    ->where('name', '!=', '')
+                    ->get()
+                    ->sortBy(function (BlogCategoryContent $content): int {
+                        return match ($content->language?->code) {
+                            'ru' => 0,
+                            'en' => 1,
+                            default => 2,
+                        };
+                    })
+                    ->first();
+
+                if (!$sourceContent) {
+                    Log::channel('translate')->warning("TranslateBlogCategoryJob [cat_id={$this->categoryId}]: no filled source content found");
+                    return;
+                }
+
+                Log::channel('translate')->info("TranslateBlogCategoryJob [cat_id={$this->categoryId}]: using lang #{$sourceContent->language_id} as source");
             }
 
             $exists = BlogCategoryContent::where('blog_category_id', $this->categoryId)

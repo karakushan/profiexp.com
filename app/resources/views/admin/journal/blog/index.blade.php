@@ -76,6 +76,20 @@
                           </td>
                           <td>
                             {{ strlen($blog->title) > 50 ? mb_substr($blog->title, 0, 50, 'UTF-8') . '...' : $blog->title }}
+                            @php
+                              $translatedInformation = $blog->information->filter(function ($content) {
+                                  return filled($content->title) || filled($content->content);
+                              });
+                            @endphp
+                            @if ($translatedInformation->isNotEmpty())
+                              <div class="mt-1">
+                                @foreach ($translatedInformation as $content)
+                                  <span class="badge badge-secondary mr-1" title="{{ $content->language->name ?? '' }}">
+                                    {{ strtoupper($content->language->code ?? '—') }}
+                                  </span>
+                                @endforeach
+                              </div>
+                            @endif
                           </td>
                           <td>{{ $blog->categoryName }}</td>
                           <td>
