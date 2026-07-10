@@ -13,6 +13,13 @@
     <meta property="og:title" content="@yield('sharetitle')">
     <meta property="og:title" content="@yield('sharetitle')">
     <meta property="og:image" content="@yield('shareimage')">
+    @php($hreflangLinks = hreflang_links())
+    @foreach ($hreflangLinks as $hreflang => $href)
+        <link rel="alternate" hreflang="{{ $hreflang }}" href="{{ $href }}">
+    @endforeach
+    @if ($defaultHref = $hreflangLinks[default_front_locale()] ?? null)
+        <link rel="alternate" hreflang="x-default" href="{{ $defaultHref }}">
+    @endif
     {{-- title --}}
     <title>@yield('pageHeading') {{ '| ' . $websiteInfo->website_title }}</title>
     {{-- fav icon --}}

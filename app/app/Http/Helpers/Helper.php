@@ -4,13 +4,18 @@ use App\Http\Helpers\VendorPermissionHelper;
 use App\Models\Advertisement;
 use App\Models\BasicSettings\Basic;
 use App\Models\Car;
+use App\Models\CustomPage\PageContent;
 use App\Models\Journal\BlogCategory;
+use App\Models\Journal\BlogInformation;
 use App\Models\Language;
 use App\Models\Listing\Listing;
 use App\Models\Listing\ListingContent;
 use App\Models\Listing\ListingProduct;
 use App\Models\Listing\ListingReview;
 use App\Models\ListingCategory;
+use App\Models\Location\CityContent;
+use App\Models\Location\ListingCityCategoryContent;
+use App\Models\Location\StateContent;
 use App\Models\Location\ListingCityCategory;
 use App\Models\PaymentGateway\OnlineGateway;
 use Illuminate\Support\Facades\Auth;
@@ -390,6 +395,134 @@ if (!function_exists('localized_route')) {
         }
 
         return route($name, $parameters);
+    }
+}
+
+if (!function_exists('hreflang_links')) {
+    /**
+     * Return the localized equivalents of the current content page.
+     */
+    function hreflang_links(): array
+    {
+        $route = request()->route();
+        $routeName = $route?->getName();
+        $slug = $route?->parameter('slug');
+
+        $staticPaths = [
+            'index' => '/',
+            'frontend.listings' => '/listings',
+            'blog' => '/blog',
+            'frontend.pricing' => '/pricing',
+            'faq' => '/faq',
+            'about_us' => '/about-us',
+            'contact' => '/contact',
+            'frontend.vendors' => '/vendors',
+            'shop.products' => '/products',
+        ];
+
+        if (array_key_exists($routeName, $staticPaths)) {
+            return Language::query()
+                ->get()
+                ->mapWithKeys(fn ($language) => [$language->code => hreflang_localized_url($staticPaths[$routeName], $language->code)])
+                ->all();
+        }
+
+        if (blank($slug)) {
+            return [];
+        }
+
+        $languageId = Language::query()->where('code', current_front_locale())->value('id');
+        $translations = collect();
+        $urlResolver = null;
+
+        if (in_array($routeName, ['frontend.listing.details', 'frontend.listings.category'], true)) {
+            $listingContent = ListingContent::query()->where('language_id', $languageId)->where('slug', $slug)->first()
+                ?? ListingContent::query()->where('slug', $slug)->first();
+
+            if ($listingContent) {
+                $translations = ListingContent::query()->where('listing_id', $listingContent->listing_id)->whereNotNull('slug')->where('slug', '!=', '')->get();
+                $urlResolver = fn ($translation, $language) => hreflang_localized_url('/listings/' . $translation->slug, $language->code);
+            } else {
+                $category = ListingCategory::query()->active()->whereHas('contents', fn ($query) => $query->where('slug', $slug))->first();
+
+                if ($category) {
+                    $translations = $category->contents()->whereNotNull('slug')->where('slug', '!=', '')->get();
+                    $urlResolver = fn ($translation, $language) => hreflang_localized_url('/listings/' . $translation->slug, $language->code);
+                }
+            }
+        } elseif ($routeName === 'frontend.listing.city_category') {
+            $content = ListingCityCategoryContent::query()->where('language_id', $languageId)->where('slug', $slug)->first()
+                ?? ListingCityCategoryContent::query()->where('slug', $slug)->first();
+
+            if ($content) {
+                $translations = ListingCityCategoryContent::query()
+                    ->where('listing_city_category_id', $content->listing_city_category_id)
+                    ->whereNotNull('slug')->where('slug', '!=', '')->get();
+                $urlResolver = fn ($translation, $language) => hreflang_localized_url('/listing-city-category/' . $translation->slug, $language->code);
+            }
+        } elseif ($routeName === 'frontend.listing.city') {
+            $content = CityContent::query()->where('language_id', $languageId)->where('slug', $slug)->first()
+                ?? CityContent::query()->where('slug', $slug)->first();
+
+            if ($content) {
+                $translations = CityContent::query()->where('city_id', $content->city_id)->whereNotNull('slug')->where('slug', '!=', '')->get();
+                $urlResolver = fn ($translation, $language) => hreflang_localized_url('/listing-city/' . $translation->slug, $language->code);
+            }
+        } elseif ($routeName === 'frontend.listing.state') {
+            $content = StateContent::query()->where('language_id', $languageId)->where('slug', $slug)->first()
+                ?? StateContent::query()->where('slug', $slug)->first();
+
+            if ($content) {
+                $translations = StateContent::query()->where('state_id', $content->state_id)->whereNotNull('slug')->where('slug', '!=', '')->get();
+                $urlResolver = fn ($translation, $language) => hreflang_localized_url('/listing-state/' . $translation->slug, $language->code);
+            }
+        } elseif ($routeName === 'blog.details') {
+            $blogInformation = BlogInformation::query()->where('language_id', $languageId)->where('slug', $slug)->first()
+                ?? BlogInformation::query()->where('slug', $slug)->first();
+
+            if ($blogInformation) {
+                $translations = BlogInformation::query()->where('blog_id', $blogInformation->blog_id)->whereNotNull('slug')->where('slug', '!=', '')->get();
+                $urlResolver = fn ($translation, $language) => hreflang_localized_url('/blog/' . $translation->slug, $language->code);
+            }
+        } elseif ($routeName === 'blog.category') {
+            $category = BlogCategory::query()->active()->whereHas('contents', fn ($query) => $query->where('slug', $slug))->first();
+
+            if ($category) {
+                $translations = $category->contents()->whereNotNull('slug')->where('slug', '!=', '')->get();
+                $urlResolver = fn ($translation, $language) => hreflang_localized_url('/blog/category/' . $translation->slug, $language->code);
+            }
+        } elseif ($routeName === 'dynamic_page') {
+            $pageContent = PageContent::query()->where('language_id', $languageId)->where('slug', $slug)->first()
+                ?? PageContent::query()->where('slug', $slug)->first();
+
+            if ($pageContent) {
+                $translations = PageContent::query()->where('page_id', $pageContent->page_id)->whereNotNull('slug')->where('slug', '!=', '')->get();
+                $urlResolver = fn ($translation, $language) => hreflang_localized_url('/' . $translation->slug, $language->code);
+            }
+        }
+
+        if ($translations->isEmpty() || !$urlResolver) {
+            return [];
+        }
+
+        $languages = Language::query()->get()->keyBy('id');
+
+        return $translations->mapWithKeys(function ($translation) use ($languages, $urlResolver) {
+            $language = $languages->get($translation->language_id);
+
+            return $language ? [$language->code => $urlResolver($translation, $language)] : [];
+        })->all();
+    }
+}
+
+if (!function_exists('hreflang_localized_url')) {
+    function hreflang_localized_url(string $path, string $languageCode): string
+    {
+        $path = '/' . ltrim($path, '/');
+
+        return $languageCode === default_front_locale()
+            ? url($path)
+            : url('/' . $languageCode . $path);
     }
 }
 
