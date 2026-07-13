@@ -2,7 +2,7 @@
 
 - используй memories.sh для сохранения важных решений и фактов между сессиями: `memories add --decision "..."` или `memories add --fact "..."`
 - в начале сессии выполняй `memories recall --json` для загрузки контекста
-- все запросы консоли делай в докер окружении
+- все запросы консоли на локальном сервере делай в докер окружении
 - Python скрипты создавай в `/Users/admin/Documents/dev/profiexp.com/scripts/`
 - проверяй файлы на наличие ошибок docker compose exec -T web php -l ...
 - сейчас активна тема v2 все правки делай там
@@ -31,4 +31,8 @@
 - публичная часть сайта использует `ru.json`, `tr.json` и т.д.
 - это поведение определяется в middleware `VendorLocal` (/app/app/Http/Middleware/VendorLocal.php): vendor->lang_code = 'admin_ru'
 - поэтому переводы для кабинета поставщика добавляй ТОЛЬКО в `admin_*.json`, иначе они не будут отображаться
+
+## Деплой и продакшн
+
+- прод сайт не на докер на обычном php с fastpanel
 
