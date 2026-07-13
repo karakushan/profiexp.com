@@ -37,11 +37,28 @@
             offCanvasMenu = $("#offcanvasMenu");
 
         menuToggler.on("click", function () {
+            $('.mobile-lang').removeClass('open');
             $(this).toggleClass("active");
             body.toggleClass("mobile-menu-active");
         })
 
         mainNavbar.find(cloneItem).clone(!0).appendTo(cloneInto);
+
+        // Place the categories entry directly after the first main menu item
+        // in the mobile popup for theme v2.
+        $(".header-area.header-2 .mobile-menu-wrapper").each(function () {
+            var wrapper = $(this),
+                mainMenu = wrapper.find("#mainMenu"),
+                categories = wrapper.find(".mobile-category-menu");
+
+            if (mainMenu.length && categories.length && mainMenu.children("li").length) {
+                categories.children("li").first()
+                    .detach()
+                    .addClass("mobile-category-menu")
+                    .insertAfter(mainMenu.children("li").first());
+                categories.remove();
+            }
+        });
 
         if (offCanvasMenu) {
             body.find(offCanvasMenu).clone(!0).appendTo(cloneInto);
@@ -808,6 +825,8 @@ $(document).ready(function () {
     ============================================*/
     $(document).on('click', '.mobile-lang-btn', function (e) {
         e.stopPropagation();
+        $('body').removeClass('mobile-menu-active');
+        $('.menu-toggler').removeClass('active');
         $(this).parent('.mobile-lang').toggleClass('open');
     });
 

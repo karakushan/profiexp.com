@@ -59,7 +59,7 @@
 <script src="{{ asset('assets/admin/js/push-notification.js') }}"></script>
 
 <!-- Main script JS -->
-<script src="{{ asset('assets/front/js/script.js') }}?v=20260710-2"></script>
+<script src="{{ asset('assets/front/js/script.js') }}?v=20260713-3"></script>
 
 {{-- custom main js --}}
 <script src="{{ asset('assets/front/js/main.js') }}"></script>

@@ -33,7 +33,7 @@
 <!-- Header CSS -->
 <link rel="stylesheet" href="{{ asset('assets/front/css/header/header.css') }}?v=20260710-2">
 @if (in_array($basicInfo->theme_version, [2, 3]))
-<link rel="stylesheet" href="{{ asset('assets/front/css/header/header-2.css') }}?v=20260710-9">
+<link rel="stylesheet" href="{{ asset('assets/front/css/header/header-2.css') }}?v=20260713-3">
 @endif
 <!-- Main Style CSS -->
 <link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
