@@ -1,11 +1,3 @@
-<style>
-    @media (min-width: 1200px) {
-        #categories.collapse {
-            display: block !important;
-            visibility: visible !important;
-        }
-    }
-</style>
 <div id="zx">
     <div class="widget-offcanvas offcanvas-xl offcanvas-start" tabindex="-1" id="widgetOffcanvas"
         aria-labelledby="widgetOffcanvas">
