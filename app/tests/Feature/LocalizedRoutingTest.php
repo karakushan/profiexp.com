@@ -8,6 +8,20 @@ use Tests\TestCase;
 
 class LocalizedRoutingTest extends TestCase
 {
+    public function test_browser_language_redirects_first_visit_to_supported_locale(): void
+    {
+        $this->withHeader('Accept-Language', 'ru-RU,ru;q=0.9,en;q=0.8')
+            ->get('/')
+            ->assertRedirect('/ru');
+    }
+
+    public function test_browser_language_falls_back_to_english_when_not_supported(): void
+    {
+        $this->withHeader('Accept-Language', 'de-DE,de;q=0.9')
+            ->get('/')
+            ->assertRedirect('/en');
+    }
+
     public function test_secondary_language_homepage_uses_localized_index_route(): void
     {
         [$defaultLanguage, $secondaryLanguage] = $this->languages();

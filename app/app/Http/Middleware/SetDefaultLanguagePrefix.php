@@ -24,12 +24,23 @@ class SetDefaultLanguagePrefix
 
   public function handle(Request $request, Closure $next)
   {
+    if (!$request->isMethod('GET') && !$request->isMethod('HEAD')) {
+      return $next($request);
+    }
+
     $path = ltrim($request->path(), '/');
 
-    $supportedCodes = Language::query()->pluck('code')->toArray();
-    $defaultCode = Language::query()->where('is_default', 1)->value('code');
+    $supportedCodes = Language::query()->pluck('code')
+      ->map(fn ($code) => strtolower($code))
+      ->all();
 
-    if (!$defaultCode) {
+    if (empty($supportedCodes) || $this->shouldSkip($path)) {
+      return $next($request);
+    }
+
+    // Only the entry page is language-negotiated. Existing public URLs must
+    // remain shareable and must not be rewritten from browser preferences.
+    if ($path !== '') {
       return $next($request);
     }
 
@@ -39,24 +50,58 @@ class SetDefaultLanguagePrefix
       return $next($request);
     }
 
-    if ($this->shouldSkip($path)) {
+    $selectedLocale = $request->session()->get('currentLocaleCode');
+    if (in_array($selectedLocale, $supportedCodes, true)) {
       return $next($request);
     }
 
-    $request->server->set('REQUEST_URI', '/' . $defaultCode . '/' . $path);
-    $request->server->set('PATH_INFO', '/' . $defaultCode . '/' . $path);
+    $locale = $this->preferredLocale($request->header('Accept-Language'), $supportedCodes);
+    if ($locale === null && !$request->header('Accept-Language')) {
+      return $next($request);
+    }
 
-    $request->initialize(
-      $request->query->all(),
-      $request->request->all(),
-      $request->attributes->all(),
-      $request->cookies->all(),
-      $request->files->all(),
-      $request->server->all(),
-      $request->getContent()
-    );
+    $locale ??= in_array('en', $supportedCodes, true)
+      ? 'en'
+      : Language::query()->where('is_default', 1)->value('code');
 
-    return $next($request);
+    if (!$locale) {
+      return $next($request);
+    }
+
+    $target = '/' . $locale . ($path === '' ? '' : '/' . $path);
+    if ($request->getQueryString()) {
+      $target .= '?' . $request->getQueryString();
+    }
+
+    return redirect()->to($target, 302);
+
+  }
+
+  private function preferredLocale(?string $acceptLanguage, array $supportedCodes): ?string
+  {
+    if (empty($acceptLanguage)) {
+      return null;
+    }
+
+    $languages = collect(explode(',', $acceptLanguage))
+      ->map(function (string $language) {
+        [$tag, $parameters] = array_pad(explode(';', $language, 2), 2, '');
+        preg_match('/q=([0-9.]+)/i', $parameters, $matches);
+
+        return [
+          'code' => strtolower(explode('-', trim($tag))[0]),
+          'quality' => isset($matches[1]) ? (float) $matches[1] : 1.0,
+        ];
+      })
+      ->sortByDesc('quality');
+
+    foreach ($languages as $language) {
+      if (in_array($language['code'], $supportedCodes, true)) {
+        return $language['code'];
+      }
+    }
+
+    return null;
   }
 
   private function shouldSkip(string $path): bool
