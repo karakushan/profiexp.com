@@ -28,8 +28,17 @@ class TranslateCityCategoryBatchJob implements ShouldQueue
         $item = ListingCityCategory::with(['city', 'category'])->find($this->itemId);
         if (!$item) return;
 
-        $source = $item->contents()->where('language_id', $this->sourceLangId)->first()
-            ?? $item->contents()->whereNotNull('name')->where('name', '!=', '')->first();
+        $defaultLanguageId = Language::where('is_default', 1)->value('id');
+        $source = $item->contents()
+            ->when($defaultLanguageId, fn ($query) => $query->where('language_id', $defaultLanguageId))
+            ->whereNotNull('name')
+            ->where('name', '!=', '')
+            ->first();
+
+        $source ??= $item->contents()
+            ->whereNotNull('name')
+            ->where('name', '!=', '')
+            ->first();
         if (!$source) return;
 
         foreach (Language::where('id', '!=', $source->language_id)->get() as $language) {

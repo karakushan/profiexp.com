@@ -26,7 +26,15 @@ class TranslateCityCategories extends Command
             ->get()->filter(fn($item) => $item->filled_count < $total)->take($batch);
 
         foreach ($items as $item) {
-            $source = $item->contents()->whereNotNull('name')->where('name', '!=', '')->first();
+            $source = $item->contents()
+                ->where('language_id', $default->id)
+                ->whereNotNull('name')
+                ->where('name', '!=', '')
+                ->first()
+                ?? $item->contents()
+                    ->whereNotNull('name')
+                    ->where('name', '!=', '')
+                    ->first();
             if ($source) TranslateCityCategoryBatchJob::dispatchSync($item->id, $source->language_id);
         }
 
