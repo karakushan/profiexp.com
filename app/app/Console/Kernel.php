@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
     $schedule->command('categories:translate')->everyMinute();
     $schedule->command('locations:translate')->everyMinute();
     $schedule->command('city-categories:translate')->everyMinute();
+    $schedule->command('city-categories:sync')->everyFifteenMinutes()->withoutOverlapping(14);
     $schedule->command('blog-categories:translate')->everyMinute();
     $schedule->command('blogs:translate')->everyMinute();
     $schedule->command('aminites:translate')->everyMinute();

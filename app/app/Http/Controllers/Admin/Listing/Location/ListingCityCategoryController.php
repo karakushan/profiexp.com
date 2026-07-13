@@ -8,8 +8,8 @@ use App\Models\ListingCategory;
 use App\Models\Location\City;
 use App\Models\Location\Country;
 use App\Models\Location\ListingCityCategory;
-use App\Models\Location\ListingCityCategoryContent;
 use App\Models\Location\State;
+use App\Services\ListingCityCategoryContentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
@@ -148,61 +148,6 @@ class ListingCityCategoryController extends Controller
 
     private function saveContents(ListingCityCategory $item, Request $request, $langs): void
     {
-        $item->load(['city', 'category']);
-        $defaultLanguage = $langs->firstWhere('is_default', 1) ?? $langs->first();
-        $defaultLanguageId = $defaultLanguage?->id;
-
-        foreach ($langs as $lang) {
-            $cityName = $item->city->getName($lang->id);
-            $categoryName = $item->category->getName($lang->id);
-            $requestedName = trim((string) $request->input($lang->code . '_name'));
-            $generatedName = blank($cityName) || blank($categoryName)
-                ? ''
-                : trim($cityName . ' — ' . $categoryName);
-            $name = $requestedName ?: $generatedName;
-            $metaTitle = $request->input($lang->code . '_meta_title');
-            $metaDescription = $request->input($lang->code . '_meta_description');
-            $seoText = $request->input($lang->code . '_seo_text');
-
-            if (blank($name) && blank($metaTitle) && blank($metaDescription) && blank($seoText)) {
-                continue;
-            }
-
-            $name = $name ?: trim($item->city->getName($defaultLanguageId) . ' — ' . $item->category->getName($defaultLanguageId));
-            $requestedSlug = $request->input($lang->code . '_slug');
-            $content = $item->contents()->where('language_id', $lang->id)->first();
-            $slug = $this->uniqueSlug(
-                createSlug($requestedSlug ?: $name ?: 'city-category-' . $item->id . '-' . $lang->code),
-                $lang->id,
-                $content?->id
-            );
-
-            $item->contents()->updateOrCreate(
-                ['language_id' => $lang->id],
-                [
-                    'name' => $name,
-                    'slug' => $slug,
-                    'meta_title' => $metaTitle,
-                    'meta_description' => $metaDescription,
-                    'seo_text' => $seoText,
-                ]
-            );
-        }
-    }
-
-    private function uniqueSlug(string $base, int $languageId, ?int $ignoreId = null): string
-    {
-        $base = $base !== '' ? $base : 'city-category';
-        $slug = $base;
-        $suffix = 2;
-
-        while (ListingCityCategoryContent::where('language_id', $languageId)
-            ->where('slug', $slug)
-            ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
-            ->exists()) {
-            $slug = $base . '-' . $suffix++;
-        }
-
-        return $slug;
+        app(ListingCityCategoryContentService::class)->saveFromRequest($item, $request, collect($langs));
     }
 }

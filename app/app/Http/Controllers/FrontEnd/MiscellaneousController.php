@@ -11,6 +11,7 @@ use App\Models\Journal\BlogInformation;
 use App\Models\Language;
 use App\Models\Listing\ListingContent;
 use App\Models\ListingCategory;
+use App\Models\Location\ListingCityCategoryContent;
 use App\Models\Subscriber;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -238,6 +239,15 @@ class MiscellaneousController extends Controller
       return $this->resolveLocalizedBlogCategoryUrl($routeParams['slug'], $currentLang, $targetLang) ?? $fallbackUrl;
     }
 
+    if ($routeName === 'frontend.listing.city_category') {
+      return $this->resolveLocalizedCityCategoryUrl(
+        $routeParams['slug'],
+        $currentLang,
+        $targetLang,
+        $queryParams
+      ) ?? $fallbackUrl;
+    }
+
     if ($routeName === 'dynamic_page') {
       return $this->resolveLocalizedPageUrl($routeParams['slug'], $currentLang, $targetLang) ?? $fallbackUrl;
     }
@@ -334,6 +344,41 @@ class MiscellaneousController extends Controller
     $targetSlug = $category->getSlug($targetLanguageId);
 
     return $targetSlug ? blog_category_url($category->id, $targetLang) : null;
+  }
+
+  private function resolveLocalizedCityCategoryUrl(
+    string $slug,
+    string $currentLang,
+    string $targetLang,
+    array $queryParams = []
+  ): ?string {
+    $currentLanguageId = Language::query()->where('code', $currentLang)->value('id');
+    $targetLanguageId = Language::query()->where('code', $targetLang)->value('id');
+
+    $content = ListingCityCategoryContent::query()
+      ->where('language_id', $currentLanguageId)
+      ->where('slug', $slug)
+      ->first();
+
+    if (!$content) {
+      return null;
+    }
+
+    $targetContent = ListingCityCategoryContent::query()
+      ->where('listing_city_category_id', $content->listing_city_category_id)
+      ->where('language_id', $targetLanguageId)
+      ->whereNotNull('slug')
+      ->where('slug', '!=', '')
+      ->first();
+
+    if (!$targetContent) {
+      return null;
+    }
+
+    return $this->appendQueryString(
+      localized_route('frontend.listing.city_category', ['slug' => $targetContent->slug], $targetLang),
+      $queryParams
+    );
   }
 
   private function resolveLocalizedPageUrl(string $slug, string $currentLang, string $targetLang): ?string

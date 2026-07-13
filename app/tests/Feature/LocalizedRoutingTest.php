@@ -74,6 +74,42 @@ class LocalizedRoutingTest extends TestCase
             ->assertRedirect('http://localhost:8080/' . $secondaryLanguage['code'] . '/test-page-' . $secondaryLanguage['code']);
     }
 
+    public function test_language_switcher_uses_city_category_translation_slug(): void
+    {
+        [$defaultLanguage, $secondaryLanguage] = $this->languages();
+        $now = Carbon::now();
+        $cityId = DB::table('cities')->value('id');
+        $categoryId = $this->createListingCategory($defaultLanguage, $secondaryLanguage);
+        $cityCategoryId = DB::table('listing_city_categories')->insertGetId([
+            'city_id' => $cityId,
+            'listing_category_id' => $categoryId,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+
+        DB::table('listing_city_category_contents')->insert([
+            [
+                'listing_city_category_id' => $cityCategoryId,
+                'language_id' => $defaultLanguage['id'],
+                'name' => 'Тестовая связка города и категории',
+                'slug' => 'test-city-category-' . $defaultLanguage['code'],
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'listing_city_category_id' => $cityCategoryId,
+                'language_id' => $secondaryLanguage['id'],
+                'name' => 'Test city category',
+                'slug' => 'test-city-category-' . $secondaryLanguage['code'],
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+        ]);
+
+        $this->get('/change-language?lang_code=' . $secondaryLanguage['code'] . '&current_url=/listing-city-category/test-city-category-' . $defaultLanguage['code'])
+            ->assertRedirect('http://localhost:8080/' . $secondaryLanguage['code'] . '/listing-city-category/test-city-category-' . $secondaryLanguage['code']);
+    }
+
     public function test_sitemap_contains_localized_urls_and_hreflang(): void
     {
         [$defaultLanguage, $secondaryLanguage] = $this->languages();
