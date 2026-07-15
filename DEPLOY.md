@@ -5,8 +5,9 @@
 ## Общие правила
 
 - Production работает на обычном PHP/FastPanel, не в Docker.
+- Порядок действий: проверить ветку и изменения → сделать `git commit` → выполнить `git push` → проверить, что production-клон видит тот же commit → выполнить деплой.
 - Перед деплоем сделать DB backup командой `php artisan backup:run --only-db`.
-- Проверить нужную ветку и commit.
+- Не деплоить неприкоммиченные или непушенные изменения.
 - Сохранять `.env`, пользовательские uploads и production-only `queue-worker.sh`.
 - После синхронизации выполнить `composer install`, `php artisan migrate --force`, `php artisan optimize:clear`, `php artisan config:cache` и `php artisan view:cache` от пользователя сайта.
 
