@@ -29,21 +29,43 @@ class TranslateCityCategoryBatchJob implements ShouldQueue
         if (!$item) return;
 
         $defaultLanguageId = Language::where('is_default', 1)->value('id');
-        $source = $item->contents()
-            ->when($defaultLanguageId, fn ($query) => $query->where('language_id', $defaultLanguageId))
+        $hasSeo = function ($query) {
+            $query->where(function ($seoQuery) {
+                $seoQuery->whereNotNull('meta_title')->where('meta_title', '!=', '')
+                    ->orWhereNotNull('meta_description')->where('meta_description', '!=', '')
+                    ->orWhereNotNull('seo_text')->where('seo_text', '!=', '');
+            });
+        };
+
+        $defaultContent = $item->contents()
+            ->where('language_id', $defaultLanguageId)
             ->whereNotNull('name')
             ->where('name', '!=', '')
             ->first();
 
+        $source = $item->contents()
+            ->whereNotNull('name')
+            ->where('name', '!=', '')
+            ->where($hasSeo)
+            ->orderBy('language_id')
+            ->first();
+
+        $source ??= $defaultContent;
         $source ??= $item->contents()
             ->whereNotNull('name')
             ->where('name', '!=', '')
+            ->orderBy('language_id')
             ->first();
         if (!$source) return;
 
         foreach (Language::where('id', '!=', $source->language_id)->get() as $language) {
             $existing = $item->contents()->where('language_id', $language->id)->first();
-            if ($existing && ($existing->meta_title || $existing->meta_description || $existing->seo_text)) continue;
+            if ($existing
+                && filled($existing->meta_title)
+                && filled($existing->meta_description)
+                && filled($existing->seo_text)) {
+                continue;
+            }
 
             $cityName = $item->city->getName($language->id);
             $categoryName = $item->category->getName($language->id);

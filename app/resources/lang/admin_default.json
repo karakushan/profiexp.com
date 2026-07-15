@@ -2636,5 +2636,9 @@
     "will be permanently removed. This can't be undone.": "will be permanently removed. This can't be undone.",
     "will be replaced immediately": "will be replaced immediately",
     "year": "year",
-    "yearly": "yearly"
+    "yearly": "yearly",
+    "Translation status": "Translation status",
+    "Translated": "Translated",
+    "Partially translated": "Partially translated",
+    "Not translated": "Not translated"
 }

@@ -19,11 +19,15 @@ class TranslateCityCategories extends Command
         $default = Language::where('is_default', 1)->first();
         if (!$default) return self::FAILURE;
 
-        $total = Language::count();
+        $totalLanguageCount = Language::count();
         $batch = max(1, (int) $this->option('batch'));
         $items = ListingCityCategory::whereHas('contents', fn($q) => $q->whereNotNull('name')->where('name', '!=', ''))
-            ->withCount(['contents as filled_count' => fn($q) => $q->whereNotNull('seo_text')->where('seo_text', '!=', '')])
-            ->get()->filter(fn($item) => $item->filled_count < $total)->take($batch);
+            ->withCount(['contents as ready_count' => function ($q) {
+                $q->whereNotNull('meta_title')->where('meta_title', '!=', '')
+                    ->whereNotNull('meta_description')->where('meta_description', '!=', '')
+                    ->whereNotNull('seo_text')->where('seo_text', '!=', '');
+            }])
+            ->get()->filter(fn($item) => $item->ready_count < $totalLanguageCount)->take($batch);
 
         foreach ($items as $item) {
             $source = $item->contents()

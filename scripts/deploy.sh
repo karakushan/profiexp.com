@@ -7,7 +7,7 @@ WEB_ROOT="/var/www/profiexp_com_usr/data/www/profiexp.com"
 # outside the destructive rsync mirror: they are not reproducible from Git.
 # Tracked CSS/JS/fonts remain deployable because only upload directories are
 # excluded.
-EXCLUDES=".env .env.backup storage vendor node_modules public/storage public/hot bootstrap/cache/*.php public/assets/admin/file public/assets/admin/img public/assets/file public/assets/front/invoices public/assets/img"
+EXCLUDES=".env .env.backup queue-worker.sh storage vendor node_modules public/storage public/hot bootstrap/cache/*.php public/assets/admin/file public/assets/admin/img public/assets/file public/assets/front/invoices public/assets/img"
 
 echo "=== Pulling latest from git ==="
 cd "$REPO_DIR"

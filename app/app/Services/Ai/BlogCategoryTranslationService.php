@@ -35,7 +35,8 @@ class BlogCategoryTranslationService
         return <<<PROMPT
 Translate the following blog category content to {$targetLangName}.
 For the 'slug' field, create a URL-friendly transliterated version (use english characters for non-latin scripts).
-Return ONLY valid JSON object with the same keys. No markdown. No explanation.
+The 'seo_text' value must be valid HTML, not Markdown. Use semantic tags such as <p>, <h2>, <h3>, <ul>, <ol>, <li>, <strong> and <em>; do not use Markdown syntax or HTML document wrappers.
+Return ONLY valid JSON object with the same keys. No code fences. No explanation.
 Return JSON:
 
 {$json}

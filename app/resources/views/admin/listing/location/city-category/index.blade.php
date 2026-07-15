@@ -33,6 +33,16 @@
         </div>
 
         <div class="card-body">
+          <form method="get" class="form-inline mb-3">
+            <input type="hidden" name="language" value="{{ $language->code }}">
+            <label for="translation_status" class="mr-2">{{ __('Translation status') }}</label>
+            <select id="translation_status" name="translation_status" class="form-control form-control-sm" onchange="this.form.submit()">
+              <option value="all" @selected($translationStatus === 'all')>{{ __('All') }}</option>
+              <option value="translated" @selected($translationStatus === 'translated')>{{ __('Translated') }}</option>
+              <option value="partial" @selected($translationStatus === 'partial')>{{ __('Partially translated') }}</option>
+              <option value="untranslated" @selected($translationStatus === 'untranslated')>{{ __('Not translated') }}</option>
+            </select>
+          </form>
           @if ($items->isEmpty())
             <h3 class="text-center mt-2">{{ __('NO CITY CATEGORIES FOUND') . '!' }}</h3>
           @else
@@ -50,9 +60,13 @@
                       <td>{{ $item->category->getName($language->id) }}</td>
                       <td>
                         @foreach ($item->contents as $content)
-                          <span class="badge badge-secondary mr-1" title="{{ $content->language->name ?? '' }}">
+                          @php($isComplete = $content->isComplete())
+                          @if ($isComplete || $content->isPartiallyTranslated())
+                          <span class="badge {{ $isComplete ? 'badge-success' : 'badge-warning' }} mr-1"
+                            title="{{ ($content->language->name ?? '') . ' — ' . ($isComplete ? __('Translated') : __('Partially translated')) }}">
                             {{ strtoupper($content->language->code ?? '—') }}
                           </span>
+                          @endif
                         @endforeach
                       </td>
                       <td>

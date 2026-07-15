@@ -44,8 +44,33 @@ class ListingCityCategoryController extends Controller
             ->with(['contents' => fn($q) => $q->where('language_id', $language->id)])
             ->orderBy('serial_number')->get();
         $information['categoryOptions'] = $this->flattenCategoryOptions($categories, $language->id);
-        $information['items'] = ListingCityCategory::with(['contents.language', 'city.contents', 'city.country.contents', 'city.state.contents', 'category.contents'])
+        $translationStatus = $request->input('translation_status', 'all');
+        if (!in_array($translationStatus, ['all', 'translated', 'partial', 'untranslated'], true)) {
+            $translationStatus = 'all';
+        }
+
+        $items = ListingCityCategory::with(['contents.language', 'city.contents', 'city.country.contents', 'city.state.contents', 'category.contents'])
             ->orderByDesc('id')->get();
+        if ($translationStatus !== 'all') {
+            $languageCount = Language::count();
+            $items = $items->filter(function ($item) use ($languageCount, $translationStatus) {
+                $completeLanguageCount = $item->contents
+                    ->filter(fn($content) => $content->isComplete())
+                    ->pluck('language_id')
+                    ->unique()
+                    ->count();
+                $isTranslated = $completeLanguageCount >= $languageCount;
+                $isPartial = $completeLanguageCount > 0 && !$isTranslated;
+
+                return match ($translationStatus) {
+                    'translated' => $isTranslated,
+                    'partial' => $isPartial,
+                    default => !$isTranslated && !$isPartial,
+                };
+            })->values();
+        }
+        $information['items'] = $items;
+        $information['translationStatus'] = $translationStatus;
 
         return view('admin.listing.location.city-category.index', $information);
     }

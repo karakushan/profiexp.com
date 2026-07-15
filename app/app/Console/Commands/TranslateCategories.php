@@ -36,11 +36,33 @@ class TranslateCategories extends Command
         $pending = ListingCategory::whereHas('contents', function ($q) {
             $q->whereNotNull('name')->where('name', '!=', '');
         })
+            ->with(['parent.contents'])
             ->withCount(['contents as filled_count' => function ($q) {
                 $q->whereNotNull('name')->where('name', '!=', '');
             }])
             ->get()
-            ->filter(fn($c) => $c->filled_count > 0 && $c->filled_count < $totalLangs)
+            ->filter(function ($category) use ($totalLangs) {
+                if ($category->filled_count <= 0 || $category->filled_count >= $totalLangs) {
+                    return false;
+                }
+
+                if (!$category->parent_id) {
+                    return true;
+                }
+
+                $parentLanguageCount = $category->parent?->contents
+                    ->filter(fn($content) => filled($content->name))
+                    ->pluck('language_id')
+                    ->unique()
+                    ->count() ?? 0;
+
+                return $parentLanguageCount >= $totalLangs;
+            })
+            ->sortBy(fn($category) => [
+                $category->parent_id ? 1 : 0,
+                $category->serial_number ?? PHP_INT_MAX,
+                $category->id,
+            ])
             ->take($batchSize);
 
         $ids = [];

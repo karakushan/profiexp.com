@@ -2719,5 +2719,9 @@
     "Enter address to search on map": "Введите адрес для поиска на карте",
     "Select a Country": "Выберите страну",
     "Select a State": "Выберите область",
-    "Select a City": "Выберите город"
+    "Select a City": "Выберите город",
+    "Translation status": "Статус перевода",
+    "Translated": "Переведённые",
+    "Partially translated": "Частично переведённые",
+    "Not translated": "Не переведённые"
 }
