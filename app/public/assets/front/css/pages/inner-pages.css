@@ -2292,8 +2292,8 @@ Category SEO text section
     width: 0.48rem;
     height: 0.48rem;
     border-radius: 50%;
-    background: #1f8f86;
-    box-shadow: 0 0 0 0.22rem rgba(31, 143, 134, 0.12);
+    background: var(--color-red);
+    box-shadow: 0 0 0 0.22rem rgba(var(--color-red-rgb), 0.14);
 }
 
 .seo-text-collapse ol {
@@ -2315,7 +2315,7 @@ Category SEO text section
     height: 1.15rem;
     place-items: center;
     border-radius: 50%;
-    background: #1f8f86;
+    background: var(--color-red);
     color: #fff;
     font-size: 0.7rem;
     font-weight: 700;
