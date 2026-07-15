@@ -2641,5 +2641,9 @@
     "Enter address to search on map": "Enter address to search on map",
     "Select a Country": "Select a Country",
     "Select a State": "Select a State",
-    "Select a City": "Select a City"
+    "Select a City": "Select a City",
+    "Translation status": "Translation status",
+    "Translated": "Translated",
+    "Partially translated": "Partially translated",
+    "Not translated": "Not translated"
 }

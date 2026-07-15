@@ -22,7 +22,8 @@ class CityCategoryTranslationService
         $json = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         $prompt = "Translate or generate SEO content for the following city-category page in {$targetLangName}.\n"
             . "Use page_name as context. If an SEO field is empty, generate a suitable value for it.\n"
-            . "Return ONLY valid JSON with meta_title, meta_description and seo_text keys. No markdown. No explanation.\n\n{$json}";
+            . "The seo_text value must be valid HTML, not Markdown. Use semantic tags such as <p>, <h2>, <h3>, <ul>, <ol>, <li>, <strong> and <em>; do not use Markdown syntax or HTML document wrappers.\n"
+            . "Return ONLY valid JSON with meta_title, meta_description and seo_text keys. No code fences. No explanation.\n\n{$json}";
 
         return $this->extract($this->gemini->generate($prompt));
     }

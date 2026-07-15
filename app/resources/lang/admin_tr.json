@@ -2688,5 +2688,9 @@
     "Enter address to search on map": "Haritada aramak için adres girin",
     "Select a Country": "Ülke Seçin",
     "Select a State": "Bölge Seçin",
-    "Select a City": "Şehir Seçin"
+    "Select a City": "Şehir Seçin",
+    "Translation status": "Çeviri durumu",
+    "Translated": "Çevrilenler",
+    "Partially translated": "Kısmen çevrilenler",
+    "Not translated": "Çevrilmemiş"
 }
