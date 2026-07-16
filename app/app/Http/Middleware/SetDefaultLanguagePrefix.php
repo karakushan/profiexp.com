@@ -33,6 +33,9 @@ class SetDefaultLanguagePrefix
     $supportedCodes = Language::query()->pluck('code')
       ->map(fn ($code) => strtolower($code))
       ->all();
+    $defaultLocale = strtolower(
+      Language::query()->where('is_default', 1)->value('code') ?? config('app.locale')
+    );
 
     if (empty($supportedCodes) || $this->shouldSkip($path)) {
       return $next($request);
@@ -50,7 +53,7 @@ class SetDefaultLanguagePrefix
       return $next($request);
     }
 
-    $selectedLocale = $request->session()->get('currentLocaleCode');
+    $selectedLocale = strtolower((string) $request->session()->get('currentLocaleCode'));
     if (in_array($selectedLocale, $supportedCodes, true)) {
       return $next($request);
     }
@@ -62,9 +65,15 @@ class SetDefaultLanguagePrefix
 
     $locale ??= in_array('en', $supportedCodes, true)
       ? 'en'
-      : Language::query()->where('is_default', 1)->value('code');
+      : $defaultLocale;
 
     if (!$locale) {
+      return $next($request);
+    }
+
+    // The default language is canonical without a prefix. Redirecting `/` to
+    // `/{defaultLocale}` would be sent back to `/` by ChangeLanguage.
+    if ($locale === $defaultLocale) {
       return $next($request);
     }
 
