@@ -63,7 +63,7 @@
           @endphp
           @if ($dContent)
             <a class="btn btn-success btn-sm float-right mr-1 d-inline-block"
-              href="{{ route('frontend.listing.details', ['slug' => $slug, 'id' => $id]) }}" target="_blank">
+              href="{{ route('frontend.listing.details.localized_legacy', ['lang' => $defaultLang->code, 'slug' => $slug, 'id' => $id]) }}" target="_blank">
               <span class="btn-label">
                 <i class="fas fa-eye"></i>
               </span>

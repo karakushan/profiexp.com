@@ -152,7 +152,7 @@
 
                           <td>
                             @if (!empty($listing_content))
-                              <a href="{{ route('frontend.listing.details', ['slug' => $listing_content->slug, 'id' => $listing->id]) }}"
+                              <a href="{{ route('frontend.listing.details.localized_legacy', ['lang' => $language->code, 'slug' => $listing_content->slug, 'id' => $listing->id]) }}"
                                 target="_blank">
                                 <div class="max-dimensions">
                                   <img
@@ -170,7 +170,7 @@
                           </td>
                           <td class="title">
                             @if (!empty($listing_content))
-                              <a href="{{ route('frontend.listing.details', ['slug' => $listing_content->slug, 'id' => $listing->id]) }}"
+                              <a href="{{ route('frontend.listing.details.localized_legacy', ['lang' => $language->code, 'slug' => $listing_content->slug, 'id' => $listing->id]) }}"
                                 target="_blank">
                                 {{ strlen(@$listing_content->title) > 50 ? mb_substr(@$listing_content->title, 0, 50, 'utf-8') . '...' : @$listing_content->title }}
                               </a>
@@ -289,7 +289,7 @@
                                     {{ __('Edit') }}
                                   </a>
                                   @if (!empty($listing_content))
-                                    <a href="{{ route('frontend.listing.details', ['slug' => $listing_content->slug, 'id' => $listing->id]) }}"
+                                    <a href="{{ route('frontend.listing.details.localized_legacy', ['lang' => $language->code, 'slug' => $listing_content->slug, 'id' => $listing->id]) }}"
                                       class="dropdown-item"target="_blank">
                                       {{ __('Preview') }}
                                     </a>

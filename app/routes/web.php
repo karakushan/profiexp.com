@@ -126,6 +126,8 @@ Route::prefix('{lang?}')
     Route::post('/get-cities', 'FrontEnd\ListingContoller@getCity')->name('frontend.listings.get-city');
     Route::get('/get-address', 'FrontEnd\ListingContoller@getAddress')->name('frontend.listings.get-address');
 
+    Route::get('/{slug}/{id}', 'FrontEnd\ListingContoller@detailsLocalized')
+      ->name('frontend.listing.details.localized_legacy');
     Route::get('/{slug}', 'FrontEnd\ListingContoller@showBySlug')->name('frontend.listing.details');
     Route::post('/listing-review/{id}/store-review', 'FrontEnd\ListingContoller@storeReview')->name('listing.listing_details.store_review');
     Route::get('/store-visitor', 'FrontEnd\ListingContoller@store_visitor')->name('frontend.store_visitor');

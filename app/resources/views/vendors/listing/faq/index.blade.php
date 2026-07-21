@@ -66,7 +66,7 @@
                 </div>
                 @if ($slug)
                   <div class="col-6 col-sm-3 col-lg-4 col-xl-3 mb-2">
-                    <a href="{{ route('frontend.listing.details', ['slug' => $slug, 'id' => $listing_id]) }}"target="_blank"
+                    <a href="{{ route('frontend.listing.details.localized_legacy', ['lang' => $defaultLang->code, 'slug' => $slug, 'id' => $listing_id]) }}"target="_blank"
                       class="btn btn-success btn-sm w-100"><i class="fas fa-eye"></i>
                       {{ __('Preview') }}</a>
                   </div>

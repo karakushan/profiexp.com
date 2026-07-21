@@ -1804,6 +1804,18 @@ class ListingContoller extends Controller
     return redirect()->to(listing_url($listingContent->slug, $language->code), 301);
   }
 
+  public function detailsLocalized(Request $request, $lang, $slug, $id)
+  {
+    $languageCode = $lang ?: default_front_locale();
+    $language = Language::query()->where('code', $languageCode)->firstOrFail();
+    $listingContent = ListingContent::query()
+      ->where('language_id', $language->id)
+      ->where('listing_id', $id)
+      ->firstOrFail();
+
+    return $this->renderDetails($listingContent->listing_id, $language);
+  }
+
   private function renderDetails(int $listingId, $language)
   {
     $misc = new MiscellaneousController();
