@@ -88,6 +88,7 @@ class TranslateListingJob implements ShouldQueue
             $targetContent->address = $translated['address'] ?? '';
             $targetContent->meta_keyword = $translated['meta_keyword'] ?? '';
             $targetContent->meta_description = $translated['meta_description'] ?? '';
+            $targetContent->aminities = $sourceContent->aminities ?? json_encode([]);
 
             $targetContent->save();
 

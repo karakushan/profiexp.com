@@ -419,6 +419,8 @@ class ListingController extends Controller
             $listingContent->aminities = json_encode($request->input('aminities', []));
             $listingContent->save();
 
+            $this->syncListingAmenities($listing->id, $request->input('aminities', []));
+
             //adding business hours
             $days = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
             foreach ($days as $day) {
@@ -750,9 +752,17 @@ Thank you for your attention to this matter.";
         $listingContent->aminities = json_encode($request->input('aminities', []));
         $listingContent->save();
 
+        $this->syncListingAmenities($listing->id, $request->input('aminities', []));
+
         Session::flash('success', __('Listing Updated successfully') . '!');
 
         return Response::json(['status' => 'success'], 200);
+    }
+
+    private function syncListingAmenities(int $listingId, array $amenities): void
+    {
+        ListingContent::where('listing_id', $listingId)
+            ->update(['aminities' => json_encode(array_values($amenities))]);
     }
 
     public function videoImageRemove($id)
