@@ -721,7 +721,7 @@ Thank you for your attention to this matter.";
         }
 
 
-        $listing = $listing->update($in);
+        $listing->update($in);
 
         $slders = $request->slider_images;
         if ($slders) {
