@@ -740,6 +740,42 @@
             </div>
         </div>
 
+        <div class="col-lg-4">
+            <div class="card">
+                <form action="{{ route('admin.basic_settings.update_google_analytics') }}" method="post">
+                    @csrf
+                    <div class="card-header">
+                        <div class="card-title">{{ __('Google Analytics') }}</div>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="form-group mb-0">
+                            <label>{{ __('Google Analytics measurement ID') }}</label>
+                            <input type="text" class="form-control" name="google_analytics_id"
+                                value="{{ old('google_analytics_id', $data->google_analytics_id ?? '') }}"
+                                placeholder="G-C5GBXWJ0JS">
+                            @if ($errors->has('google_analytics_id'))
+                                <p class="mt-1 mb-0 text-danger">{{ $errors->first('google_analytics_id') }}</p>
+                            @endif
+                            <small class="form-text text-muted">
+                                {{ __('Enter only the Google Analytics measurement ID, for example G-C5GBXWJ0JS.') }}
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <button type="submit" class="btn btn-success">
+                                    {{ __('Update') }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         {{-- <div class="col-lg-4">
             <div class="card">
                 <form action="{{ route('admin.basic_settings.update_pollinations') }}" method="post">

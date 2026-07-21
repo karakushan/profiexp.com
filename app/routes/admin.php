@@ -962,6 +962,7 @@ Route::prefix('/admin')->middleware('auth:admin', 'Demo', 'adminLang')->group(fu
         Route::post('/update-openai', 'Admin\BasicSettings\BasicController@updateOpenAI')->name('admin.basic_settings.update_openai');
         Route::post('/update-gemini', 'Admin\BasicSettings\BasicController@updateGemini')->name('admin.basic_settings.update_gemini');
         Route::post('/update-translate-settings', 'Admin\BasicSettings\BasicController@updateTranslateSettings')->name('admin.basic_settings.update_translate_settings');
+        Route::post('/update-google-analytics', 'Admin\BasicSettings\BasicController@updateGoogleAnalytics')->name('admin.basic_settings.update_google_analytics');
         // Route::post('/update-pollinations', 'Admin\BasicSettings\BasicController@updatePollinations')->name('admin.basic_settings.update_pollinations');
         // basic settings plugins route end
 

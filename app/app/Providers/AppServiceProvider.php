@@ -127,7 +127,7 @@ class AppServiceProvider extends ServiceProvider
       View::composer(['frontend.*', 'errors.*'], function ($view) {
         // get basic info
         $basicData = DB::table('basic_settings')
-          ->select('theme_version', 'footer_logo', 'footer_background_image', 'email_address', 'contact_number', 'address', 'primary_color', 'whatsapp_status', 'whatsapp_number', 'whatsapp_header_title', 'whatsapp_popup_status', 'whatsapp_popup_message', 'tawkto_status', 'tawkto_direct_chat_link', 'base_currency_symbol', 'base_currency_symbol_position', 'base_currency_text', 'base_currency_text_position', 'hero_section_video_url', 'preloader_status', 'preloader', 'shop_status', 'time_format', 'google_map_api_key_status', 'google_map_api_key', 'listing_view', 'website_title')
+          ->select('theme_version', 'footer_logo', 'footer_background_image', 'email_address', 'contact_number', 'address', 'primary_color', 'whatsapp_status', 'whatsapp_number', 'whatsapp_header_title', 'whatsapp_popup_status', 'whatsapp_popup_message', 'tawkto_status', 'tawkto_direct_chat_link', 'base_currency_symbol', 'base_currency_symbol_position', 'base_currency_text', 'base_currency_text_position', 'hero_section_video_url', 'preloader_status', 'preloader', 'shop_status', 'time_format', 'google_map_api_key_status', 'google_map_api_key', 'google_analytics_id', 'listing_view', 'website_title')
           ->first();
 
         // get all the languages of this system

@@ -28,6 +28,18 @@
 
     @includeIf('frontend.partials.styles')
 
+    @php($googleAnalyticsId = trim((string) ($basicInfo->google_analytics_id ?? '')))
+    @if (preg_match('/^G-[A-Z0-9]+$/i', $googleAnalyticsId))
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $googleAnalyticsId }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '{{ $googleAnalyticsId }}');
+        </script>
+    @endif
+
 </head>
 
 <body class=" @if (

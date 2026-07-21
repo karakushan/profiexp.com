@@ -378,7 +378,8 @@ class BasicController extends Controller
             'pollinations_secret_key',
             'pollinations_text_model',
             'pollinations_image_model',
-            'auto_translate_status' )
+            'auto_translate_status',
+            'google_analytics_id' )
             ->first();
 
         return view('admin.basic-settings.plugins', ['data' => $data]);
@@ -724,6 +725,26 @@ class BasicController extends Controller
         );
 
         Session::flash('success', __('Auto-translate settings updated successfully') . '!');
+
+        return redirect()->back();
+    }
+
+    public function updateGoogleAnalytics(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'google_analytics_id' => ['nullable', 'regex:/^G-[A-Z0-9]+$/i'],
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator->errors());
+        }
+
+        DB::table('basic_settings')->updateOrInsert(
+            ['uniqid' => 12345],
+            ['google_analytics_id' => strtoupper(trim((string) $request->input('google_analytics_id')))]
+        );
+
+        Session::flash('success', __('Google Analytics tag updated successfully') . '!');
 
         return redirect()->back();
     }
