@@ -9,6 +9,7 @@ use App\Models\Journal\BlogInformation;
 use App\Models\Language;
 use App\Models\Listing\ListingContent;
 use App\Models\ListingCategory;
+use App\Models\Location\ListingCityCategory;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\SitemapIndex;
 use Spatie\Sitemap\Tags\Url;
@@ -20,6 +21,7 @@ class SitemapController extends Controller
         $index = SitemapIndex::create()
             ->add(url('/sitemap/listings.xml'))
             ->add(url('/sitemap/categories.xml'))
+            ->add(url('/sitemap/city-categories.xml'))
             ->add(url('/sitemap/blog-posts.xml'))
             ->add(url('/sitemap/blog-categories.xml'))
             ->add(url('/sitemap/pages.xml'))
@@ -104,6 +106,37 @@ class SitemapController extends Controller
                         ->setPriority(0.6),
                     $translations,
                     fn($translation, $language) => listing_category_url($category->id, $language->code)
+                )
+            );
+        }
+
+        return $this->xmlResponse($sitemap->render());
+    }
+
+    public function cityCategories()
+    {
+        $languages = Language::query()->get()->keyBy('id');
+        $defaultLanguage = $this->defaultLanguage($languages);
+        $items = ListingCityCategory::query()->with('contents')->get();
+        $sitemap = Sitemap::create();
+
+        foreach ($items as $item) {
+            $translations = $item->contents
+                ->filter(fn($translation) => !empty($translation->slug) && isset($languages[$translation->language_id]));
+
+            $primary = $this->primaryTranslation($translations, $defaultLanguage);
+            if (!$primary) {
+                continue;
+            }
+
+            $sitemap->add(
+                $this->withAlternates(
+                    Url::create(listing_city_category_url($item, $languages[$primary->language_id]->code))
+                        ->setLastModificationDate($primary->updated_at ?? $item->updated_at)
+                        ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
+                        ->setPriority(0.6),
+                    $translations,
+                    fn($translation, $language) => listing_city_category_url($item, $language->code)
                 )
             );
         }

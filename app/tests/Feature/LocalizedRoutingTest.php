@@ -154,6 +154,7 @@ class LocalizedRoutingTest extends TestCase
         $this->get('/sitemap.xml')
             ->assertOk()
             ->assertSee('/sitemap/pages.xml', false)
+            ->assertSee('/sitemap/city-categories.xml', false)
             ->assertSee('/sitemap/static-pages.xml', false);
 
         $this->get('/sitemap/listings.xml')

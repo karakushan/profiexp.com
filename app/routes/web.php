@@ -336,6 +336,7 @@ Route::prefix('{lang?}/user')->where(['lang' => $languageRoutePattern])->middlew
 Route::get('/sitemap.xml', 'FrontEnd\SitemapController@index');
 Route::get('/sitemap/listings.xml', 'FrontEnd\SitemapController@listings');
 Route::get('/sitemap/categories.xml', 'FrontEnd\SitemapController@categories');
+Route::get('/sitemap/city-categories.xml', 'FrontEnd\SitemapController@cityCategories');
 Route::get('/sitemap/blog-posts.xml', 'FrontEnd\SitemapController@blogPosts');
 Route::get('/sitemap/blog-categories.xml', 'FrontEnd\SitemapController@blogCategories');
 Route::get('/sitemap/pages.xml', 'FrontEnd\SitemapController@pages');
