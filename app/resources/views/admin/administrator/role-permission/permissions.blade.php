@@ -108,6 +108,12 @@
 
                                         <label class="selectgroup-item">
                                             <input type="checkbox" class="selectgroup-input" name="permissions[]"
+                                                value="Reviews Management" @if (is_array($rolePermissions) && in_array('Reviews Management', $rolePermissions)) checked @endif>
+                                            <span class="selectgroup-button">{{ __('Reviews Management') }}</span>
+                                        </label>
+
+                                        <label class="selectgroup-item">
+                                            <input type="checkbox" class="selectgroup-input" name="permissions[]"
                                                 value="Shop Management" @if (is_array($rolePermissions) && in_array('Shop Management', $rolePermissions)) checked @endif>
                                             <span class="selectgroup-button">{{ __('Shop Management') }}</span>
                                         </label>

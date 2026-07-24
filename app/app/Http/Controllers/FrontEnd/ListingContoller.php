@@ -24,6 +24,7 @@ use App\Models\Listing\ListingImage;
 use App\Models\Listing\ListingMessage;
 use App\Models\Listing\ListingProduct;
 use App\Models\Listing\ListingReview;
+use App\Services\ReviewService;
 use App\Models\Listing\ListingSocialMedia;
 use App\Models\Listing\ProductMessage;
 use App\Models\ListingCategory;
@@ -1874,10 +1875,13 @@ class ListingContoller extends Controller
         ->first();
     }
 
-    $reviews = ListingReview::query()->where('listing_id', '=', $listingId)->orderByDesc('id')->get();
+    $reviews = ListingReview::query()->where('listing_id', '=', $listingId)
+      ->where('status', 'approved')
+      ->orderByDesc('id')->get();
 
-    $reviews->map(function ($review) {
+    $reviews->map(function ($review) use ($language) {
       $review['user'] = $review->userInfo()->first();
+      ReviewService::setDisplayText($review, $language->id);
     });
 
     $information['reviews'] = $reviews;
@@ -2320,7 +2324,12 @@ class ListingContoller extends Controller
     if ($user) {
         $review = ListingReview::updateOrCreate(
           ['user_id' => $user->id, 'listing_id' => $id],
-          ['review' => $request->review, 'rating' => $request->rating]
+          [
+            'review' => $request->review,
+            'rating' => $request->rating,
+            'status' => 'pending',
+            'language_id' => ReviewService::languageId(),
+          ]
         ); 
         if ($review->wasRecentlyCreated) {
           $listing = Listing::find($id);
@@ -2336,23 +2345,9 @@ class ListingContoller extends Controller
           );
         }
 
-      // now, get the average rating of this product
-      $reviews = ListingReview::where('listing_id', $id)->get();
+      ReviewService::recalculate(ReviewService::TYPE_LISTING, (int) $id);
 
-      $totalRating = 0;
-
-      foreach ($reviews as $review) {
-        $totalRating += $review->rating;
-      }
-
-      $numOfReview = count($reviews);
-
-      $averageRating = $totalRating / $numOfReview;
-
-      // finally, store the average rating of this Listing
-      Listing::find($id)->update(['average_rating' => $averageRating]);
-
-      Session::flash('success', __('Your review submitted successfully') . '.');
+      Session::flash('success', __('Your review submitted and is awaiting moderation') . '.');
     } else {
       Session::flash('error', __('You have to Login First!'));
     }

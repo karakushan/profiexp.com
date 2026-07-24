@@ -32,6 +32,7 @@ use App\Models\Location\State;
 use App\Models\Shop\Product;
 use App\Models\Vendor;
 use App\Services\VendorNotificationService;
+use App\Services\ReviewService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -705,10 +706,13 @@ class ListingController extends Controller
             $information['vendor'] = HelperController::formatVendorForApi($vendor_id, $language->id, 'vendor');
         }
 
-        $reviews = ListingReview::query()->where('listing_id', '=', $id)->orderByDesc('id')->get();
+        $reviews = ListingReview::query()->where('listing_id', '=', $id)
+            ->where('status', 'approved')
+            ->orderByDesc('id')->get();
 
-        $reviews = $reviews->map(function ($review) {
+        $reviews = $reviews->map(function ($review) use ($language) {
             $user = $review->userInfo()->select('id', 'name', 'username', 'image')->first();
+            ReviewService::setDisplayText($review, $language->id);
 
             return [
                 'id'         => $review->id,
@@ -810,7 +814,12 @@ class ListingController extends Controller
         if ($user) {
             $review = ListingReview::updateOrCreate(
                 ['user_id' => $user->id, 'listing_id' => $id],
-                ['review' => $request->review, 'rating' => $request->rating]
+                [
+                    'review' => $request->review,
+                    'rating' => $request->rating,
+                    'status' => 'pending',
+                    'language_id' => ReviewService::languageId($request->header('Accept-Language')),
+                ]
             );
             if ($review->wasRecentlyCreated) {
                 $listing = Listing::find($id);
@@ -826,25 +835,11 @@ class ListingController extends Controller
                 );
             }
 
-            // now, get the average rating of this product
-            $reviews = ListingReview::where('listing_id', $id)->get();
-
-            $totalRating = 0;
-
-            foreach ($reviews as $review) {
-                $totalRating += $review->rating;
-            }
-
-            $numOfReview = count($reviews);
-
-            $averageRating = $totalRating / $numOfReview;
-
-            // finally, store the average rating of this Listing
-            Listing::find($id)->update(['average_rating' => $averageRating]);
+            ReviewService::recalculate(ReviewService::TYPE_LISTING, (int) $id);
 
             return response()->json([
                 'success' => true,
-                'message' =>  __('Your review submitted successfully')
+                'message' =>  __('Your review submitted and is awaiting moderation')
             ], 200);
         } else {
             return response()->json([
