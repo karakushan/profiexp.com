@@ -180,6 +180,50 @@ class ListingContoller extends Controller
     return $data;
   }
 
+  /**
+   * Fallback for location searches when geocoding is unavailable.
+   *
+   * The displayed location combines localized address, city, state and country,
+   * so all of those fields are matched in the active language, case-insensitively.
+   */
+  private function findListingIdsByLocalizedAddress(string $location, int $languageId): array
+  {
+    $terms = collect(explode(',', $location))
+      ->map(fn (string $term) => mb_strtolower(trim($term), 'UTF-8'))
+      ->filter()
+      ->values();
+
+    return ListingContent::query()
+      ->leftJoin('city_contents', function ($join) use ($languageId) {
+        $join->on('city_contents.city_id', '=', 'listing_contents.city_id')
+          ->where('city_contents.language_id', '=', $languageId);
+      })
+      ->leftJoin('state_contents', function ($join) use ($languageId) {
+        $join->on('state_contents.state_id', '=', 'listing_contents.state_id')
+          ->where('state_contents.language_id', '=', $languageId);
+      })
+      ->leftJoin('country_contents', function ($join) use ($languageId) {
+        $join->on('country_contents.country_id', '=', 'listing_contents.country_id')
+          ->where('country_contents.language_id', '=', $languageId);
+      })
+      ->where('listing_contents.language_id', $languageId)
+      ->where(function ($query) use ($terms) {
+        foreach ($terms as $term) {
+          $like = '%' . $term . '%';
+          $query->where(function ($locationQuery) use ($like) {
+            $locationQuery
+              ->whereRaw('LOWER(listing_contents.address) LIKE ?', [$like])
+              ->orWhereRaw('LOWER(city_contents.name) LIKE ?', [$like])
+              ->orWhereRaw('LOWER(state_contents.name) LIKE ?', [$like])
+              ->orWhereRaw('LOWER(country_contents.name) LIKE ?', [$like]);
+          });
+        }
+      })
+      ->distinct()
+      ->pluck('listing_contents.listing_id')
+      ->all();
+  }
+
   public function index(Request $request)
   {
     // dd($request->alL());
@@ -244,14 +288,18 @@ class ListingContoller extends Controller
     //search by location
 
     $bs = Basic::select('google_map_api_key_status', 'radius', 'google_map_api_key')->first();
-    $radius = $bs->google_map_api_key_status == 1 ? $bs->radius : 5000;
+    // The configured radius and GeoSearch::getDistance() use kilometres,
+    // while the SQL distance expression returns metres.
+    $radius = $bs->google_map_api_key_status == 1 ? ($bs->radius * 1000) : 5000;
 
     $locationIds = [];
     $lat_long = [];
     $locationSearchPerformed = false;
 
-    if ($request->filled('location')) {
-      $location = $request->location;
+    // The AJAX filter uses location_val, while direct page requests use location.
+    // Accept both so a normal form submit cannot silently drop the location filter.
+    if ($request->filled('location') || $request->filled('location_val')) {
+      $location = $request->input('location', $request->input('location_val'));
       $locationSearchPerformed = true;
       $locationSearch = GeoSearch::findListingIds(
         $location,
@@ -263,6 +311,9 @@ class ListingContoller extends Controller
       );
       $locationIds = $locationSearch['ids'];
       $lat_long = $locationSearch['coordinates'];
+      if (empty($locationIds)) {
+        $locationIds = $this->findListingIdsByLocalizedAddress($location, $language->id);
+      }
     }
 
 
@@ -1145,7 +1196,9 @@ class ListingContoller extends Controller
     $locationSearchPerformed = false;
 
     $bs = Basic::select('google_map_api_key_status', 'radius', 'google_map_api_key')->first();
-    $radius = $bs->google_map_api_key_status == 1 ? $bs->radius : 5000;
+    // The configured radius and GeoSearch::getDistance() use kilometres,
+    // while the SQL distance expression returns metres.
+    $radius = $bs->google_map_api_key_status == 1 ? ($bs->radius * 1000) : 5000;
 
     if ($request->filled('location_val')) {
       $location = $request->location_val;
@@ -1160,6 +1213,9 @@ class ListingContoller extends Controller
       );
       $locationIds = $locationSearch['ids'];
       $lat_long = $locationSearch['coordinates'];
+      if (empty($locationIds)) {
+        $locationIds = $this->findListingIdsByLocalizedAddress($location, $language->id);
+      }
     }
 
     $category_listingIds = [];

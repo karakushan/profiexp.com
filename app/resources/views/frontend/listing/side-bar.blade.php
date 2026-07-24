@@ -72,7 +72,8 @@
                                 </div>
                                 <div class="form-group icon-end mb-20">
                                     <input type="text" class="form-control"id="location"
-                                        value="{{ request()->input('location') }}" name="location"
+                                        value="{{ request()->input('location') === 'undefined' ? '' : request()->input('location') }}" name="location"
+                                        autocomplete="off" aria-autocomplete="none"
                                         placeholder="{{ __('Enter Location') }} ">
                                     @if ($basicInfo->google_map_api_key_status == 1)
                                         <button type="button" class="btn btn-sm current-location"

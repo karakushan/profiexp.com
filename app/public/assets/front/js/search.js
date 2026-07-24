@@ -4,6 +4,8 @@
 var filterSliders = null;
 var o_min = null;
 var o_max = null;
+var locationInputTimeout = null;
+var locationInputDebounceMs = 500;
 
 console.log(`select_city: ${select_city} ${select_country} ${select_state}`);
 
@@ -17,15 +19,41 @@ $(document).ready(function () {
     }
   });
 
-  if (googleApiStatus === 0) {
-    $('body').on('keypress', '#location', function (event) {
-      if (event.which === 13) {
-        $('#location_val').val($(this).val());
+  $('body').on('keydown', '#location', function (event) {
+    if (event.key === 'Enter' || event.which === 13) {
+      event.preventDefault();
+      clearTimeout(locationInputTimeout);
+
+      var locationValue = String($(this).val() || '').trim();
+      locationValue = locationValue === 'undefined' ? '' : locationValue;
+
+      window.lastLocationSearchValue = locationValue;
+      $('#location_val').val(locationValue);
+      $('#page').val(1);
+
+      updateUrl();
+    }
+  });
+
+  $('body').on('input', '#location', function () {
+    var locationValue = String($(this).val() || '').trim();
+    clearTimeout(locationInputTimeout);
+
+    if (locationValue && locationValue !== 'undefined') {
+      locationInputTimeout = setTimeout(function () {
+        window.lastLocationSearchValue = locationValue;
+        $('#location_val').val(locationValue);
         $('#page').val(1);
         updateUrl();
-      }
-    });
-  }
+      }, locationInputDebounceMs);
+      return;
+    }
+
+    window.lastLocationSearchValue = '';
+    $('#location_val').val('');
+    $('#page').val(1);
+    updateUrl();
+  });
 
   $('body').on('click', '.page-link', function () {
     var page = $(this).data('page');
@@ -369,7 +397,21 @@ $(document).ready(function () {
 });
 
 let updateTimeout = null;
+function syncLocationUrl() {
+  var locationValue = String($('#location_val').val() || '').trim();
+  locationValue = locationValue === 'undefined' ? '' : locationValue;
+
+  var newUrl = new URL(window.location);
+  if (locationValue) {
+    newUrl.searchParams.set('location', locationValue);
+  } else {
+    newUrl.searchParams.delete('location');
+  }
+  window.history.replaceState({}, '', newUrl);
+}
+
 function updateUrl() {
+  syncLocationUrl();
   clearTimeout(updateTimeout);
   updateTimeout = setTimeout(function () {
     var $form = $('#searchForm');
@@ -380,6 +422,13 @@ function updateUrl() {
 
 $('#searchForm').on('submit', function (e) {
   e.preventDefault();
+  var locationValue = String($('#location_val').val() || '').trim();
+  if (locationValue === 'undefined') {
+    var lastLocationValue = String(window.lastLocationSearchValue || $('#location').val() || '').trim();
+    lastLocationValue = lastLocationValue === 'undefined' ? '' : lastLocationValue;
+    $('#location').val(lastLocationValue);
+    $('#location_val').val(lastLocationValue);
+  }
   var fd = $(this).serialize();
   $('.search-container').html('');
   $.ajax({
