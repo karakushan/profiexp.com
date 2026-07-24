@@ -914,7 +914,7 @@ class ListingController extends Controller
             $in['video_url'] = $videoLink;
         }
 
-        $listing = $listing->update($in);
+        $listing->update($in);
 
         $slders = $request->slider_images;
         if ($slders) {
