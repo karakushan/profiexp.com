@@ -48,6 +48,7 @@ use Illuminate\Http\Request;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
@@ -1821,7 +1822,9 @@ class ListingContoller extends Controller
   {
     $misc = new MiscellaneousController();
     $vendorId = Listing::where('id', $listingId)->pluck('vendor_id')->first();
-    $information['bs'] = Basic::query()->select('google_recaptcha_status', 'facebook_login_status', 'google_login_status')->first();
+    $information['bs'] = Basic::query()->select('google_recaptcha_status', 'google_recaptcha_site_key', 'facebook_login_status', 'google_login_status')->first();
+    $information['recaptchaV3SiteKey'] = config('services.recaptcha.v3.site_key')
+      ?: ($information['bs']->google_recaptcha_site_key ?? null);
 
     $listing = Listing::with(['listing_content' => function ($query) use ($language) {
       return $query->where('language_id', $language->id);
@@ -2311,8 +2314,12 @@ class ListingContoller extends Controller
     return response()->json(['message' => 'Message sent successfully'], 200);
   }
 
-  public function storeReview(Request $request, $id)
+  public function storeReview(Request $request, $langOrId, $id = null)
   {
+    // The localized route has an optional {lang} parameter before {id}, while
+    // the default-locale route only passes {id}.
+    $listingId = $id ?? $langOrId;
+
 
     $rule = ['rating' => 'required'];
     $validator = Validator::make($request->all(), $rule);
@@ -2323,11 +2330,17 @@ class ListingContoller extends Controller
         ->withInput();
     }
 
+    if (!$this->verifyListingReviewRecaptcha($request)) {
+      return redirect()->back()
+        ->with('error', __('Please verify that you are not a robot.'))
+        ->withInput();
+    }
+
     $user = Auth::guard('web')->user();
 
     if ($user) {
         $review = ListingReview::updateOrCreate(
-          ['user_id' => $user->id, 'listing_id' => $id],
+          ['user_id' => $user->id, 'listing_id' => $listingId],
           [
             'review' => $request->review,
             'rating' => $request->rating,
@@ -2336,26 +2349,66 @@ class ListingContoller extends Controller
           ]
         ); 
         if ($review->wasRecentlyCreated) {
-          $listing = Listing::find($id);
+          $listing = Listing::find($listingId);
           VendorNotificationService::send(
             $listing?->vendor,
             'vendor_listing_review_received',
             __('New listing review'),
             __('You received a new review on one of your listings.'),
             [
-              'listing_id' => $id,
+              'listing_id' => $listingId,
               'review_id' => $review->id,
             ]
           );
         }
 
-      ReviewService::recalculate(ReviewService::TYPE_LISTING, (int) $id);
+      ReviewService::recalculate(ReviewService::TYPE_LISTING, (int) $listingId);
 
       Session::flash('success', __('Your review submitted and is awaiting moderation') . '.');
     } else {
       Session::flash('error', __('You have to Login First!'));
     }
     return redirect()->back();
+  }
+
+  private function verifyListingReviewRecaptcha(Request $request): bool
+  {
+    $settings = Basic::query()
+      ->select('google_recaptcha_status', 'google_recaptcha_secret_key')
+      ->first();
+
+    if (!$settings || (int) $settings->google_recaptcha_status !== 1) {
+      return true;
+    }
+
+    $token = trim((string) $request->input('g-recaptcha-response'));
+    $secretKey = (string) (config('services.recaptcha.v3.secret_key') ?: $settings->google_recaptcha_secret_key);
+
+    if ($token === '' || $secretKey === '') {
+      return false;
+    }
+
+    try {
+      $verification = Http::asForm()
+        ->timeout(5)
+        ->post('https://www.google.com/recaptcha/api/siteverify', [
+          'secret' => $secretKey,
+          'response' => $token,
+          'remoteip' => $request->ip(),
+        ]);
+    } catch (\Throwable $exception) {
+      return false;
+    }
+
+    if (!$verification->successful()) {
+      return false;
+    }
+
+    $result = $verification->json();
+
+    return ($result['success'] ?? false) === true
+      && ($result['action'] ?? null) === config('services.recaptcha.v3.review_action', 'listing_review')
+      && (float) ($result['score'] ?? 0) >= (float) config('services.recaptcha.v3.score_threshold', 0.5);
   }
   public function store_visitor(Request $request)
   {

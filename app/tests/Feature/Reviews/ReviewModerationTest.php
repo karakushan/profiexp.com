@@ -5,10 +5,13 @@ namespace Tests\Feature\Reviews;
 use App\Models\Language;
 use App\Models\Listing\ListingReview;
 use App\Models\ReviewTranslation;
+use App\Models\User;
 use App\Jobs\TranslateReviewJob;
 use App\Services\Ai\ReviewTranslationService;
 use App\Services\ReviewService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class ReviewModerationTest extends TestCase
@@ -98,6 +101,86 @@ class ReviewModerationTest extends TestCase
         ]);
 
         $this->assertSame($this->listingId, $review->listingInfo?->id);
+    }
+
+    public function test_localized_listing_review_route_passes_listing_id_to_controller(): void
+    {
+        Auth::guard('web')->login(User::query()->findOrFail(1));
+
+        $this->post('/ru/listings/listing-review/' . $this->listingId . '/store-review', [
+            'review' => 'Localized route review',
+            'rating' => 5,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('listing_reviews', [
+            'user_id' => 1,
+            'listing_id' => $this->listingId,
+            'review' => 'Localized route review',
+            'rating' => 5,
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_listing_review_requires_recaptcha_when_enabled(): void
+    {
+        DB::table('basic_settings')->updateOrInsert(
+            ['uniqid' => 12345],
+            [
+                'google_recaptcha_status' => 1,
+                'google_recaptcha_site_key' => 'test-site-key',
+                'google_recaptcha_secret_key' => 'test-secret-key',
+            ]
+        );
+        Auth::guard('web')->login(User::query()->findOrFail(1));
+
+        $this->post('/ru/listings/listing-review/' . $this->listingId . '/store-review', [
+            'review' => 'Blocked without captcha',
+            'rating' => 5,
+        ])->assertRedirect()->assertSessionHas('error');
+
+        $this->assertDatabaseMissing('listing_reviews', [
+            'user_id' => 1,
+            'listing_id' => $this->listingId,
+            'review' => 'Blocked without captcha',
+        ]);
+    }
+
+    public function test_listing_review_accepts_valid_v3_recaptcha_action_and_score(): void
+    {
+        DB::table('basic_settings')->updateOrInsert(
+            ['uniqid' => 12345],
+            [
+                'google_recaptcha_status' => 1,
+                'google_recaptcha_site_key' => 'test-site-key',
+                'google_recaptcha_secret_key' => 'test-secret-key',
+            ]
+        );
+        Http::fake([
+            'https://www.google.com/recaptcha/api/siteverify' => Http::response([
+                'success' => true,
+                'score' => 0.9,
+                'action' => 'listing_review',
+            ], 200),
+        ]);
+        Auth::guard('web')->login(User::query()->findOrFail(1));
+
+        $this->post('/ru/listings/listing-review/' . $this->listingId . '/store-review', [
+            'review' => 'Accepted with captcha',
+            'rating' => 5,
+            'g-recaptcha-response' => 'test-token',
+        ])->assertRedirect();
+
+        Http::assertSent(function ($request) {
+            return $request->url() === 'https://www.google.com/recaptcha/api/siteverify'
+                && $request['secret'] === 'test-secret-key'
+                && $request['response'] === 'test-token';
+        });
+        $this->assertDatabaseHas('listing_reviews', [
+            'user_id' => 1,
+            'listing_id' => $this->listingId,
+            'review' => 'Accepted with captcha',
+            'status' => 'pending',
+        ]);
     }
 
     public function test_reviews_management_routes_are_registered(): void

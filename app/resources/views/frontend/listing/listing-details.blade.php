@@ -491,6 +491,13 @@
                                             </div>
                                             <input type="hidden" id="rating-id" name="rating">
 
+                                            @if (($bs->google_recaptcha_status ?? 0) == 1)
+                                                <input type="hidden" name="g-recaptcha-response" id="listing-review-recaptcha-response">
+                                                <p class="text-danger d-none" id="listing-review-recaptcha-error">
+                                                    {{ __('Please verify that you are not a robot.') }}
+                                                </p>
+                                            @endif
+
                                             <div class="form-group mt-10">
                                                 <button type="submit"
                                                     class="btn btn-lg btn-primary">{{ __('Submit Review') }}</button>
@@ -742,6 +749,46 @@
     {{-- @include('frontend.listing.product-details', $product_contents); --}}
 @endsection
 @section('script')
+    @if (($bs->google_recaptcha_status ?? 0) == 1 && !empty($recaptchaV3SiteKey))
+        <script src="https://www.google.com/recaptcha/api.js?render={{ urlencode($recaptchaV3SiteKey) }}"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('reviewSubmitForm');
+                const tokenInput = document.getElementById('listing-review-recaptcha-response');
+                const error = document.getElementById('listing-review-recaptcha-error');
+                const action = @json(config('services.recaptcha.v3.review_action', 'listing_review'));
+                const siteKey = @json($recaptchaV3SiteKey);
+
+                if (!form || !tokenInput) {
+                    return;
+                }
+
+                form.addEventListener('submit', function(event) {
+                    if (tokenInput.value) {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    if (!window.grecaptcha) {
+                        error?.classList.remove('d-none');
+                        return;
+                    }
+
+                    grecaptcha.ready(function() {
+                        grecaptcha.execute(siteKey, { action: action })
+                            .then(function(token) {
+                                tokenInput.value = token;
+                                form.submit();
+                            })
+                            .catch(function() {
+                                error?.classList.remove('d-none');
+                            });
+                    });
+                });
+            });
+        </script>
+    @endif
     <script>
         "use strict";
         var visitor_store_url = "{{ route('frontend.store_visitor') }}";

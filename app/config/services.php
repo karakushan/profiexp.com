@@ -44,4 +44,13 @@ return [
     'secret' => env('STRIPE_SECRET'),
   ],
 
+  'recaptcha' => [
+    'v3' => [
+      'site_key' => env('RECAPTCHA_V3_SITE_KEY'),
+      'secret_key' => env('RECAPTCHA_V3_SECRET_KEY'),
+      'score_threshold' => (float) env('RECAPTCHA_V3_SCORE_THRESHOLD', 0.5),
+      'review_action' => env('RECAPTCHA_V3_REVIEW_ACTION', 'listing_review'),
+    ],
+  ],
+
 ];
