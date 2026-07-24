@@ -739,10 +739,10 @@ class ListingController extends Controller
                 ];
             });
 
-        $listing_aminites =   $listing->listing_content->first()->aminities ??  [];
+        $listing_aminites = $listing->aminities ?? [];
         $aminiteIds = AminiteContent::where('language_id', $language->id)->pluck('aminite_id');
         $information['aminities'] = Aminite::whereIn('id', $aminiteIds)->get()->filter(function ($item) use ($listing_aminites) {
-            return in_array($item->id, json_decode($listing_aminites));
+            return in_array($item->id, $listing_aminites);
         });
 
         $information['listing_features'] = ListingFeature::join(

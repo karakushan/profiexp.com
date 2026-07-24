@@ -24,7 +24,12 @@ class Listing extends Model
         'max_price',
         'min_price',
         'visibility',
+        'aminities',
         'translated_languages'
+    ];
+
+    protected $casts = [
+        'aminities' => 'array',
     ];
 
     public function listing_content()

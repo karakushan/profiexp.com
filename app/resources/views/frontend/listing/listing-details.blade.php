@@ -271,9 +271,7 @@
                                         <ul class="amenities-list list-unstyled p-0 m-0">
                                             @php
                                                 $aminities = App\Models\Aminite::with('contents')->get();
-                                                $hasaminitie = json_decode(
-                                                    $listing->listing_content->first()->aminities,
-                                                ) ?? [];
+                                                $hasaminitie = $listing->aminities ?? [];
                                             @endphp
                                             @if (is_array($hasaminitie))
                                             @foreach ($aminities as $aminitie)

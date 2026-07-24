@@ -636,14 +636,8 @@ class ListingController extends Controller
                     $listingContent->save();
                 }
 
-                $aminities = $request->input('aminities', []);
-                foreach ($languages as $lang) {
-                    $lc = ListingContent::where('listing_id', $listing->id)->where('language_id', $lang->id)->first();
-                    if ($lc) {
-                        $lc->aminities = json_encode($aminities);
-                        $lc->save();
-                    }
-                }
+                $listing->aminities = array_values($request->input('aminities', []));
+                $listing->save();
 
                 $days = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
                 foreach ($days as $day) {
@@ -958,14 +952,8 @@ class ListingController extends Controller
                     $listingContent->save();
                 }
 
-                $aminities = $request->input('aminities', []);
-                foreach ($languages as $lang) {
-                    $lc = ListingContent::where('listing_id', $request->listing_id)->where('language_id', $lang->id)->first();
-                    if ($lc) {
-                        $lc->aminities = json_encode($aminities);
-                        $lc->save();
-                    }
-                }
+                $listing->aminities = array_values($request->input('aminities', []));
+                $listing->save();
 
                 $days = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
         foreach ($days as $day) {
