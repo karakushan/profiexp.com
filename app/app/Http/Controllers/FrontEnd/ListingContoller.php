@@ -253,63 +253,16 @@ class ListingContoller extends Controller
     if ($request->filled('location')) {
       $location = $request->location;
       $locationSearchPerformed = true;
-
-      if ($bs->google_map_api_key_status == 1) {
-        $geoResult = GeoSearch::getCoordinates($location, $bs->google_map_api_key);
-        if (is_array($geoResult) && isset($geoResult['lat']) && isset($geoResult['lng'])) {
-          $lat_long = ['lat' => $geoResult['lat'], 'lng' => $geoResult['lng']];
-
-          $locationQuery = Listing::join('listing_contents', 'listings.id', '=', 'listing_contents.listing_id')
-            ->where('listing_contents.language_id', $language->id)
-            ->whereRaw("
-                    (6371000 * acos(
-                        cos(radians(?)) *
-                        cos(radians(listings.latitude)) *
-                        cos(radians(listings.longitude) - radians(?)) +
-                        sin(radians(?)) *
-                        sin(radians(listings.latitude))
-                    )) <= ?
-                ", [$lat_long['lat'], $lat_long['lng'], $lat_long['lat'], $radius])
-            ->where('listings.status', 1)
-            ->where('listings.visibility', 1)
-            ->distinct()
-            ->pluck('listings.id');
-
-          $locationIds = $locationQuery->toArray();
-        }
-      } else {
-        $listingContentResults = ListingContent::where('language_id', $language->id)
-          ->where('address', 'like', '%' . $location . '%')
-          ->distinct()
-          ->pluck('listing_id')
-          ->toArray();
-
-        if (!empty($listingContentResults)) {
-          $firstListing = Listing::whereIn('id', $listingContentResults)
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->first(['latitude', 'longitude', 'id']);
-
-          if ($firstListing) {
-            $lat_long = ['lat' => $firstListing->latitude, 'lng' => $firstListing->longitude];
-
-            $locationQuery = Listing::whereRaw("
-                    (6371000 * acos(
-                        cos(radians(?)) *
-                        cos(radians(latitude)) *
-                        cos(radians(longitude) - radians(?)) +
-                        sin(radians(?)) *
-                        sin(radians(latitude))
-                    )) <= ?
-                ", [$lat_long['lat'], $lat_long['lng'], $lat_long['lat'], $radius])
-              ->where('status', 1)
-              ->where('visibility', 1)
-              ->pluck('id');
-
-            $locationIds = $locationQuery->toArray();
-          }
-        }
-      }
+      $locationSearch = GeoSearch::findListingIds(
+        $location,
+        $language->id,
+        $language->code,
+        (bool) $bs->google_map_api_key_status,
+        $bs->google_map_api_key,
+        $radius
+      );
+      $locationIds = $locationSearch['ids'];
+      $lat_long = $locationSearch['coordinates'];
     }
 
 
@@ -1197,63 +1150,16 @@ class ListingContoller extends Controller
     if ($request->filled('location_val')) {
       $location = $request->location_val;
       $locationSearchPerformed = true;
-
-      if ($bs->google_map_api_key_status == 1) {
-        $geoResult = GeoSearch::getCoordinates($location, $bs->google_map_api_key);
-        if (is_array($geoResult) && isset($geoResult['lat']) && isset($geoResult['lng'])) {
-          $lat_long = ['lat' => $geoResult['lat'], 'lng' => $geoResult['lng']];
-
-          $locationQuery = Listing::join('listing_contents', 'listings.id', '=', 'listing_contents.listing_id')
-            ->where('listing_contents.language_id', $language->id)
-            ->whereRaw("
-                    (6371000 * acos(
-                        cos(radians(?)) *
-                        cos(radians(listings.latitude)) *
-                        cos(radians(listings.longitude) - radians(?)) +
-                        sin(radians(?)) *
-                        sin(radians(listings.latitude))
-                    )) <= ?
-                ", [$lat_long['lat'], $lat_long['lng'], $lat_long['lat'], $radius])
-            ->where('listings.status', 1)
-            ->where('listings.visibility', 1)
-            ->distinct()
-            ->pluck('listings.id');
-
-          $locationIds = $locationQuery->toArray();
-        }
-      } else {
-        $listingContentResults = ListingContent::where('language_id', $language->id)
-          ->where('address', 'like', '%' . $location . '%')
-          ->distinct()
-          ->pluck('listing_id')
-          ->toArray();
-
-        if (!empty($listingContentResults)) {
-          $firstListing = Listing::whereIn('id', $listingContentResults)
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->first(['latitude', 'longitude', 'id']);
-
-          if ($firstListing) {
-            $lat_long = ['lat' => $firstListing->latitude, 'lng' => $firstListing->longitude];
-
-            $locationQuery = Listing::whereRaw("
-                    (6371000 * acos(
-                        cos(radians(?)) *
-                        cos(radians(latitude)) *
-                        cos(radians(longitude) - radians(?)) +
-                        sin(radians(?)) *
-                        sin(radians(latitude))
-                    )) <= ?
-                ", [$lat_long['lat'], $lat_long['lng'], $lat_long['lat'], $radius])
-              ->where('status', 1)
-              ->where('visibility', 1)
-              ->pluck('id');
-
-            $locationIds = $locationQuery->toArray();
-          }
-        }
-      }
+      $locationSearch = GeoSearch::findListingIds(
+        $location,
+        $language->id,
+        $language->code,
+        (bool) $bs->google_map_api_key_status,
+        $bs->google_map_api_key,
+        $radius
+      );
+      $locationIds = $locationSearch['ids'];
+      $lat_long = $locationSearch['coordinates'];
     }
 
     $category_listingIds = [];
