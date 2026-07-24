@@ -864,6 +864,7 @@
     "Tip": "Tip",
     "Title": "Title",
     "To Give Your Review": "Залишити відгук",
+    "Please login to give your review": "Будь ласка, <a href=\":url\">увійдіть</a>, щоб залишити відгук.",
     "Top :count Best :label - Last Updated :month :year - :site": "{1} Топ :count :label — Останнє оновлення :month :year — :site|[2,*] Топ :count :label — Останнє оновлення :month :year — :site",
     "Top :count Best :label in :city - Last Updated :month :year - :site": "{1} Топ :count :label в :city — Останнє оновлення :month :year — :site|[2,*] Топ :count :label в :city — Останнє оновлення :month :year — :site",
     "Top-down": "Top-down",

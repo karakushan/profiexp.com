@@ -53,7 +53,7 @@
           </form>
         </div>
 
-        <form method="post" action="{{ route('admin.reviews.bulk_status') }}">
+        <form id="bulkReviewsForm" method="post" action="{{ route('admin.reviews.bulk_status') }}">
           @csrf
           <div class="card-body">
             <div class="row mb-3 align-items-center">
@@ -67,12 +67,15 @@
                   <option value="approved">{{ __('Approve') }}</option>
                   <option value="rejected">{{ __('Reject') }}</option>
                   <option value="pending">{{ __('Set pending') }}</option>
+                  <option value="delete">{{ __('Delete') }}</option>
                 </select>
-                <button class="btn btn-success" type="submit">{{ __('Apply') }}</button>
+                <button class="btn btn-success" type="submit" id="bulkApplyBtn">{{ __('Apply') }}</button>
               </div>
             </div>
+          </div>
+        </form>
 
-            @if ($reviews->isEmpty())
+        @if ($reviews->isEmpty())
               <h3 class="text-center mt-4">{{ __('NO REVIEW FOUND') . '!' }}</h3>
             @else
               <div class="table-responsive">
@@ -80,7 +83,7 @@
                   <thead>
                     <tr>
                       <th><input type="checkbox" id="selectAllReviews"></th>
-                      <th>{{ __('Listing') }}</th><th>{{ __('Author') }}</th>
+                      <th>ID</th><th>{{ __('Listing') }}</th><th>{{ __('Author') }}</th>
                       <th>{{ __('Rating') }}</th><th>{{ __('Review') }}</th><th>{{ __('Source language') }}</th>
                       <th>{{ __('Approve Status') }}</th><th>{{ __('Date') }}</th><th>{{ __('Actions') }}</th>
                     </tr>
@@ -88,8 +91,8 @@
                   <tbody>
                     @foreach ($reviews as $review)
                       <tr>
-                        <td><input type="checkbox" name="selected[]" value="{{ $review->id }}"></td>
-                        <td>{{ $review->item_title }}</td><td>{{ $review->author }}</td>
+                        <td><input type="checkbox" name="selected[]" value="{{ $review->id }}" form="bulkReviewsForm"></td>
+                        <td>{{ $review->id }}</td><td>{{ $review->item_title }}</td><td>{{ $review->author }}</td>
                         <td>{{ $review->rating }}/5</td>
                         <td style="min-width:220px;max-width:320px;">{{ \Illuminate\Support\Str::limit($review->text, 120) }}</td>
                         <td>{{ $review->source_language }}</td>
@@ -151,7 +154,7 @@
                         </div></div>
                       </div>
                       <div class="modal fade" id="reviewEditModal{{ $review->id }}" tabindex="-1" role="dialog" aria-hidden="true">
-                        <div class="modal-dialog" role="document"><div class="modal-content">
+                        <div class="modal-dialog modal-lg" role="document"><div class="modal-content">
                           <form method="post" action="{{ route('admin.reviews.update', $review->id) }}">
                             @csrf
                             <div class="modal-header"><h5 class="modal-title">{{ __('Edit Review') }}</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
@@ -164,9 +167,46 @@
                                   @endfor
                                 </select>
                               </div>
-                              <div class="form-group mb-0">
-                                <label for="reviewText{{ $review->id }}">{{ __('Review') }}</label>
-                                <textarea id="reviewText{{ $review->id }}" class="form-control" name="review" rows="6" required>{{ $review->source_text }}</textarea>
+
+                              <div id="accordion{{ $review->id }}" class="mt-3">
+                                @foreach ($languages as $lang)
+                                  @php
+                                    $isSource = $lang->id === $review->model->language_id;
+                                    $translation = $review->translations->firstWhere('language_id', $lang->id);
+                                  @endphp
+                                  <div class="version">
+                                    <div class="version-header" id="heading{{ $review->id }}_{{ $lang->id }}">
+                                      <h5 class="mb-0">
+                                        <button type="button"
+                                          class="btn btn-link {{ $lang->direction == 1 ? 'rtl text-right' : '' }}"
+                                          data-toggle="collapse"
+                                          data-target="#collapse{{ $review->id }}_{{ $lang->id }}"
+                                          aria-expanded="{{ $isSource ? 'true' : 'false' }}"
+                                          aria-controls="collapse{{ $review->id }}_{{ $lang->id }}">
+                                          {{ $lang->name }} {{ $isSource ? '(' . __('Original') . ')' : '' }}
+                                        </button>
+                                      </h5>
+                                    </div>
+                                    <div id="collapse{{ $review->id }}_{{ $lang->id }}"
+                                      class="collapse {{ $isSource ? 'show' : '' }}"
+                                      aria-labelledby="heading{{ $review->id }}_{{ $lang->id }}"
+                                      data-parent="#accordion{{ $review->id }}">
+                                      <div class="version-body">
+                                        @if ($isSource)
+                                          <div class="form-group {{ $lang->direction == 1 ? 'rtl text-right' : '' }}">
+                                            <label>{{ __('Original review') }}</label>
+                                            <textarea class="form-control" name="review" rows="4" required>{{ $review->source_text }}</textarea>
+                                          </div>
+                                        @else
+                                          <div class="form-group {{ $lang->direction == 1 ? 'rtl text-right' : '' }}">
+                                            <label>{{ __('Translation') }}</label>
+                                            <textarea class="form-control" name="translations[{{ $lang->id }}]" rows="4">{{ $translation->text ?? '' }}</textarea>
+                                          </div>
+                                        @endif
+                                      </div>
+                                    </div>
+                                  </div>
+                                @endforeach
                               </div>
                             </div>
                             <div class="modal-footer">
@@ -180,16 +220,15 @@
                   </tbody>
                 </table>
               </div>
-            @endif
+        @endif
           </div>
-        </form>
         <div class="card-footer"><div class="d-inline-block mx-auto">{{ $reviews->links() }}</div></div>
       </div>
     </div>
   </div>
 @endsection
 
-@push('styles')
+@section('style')
   <style>
     .review-approval-status {
       width: 145px !important;
@@ -198,12 +237,27 @@
       min-height: calc(1.5em + .5rem + 2px) !important;
     }
   </style>
-@endpush
+@endsection
 
-@push('scripts')
+@section('script')
   <script>
-    document.getElementById('selectAllReviews')?.addEventListener('change', function () {
-      document.querySelectorAll('input[name="selected[]"]').forEach((checkbox) => checkbox.checked = this.checked);
+    $(document).ready(function () {
+      var $selectAll = $('#selectAllReviews');
+      var $checkboxes = $('input[name="selected[]"]');
+
+      $selectAll.on('change', function () {
+        $checkboxes.prop('checked', $(this).prop('checked'));
+      });
+
+      $checkboxes.on('change', function () {
+        $selectAll.prop('checked', $checkboxes.length === $checkboxes.filter(':checked').length);
+      });
+
+      $('#bulkReviewsForm').on('submit', function (e) {
+        if ($('#bulkReviewsForm select[name="status"]').val() === 'delete' && !confirm('{{ __('Are you sure you want to delete selected reviews?') }}')) {
+          e.preventDefault();
+        }
+      });
     });
   </script>
-@endpush
+@endsection

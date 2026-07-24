@@ -547,6 +547,7 @@
   "Ticket has been submitted successfully": "Ticket enviado correctamente",
   "Ticket ID": "ID del Ticket",
   "To Give Your Review": "Para dar tu opinión",
+  "Please login to give your review": "Por favor, <a href=\":url\">inicie sesión</a> para dar tu opinión.",
   "to Login": "para Iniciar Sesión",
   "to Signup": "para Registrarse",
   "Total": "Total",

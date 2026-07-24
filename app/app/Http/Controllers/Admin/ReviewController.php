@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Language;
 use App\Models\Listing\Listing;
 use App\Models\Listing\ListingReview;
+use App\Models\ReviewTranslation;
 use App\Models\User;
 use App\Services\ReviewService;
 use Illuminate\Http\Request;
@@ -58,16 +59,31 @@ class ReviewController extends Controller
         $data = $request->validate([
             'rating' => 'required|integer|between:1,5',
             'review' => 'required|string|max:5000',
+            'translations' => 'nullable|array',
+            'translations.*' => 'nullable|string|max:5000',
         ]);
 
         $review = ListingReview::query()->findOrFail($id);
-        $sourceChanged = $review->review !== $data['review'];
 
-        DB::transaction(function () use ($review, $data, $sourceChanged) {
-            $review->update($data);
+        DB::transaction(function () use ($review, $data) {
+            $review->update(['rating' => $data['rating'], 'review' => $data['review']]);
 
-            if ($sourceChanged) {
-                $review->translations()->delete();
+            if (!empty($data['translations'])) {
+                foreach ($data['translations'] as $languageId => $text) {
+                    $text = trim((string) $text);
+                    if ($text === '') {
+                        $review->translations()->where('language_id', $languageId)->delete();
+                    } else {
+                        ReviewTranslation::updateOrCreate(
+                            [
+                                'review_type' => ReviewService::TYPE_LISTING,
+                                'review_id' => $review->id,
+                                'language_id' => $languageId,
+                            ],
+                            ['text' => $text]
+                        );
+                    }
+                }
             }
         });
 
@@ -121,20 +137,37 @@ class ReviewController extends Controller
     public function bulkStatus(Request $request)
     {
         $data = $request->validate([
-            'status' => 'required|in:pending,approved,rejected',
+            'status' => 'required|in:pending,approved,rejected,delete',
             'selected' => 'required|array|min:1',
             'selected.*' => 'required|string',
         ]);
 
+        $deleted = 0;
         foreach ($data['selected'] as $selected) {
             if (!ctype_digit((string) $selected)) {
                 continue;
             }
 
-            ReviewService::updateStatus(ListingReview::query()->findOrFail((int) $selected), $data['status']);
+            if ($data['status'] === 'delete') {
+                $review = ListingReview::query()->find((int) $selected);
+                if (!$review) {
+                    continue;
+                }
+                $parentId = (int) $review->listing_id;
+                $review->translations()->delete();
+                $review->delete();
+                ReviewService::recalculate(ReviewService::TYPE_LISTING, $parentId);
+                $deleted++;
+            } else {
+                ReviewService::updateStatus(ListingReview::query()->findOrFail((int) $selected), $data['status']);
+            }
         }
 
-        return redirect()->back()->with('success', __('Review statuses updated successfully') . '!');
+        $message = $data['status'] === 'delete'
+            ? __(':count review(s) deleted successfully', ['count' => $deleted])
+            : __('Review statuses updated successfully') . '!';
+
+        return redirect()->back()->with('success', $message);
     }
 
     private function listingRows(?string $status, string $search, int $contentLanguageId, ?int $sourceLanguageId): Collection

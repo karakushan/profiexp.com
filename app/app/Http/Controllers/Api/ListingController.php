@@ -708,6 +708,10 @@ class ListingController extends Controller
 
         $reviews = ListingReview::query()->where('listing_id', '=', $id)
             ->where('status', 'approved')
+            ->where(function ($q) use ($language) {
+                $q->where('language_id', $language->id)
+                  ->orWhereHas('translations', fn ($q) => $q->where('language_id', $language->id));
+            })
             ->orderByDesc('id')->get();
 
         $reviews = $reviews->map(function ($review) use ($language) {

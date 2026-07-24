@@ -546,6 +546,7 @@
   "Ticket has been submitted successfully": "Ticket has been submitted successfully",
   "Ticket ID": "Ticket ID",
   "To Give Your Review": "To Give Your Review",
+  "Please login to give your review": "Please <a href=\":url\">Login</a> to give your review.",
   "to Login": "to Login",
   "to Signup": "to Signup",
   "Total": "Total",

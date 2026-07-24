@@ -5970,6 +5970,14 @@ td.title {
   color: var(--color-primary);
   text-decoration: underline;
 }
+
+.login-text a {
+  color: red;
+  text-decoration: underline;
+}
+.login-text a:hover {
+  text-decoration: none;
+}
 /* offline css end */
 
 .text-primary {

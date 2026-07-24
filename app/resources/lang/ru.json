@@ -864,6 +864,7 @@
     "Tip": "Подсказка",
     "Title": "Заголовок",
     "To Give Your Review": "Чтобы оставить отзыв",
+    "Please login to give your review": "Пожалуйста, <a href=\":url\">войдите</a>, чтобы оставить отзыв.",
     "Top :count Best :label - Last Updated :month :year - :site": "{1} Топ :count :label — Последнее обновление :month :year — :site|[2,*] Топ :count :label — Последнее обновление :month :year — :site",
     "Top :count Best :label in :city - Last Updated :month :year - :site": "{1} Топ :count :label в :city — Последнее обновление :month :year — :site|[2,*] Топ :count :label в :city — Последнее обновление :month :year — :site",
     "Top-down": "Сверху",

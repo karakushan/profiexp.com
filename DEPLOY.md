@@ -11,7 +11,7 @@
 - Перед деплоем сделать DB backup командой `php artisan backup:run --only-db`.
 - Не деплоить неприкоммиченные или непушенные изменения.
 - Сохранять `.env`, пользовательские uploads и production-only `queue-worker.sh`.
-- После синхронизации выполнить `composer install`, `php artisan migrate --force`, `php artisan optimize:clear`, `php artisan config:cache` и `php artisan view:cache` от пользователя сайта.
+- После синхронизации выполнить `composer install`, `npm ci && npm run production`, `php artisan migrate --force`, `php artisan optimize:clear`, `php artisan config:cache` и `php artisan view:cache` от пользователя сайта.
 
 ## profiexp.com
 

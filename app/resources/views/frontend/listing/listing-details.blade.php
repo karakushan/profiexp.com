@@ -419,7 +419,7 @@
                                                                 <h6 class="m-0">{{ $review->user->username }}</h6>
 
                                                                 <span
-                                                                    class="font-sm">{{ date('dS F Y, h.i A', strtotime($review->updated_at)) }}</span>
+                                                                    class="font-sm">{{ \Carbon\Carbon::parse($review->updated_at)->translatedFormat('j F Y, H:i') }}</span>
                                                                 <div class="product-ratings mb-1">
                                                                     <div class="ratings">
                                                                         <div class="rate"
@@ -501,12 +501,9 @@
                                 @endauth
                                 @guest('web')
                                     <div class="login-text mb-40">
-                                        <span>{{ __('Please') }} <a
-                                                href="{{ route('user.login', ['redirectPath' => 'listingDetails']) }}"
-                                                title="Login">{{ __('Login') }}</a>
-                                            {{ __('To Give Your Review') }}
-                                            .</span>
-
+                                        <span>{!! __('Please login to give your review', [
+                                            'url' => route('user.login', ['redirectPath' => 'listingDetails']),
+                                        ]) !!}</span>
                                     </div>
                                 @endguest
                                 @if (!empty(showAd(3)))

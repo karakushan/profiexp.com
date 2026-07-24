@@ -864,6 +864,7 @@
     "Tip": "Tip",
     "Title": "Title",
     "To Give Your Review": "Yorumunuzu yapmak için",
+    "Please login to give your review": "Lütfen yorum yapmak için <a href=\":url\">giriş yapın</a>.",
     "Top :count Best :label - Last Updated :month :year - :site": "En İyi :count :label — Son Güncelleme :month :year — :site",
     "Top :count Best :label in :city - Last Updated :month :year - :site": "En İyi :count :label :city şehrinde — Son Güncelleme :month :year — :site",
     "Top-down": "Top-down",
