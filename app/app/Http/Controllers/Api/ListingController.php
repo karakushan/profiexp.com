@@ -678,9 +678,11 @@ class ListingController extends Controller
                 'created_at' => $review->created_at->toDateTimeString(),
                 'updated_at' => $review->updated_at->toDateTimeString(),
                 'user'       => [
-                    'name'     => $user->name ?? null,
-                    'username' => $user->username ?? null,
-                    'image'    => $user?->image ? asset('assets/img/users/' . $user->image) : null,
+                    'name'     => $review->display_author_name,
+                    'username' => $review->display_author_name,
+                    'image'    => $review->display_author_image
+                        ? asset($user?->image ? 'assets/img/users/' . $user->image : 'assets/img/reviews/' . $review->display_author_image)
+                        : null,
                 ],
             ];
         });

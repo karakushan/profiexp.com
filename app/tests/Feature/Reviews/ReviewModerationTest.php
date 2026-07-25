@@ -60,6 +60,22 @@ class ReviewModerationTest extends TestCase
         $this->assertSame(0.0, (float) DB::table('listings')->where('id', $this->listingId)->value('average_rating'));
     }
 
+    public function test_review_can_use_custom_author_without_user_account(): void
+    {
+        $review = ListingReview::query()->create([
+            'listing_id' => $this->listingId,
+            'user_id' => null,
+            'author_name' => 'Guest reviewer',
+            'rating' => 5,
+            'review' => 'Review from a guest',
+            'language_id' => $this->language->id,
+        ]);
+
+        $this->assertSame('Guest reviewer', $review->fresh()->display_author_name);
+        $this->assertNull($review->fresh()->user_id);
+        $this->assertSame(5, (int) $review->fresh()->rating);
+    }
+
     public function test_review_translation_falls_back_to_source_text(): void
     {
         $review = ListingReview::query()->create([

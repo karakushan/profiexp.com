@@ -370,7 +370,7 @@
                     <li class="nav-item {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
                         <a href="{{ route('admin.reviews.index', ['language' => $defaultLang->code]) }}">
                             <i class="fas fa-star"></i>
-                            <p>{{ __('Reviews Management') }}</p>
+                            <p>{{ __('Reviews Management') }} @if (($pendingReviewsCount ?? 0) > 0)<span class="badge badge-warning ml-1">{{ $pendingReviewsCount }}</span>@endif</p>
                         </a>
                     </li>
                 @endif

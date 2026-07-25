@@ -410,13 +410,13 @@
                                                                     @else
                                                                         <img class="lazyload blur-up"
                                                                             src="assets/images/placeholder.png"
-                                                                            data-src="{{ asset('assets/img/users/' . $review->user->image) }}"
+                                                                            data-src="{{ asset($review->author_image ? 'assets/img/reviews/' . $review->author_image : 'assets/img/users/' . $review->user->image) }}"
                                                                             alt="Person Image">
                                                                     @endif
                                                                 </div>
                                                             </div>
                                                             <div class="content">
-                                                                <h6 class="m-0">{{ $review->user->username }}</h6>
+                                                                <h6 class="m-0">{{ $review->user->username ?: $review->user->name }}</h6>
 
                                                                 <span
                                                                     class="font-sm">{{ \Carbon\Carbon::parse($review->updated_at)->translatedFormat('j F Y, H:i') }}</span>

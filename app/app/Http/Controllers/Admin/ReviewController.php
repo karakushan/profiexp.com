@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Helpers\UploadFile;
 use App\Models\Language;
 use App\Models\Listing\Listing;
 use App\Models\Listing\ListingReview;
@@ -108,12 +109,18 @@ class ReviewController extends Controller
     {
         $data = $request->validate([
             'listing_id' => 'required|integer|exists:listings,id',
-            'user_id' => 'required|integer|exists:users,id',
+            'user_id' => 'nullable|integer|exists:users,id',
+            'author_name' => 'required|string|max:255',
+            'author_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
             'rating' => 'required|integer|between:1,5',
             'review' => 'required|string|max:5000',
             'language_id' => 'required|integer|exists:languages,id',
             'status' => 'required|in:pending,approved,rejected',
         ]);
+
+        if ($request->hasFile('author_image')) {
+            $data['author_image'] = UploadFile::store(public_path('assets/img/reviews/'), $request->file('author_image'));
+        }
 
         ListingReview::query()->create($data);
 
@@ -208,7 +215,7 @@ class ReviewController extends Controller
             'rating' => $review->rating,
             'text' => ReviewService::translatedText($review, $contentLanguageId),
             'source_text' => ReviewService::sourceText($review),
-            'author' => $review->userInfo?->name ?: $review->userInfo?->username ?: __('Unknown'),
+            'author' => $review->display_author_name,
             'item_title' => $content?->title ?: __('Unknown'),
             'item_url' => $content?->slug
                 ? route('frontend.listing.details', ['slug' => $content->slug])

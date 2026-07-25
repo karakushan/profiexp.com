@@ -15,7 +15,7 @@
   <div class="row">
     <div class="col-md-8">
       <div class="card">
-        <form method="post" action="{{ route('admin.reviews.store') }}">
+        <form method="post" action="{{ route('admin.reviews.store') }}" enctype="multipart/form-data">
           @csrf
           <input type="hidden" name="language" value="{{ request('language') }}">
           <div class="card-header"><div class="card-title">{{ __('Add Review') }}</div></div>
@@ -36,9 +36,16 @@
               </div>
 
               <div class="form-group col-md-6">
-                <label for="user_id">{{ __('Author') }} *</label>
-                <select id="user_id" class="form-control @error('user_id') is-invalid @enderror" name="user_id" required>
-                  <option value="">{{ __('Select User') }}</option>
+                <label for="author_name">{{ __('Author') }} *</label>
+                <input id="author_name" type="text" class="form-control @error('author_name') is-invalid @enderror" name="author_name" value="{{ old('author_name') }}" required>
+                @error('author_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                <small class="form-text text-muted">{{ __('You can enter any name, even without a user account.') }}</small>
+              </div>
+
+              <div class="form-group col-md-6">
+                <label for="user_id">{{ __('User') }}</label>
+                <select id="user_id" class="form-control @error('user_id') is-invalid @enderror" name="user_id">
+                  <option value="">{{ __('No linked user') }}</option>
                   @foreach ($users as $user)
                     <option value="{{ $user->id }}" @selected((string) old('user_id') === (string) $user->id)>
                       {{ $user->name ?: $user->username ?: $user->email }}
@@ -53,9 +60,8 @@
               <div class="form-group col-md-4">
                 <label for="rating">{{ __('Rating') }} *</label>
                 <select id="rating" class="form-control @error('rating') is-invalid @enderror" name="rating" required>
-                  <option value="">{{ __('Rating') }}</option>
                   @for ($rating = 5; $rating >= 1; $rating--)
-                    <option value="{{ $rating }}" @selected((string) old('rating') === (string) $rating)>{{ $rating }}/5</option>
+                    <option value="{{ $rating }}" @selected((string) old('rating', 5) === (string) $rating)>{{ $rating }}/5</option>
                   @endfor
                 </select>
                 @error('rating')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -78,6 +84,12 @@
                 </select>
                 @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
               </div>
+            </div>
+
+            <div class="form-group">
+              <label for="author_image">{{ __('Author Avatar') }}</label>
+              <input id="author_image" type="file" class="form-control-file @error('author_image') is-invalid @enderror" name="author_image" accept="image/jpeg,image/png,image/webp">
+              @error('author_image')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
             </div>
 
             <div class="form-group">
