@@ -771,16 +771,15 @@ class ListingController extends Controller
         $user = Auth::guard('sanctum')->user();
 
         if ($user) {
-            $review = ListingReview::updateOrCreate(
-                ['user_id' => $user->id, 'listing_id' => $id],
-                [
-                    'review' => $request->review,
-                    'rating' => $request->rating,
-                    'status' => 'pending',
-                    'language_id' => ReviewService::languageId($request->header('Accept-Language')),
-                ]
-            );
-            if ($review->wasRecentlyCreated) {
+            $review = ListingReview::create([
+                'user_id' => $user->id,
+                'listing_id' => $id,
+                'review' => $request->review,
+                'rating' => $request->rating,
+                'status' => 'pending',
+                'language_id' => ReviewService::languageId($request->header('Accept-Language')),
+            ]);
+            if ($review) {
                 $listing = Listing::find($id);
                 VendorNotificationService::send(
                     $listing?->vendor,
