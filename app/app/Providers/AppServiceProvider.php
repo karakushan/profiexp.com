@@ -7,6 +7,7 @@ use App\Models\BasicSettings\SocialMedia;
 use App\Models\HomePage\Section;
 use App\Models\Language;
 use App\Models\ListingCategory;
+use App\Models\Listing\ListingReview;
 use App\Models\Shop\Product;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
@@ -87,6 +88,7 @@ class AppServiceProvider extends ServiceProvider
         $view->with('defaultLang', $language);
         $view->with('settings', $websiteSettings);
         $view->with('footerTextInfo', $footerText);
+        $view->with('pendingReviewsCount', ListingReview::query()->where('status', 'pending')->count());
       });
 
       // send this information to only back-end view files

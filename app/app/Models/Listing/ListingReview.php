@@ -16,6 +16,8 @@ class ListingReview extends Model
     use HasFactory;
     protected $fillable = [
         'user_id',
+        'author_name',
+        'author_image',
         'listing_id',
         'rating',
         'review',
@@ -39,5 +41,15 @@ class ListingReview extends Model
     public function translations()
     {
         return $this->hasMany(ReviewTranslation::class, 'review_id')->where('review_type', self::TYPE);
+    }
+
+    public function getDisplayAuthorNameAttribute(): string
+    {
+        return (string) ($this->author_name ?: $this->userInfo?->name ?: $this->userInfo?->username ?: __('Unknown'));
+    }
+
+    public function getDisplayAuthorImageAttribute(): ?string
+    {
+        return $this->author_image ?: $this->userInfo?->image;
     }
 }

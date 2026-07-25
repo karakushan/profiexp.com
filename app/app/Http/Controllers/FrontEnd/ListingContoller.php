@@ -1852,7 +1852,11 @@ class ListingContoller extends Controller
       ->orderByDesc('id')->get();
 
     $reviews->map(function ($review) use ($language) {
-      $review['user'] = $review->userInfo()->first();
+      $user = $review->userInfo()->first();
+      $review['user'] = $user ?: (object) [];
+      $review['user']->name = $review->display_author_name;
+      $review['user']->username = $review->display_author_name;
+      $review['user']->image = $review->display_author_image;
       ReviewService::setDisplayText($review, $language->id);
     });
 
