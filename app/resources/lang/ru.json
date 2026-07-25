@@ -864,6 +864,7 @@
     "Tip": "Подсказка",
     "Title": "Заголовок",
     "To Give Your Review": "Чтобы оставить отзыв",
+    "Please login to give your review": "Пожалуйста, <a href=\":url\">войдите</a>, чтобы оставить отзыв.",
     "Top :count Best :label - Last Updated :month :year - :site": "{1} Топ :count :label — Последнее обновление :month :year — :site|[2,*] Топ :count :label — Последнее обновление :month :year — :site",
     "Top :count Best :label in :city - Last Updated :month :year - :site": "{1} Топ :count :label в :city — Последнее обновление :month :year — :site|[2,*] Топ :count :label в :city — Последнее обновление :month :year — :site",
     "Top-down": "Сверху",
@@ -1032,5 +1033,6 @@
     "Meta Title For Vendor Signup Page": "Meta Title для страницы регистрации поставщика",
     "Meta Title For Vendor Login Page": "Meta Title для страницы входа поставщика",
     "Meta Title For Vendor Forget Password Page": "Meta Title для страницы забытого пароля поставщика",
-    "Meta Title For About Us Page": "Meta Title для страницы о нас"
+    "Meta Title For About Us Page": "Meta Title для страницы о нас",
+    "Your review submitted and is awaiting moderation": "Ваш отзыв отправлен и ожидает модерации"
 }

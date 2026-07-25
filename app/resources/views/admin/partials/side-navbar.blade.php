@@ -365,6 +365,16 @@
                     </li>
                 @endif
 
+                {{-- Reviews Management --}}
+                @if (is_null($roleInfo) || (!empty($rolePermissions) && in_array('Reviews Management', $rolePermissions)))
+                    <li class="nav-item {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.reviews.index', ['language' => $defaultLang->code]) }}">
+                            <i class="fas fa-star"></i>
+                            <p>{{ __('Reviews Management') }}</p>
+                        </a>
+                    </li>
+                @endif
+
                 {{-- package management --}}
                 @if (is_null($roleInfo) || (!empty($rolePermissions) && in_array('Package Management', $rolePermissions)))
                     <li

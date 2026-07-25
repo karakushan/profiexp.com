@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
       TurkeyLocationSeeder::class,
       BlogCategorySeeder::class,
       BlogSeeder::class,
+      ReviewSeeder::class,
     ]);
   }
 }

@@ -17,6 +17,7 @@ use App\Models\Shop\ProductContent;
 use App\Models\Shop\ProductReview;
 use App\Models\Vendor;
 use App\Services\VendorNotificationService;
+use App\Services\ReviewService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -183,15 +184,18 @@ class ProductController extends Controller
 
         $information['details'] = $details;
 
-        $reviews = ProductReview::query()->where('product_id', '=', $productId)->orderByDesc('id')->get();
+        $reviews = ProductReview::query()->where('product_id', '=', $productId)
+            ->where('status', 'approved')
+            ->orderByDesc('id')->get();
 
-        $reviews = $reviews->map(function ($review) {
+        $reviews = $reviews->map(function ($review) use ($language) {
             $user = $review->userInfo()->select('id', 'name', 'username', 'image')->first();
+            ReviewService::setDisplayText($review, $language->id);
 
             return [
                 'id'         => $review->id,
                 'rating'     => $review->rating,
-                'review'     => $review->review,
+                'review'     => $review->comment,
                 'created_at' => $review->created_at->toDateTimeString(),
                 'updated_at' => $review->updated_at->toDateTimeString(),
                 'user'       => [
@@ -284,7 +288,12 @@ class ProductController extends Controller
             if ($productPurchased == true) {
                 $review = ProductReview::updateOrCreate(
                     ['user_id' => $user->id, 'product_id' => $id],
-                    ['comment' => $request->comment, 'rating' => $request->rating]
+                    [
+                        'comment' => $request->comment,
+                        'rating' => $request->rating,
+                        'status' => 'pending',
+                        'language_id' => ReviewService::languageId($request->header('Accept-Language')),
+                    ]
                 );
                 if ($review->wasRecentlyCreated) {
                     $product = Product::find($id);
@@ -302,25 +311,11 @@ class ProductController extends Controller
                     );
                 }
 
-                  // now, get the average rating of this product
-                  $reviews = ProductReview::where('product_id', $id)->get();
-
-                $totalRating = 0;
-
-                foreach ($reviews as $review) {
-                    $totalRating += $review->rating;
-                }
-
-                $numOfReview = count($reviews);
-
-                $averageRating = $totalRating / $numOfReview;
-
-                // finally, store the average rating of this product
-                Product::find($id)->update(['average_rating' => $averageRating]);
+                ReviewService::recalculate(ReviewService::TYPE_PRODUCT, (int) $id);
 
                 return response()->json([
                     'success' => true,
-                    'message' =>  __('Your review submitted successfully')
+                    'message' =>  __('Your review submitted and is awaiting moderation')
                 ], 200);
             } else {
                 return response()->json([

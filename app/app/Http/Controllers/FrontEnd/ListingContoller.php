@@ -24,6 +24,7 @@ use App\Models\Listing\ListingImage;
 use App\Models\Listing\ListingMessage;
 use App\Models\Listing\ListingProduct;
 use App\Models\Listing\ListingReview;
+use App\Services\ReviewService;
 use App\Models\Listing\ListingSocialMedia;
 use App\Models\Listing\ProductMessage;
 use App\Models\ListingCategory;
@@ -47,6 +48,7 @@ use Illuminate\Http\Request;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
@@ -178,6 +180,50 @@ class ListingContoller extends Controller
     return $data;
   }
 
+  /**
+   * Fallback for location searches when geocoding is unavailable.
+   *
+   * The displayed location combines localized address, city, state and country,
+   * so all of those fields are matched in the active language, case-insensitively.
+   */
+  private function findListingIdsByLocalizedAddress(string $location, int $languageId): array
+  {
+    $terms = collect(explode(',', $location))
+      ->map(fn (string $term) => mb_strtolower(trim($term), 'UTF-8'))
+      ->filter()
+      ->values();
+
+    return ListingContent::query()
+      ->leftJoin('city_contents', function ($join) use ($languageId) {
+        $join->on('city_contents.city_id', '=', 'listing_contents.city_id')
+          ->where('city_contents.language_id', '=', $languageId);
+      })
+      ->leftJoin('state_contents', function ($join) use ($languageId) {
+        $join->on('state_contents.state_id', '=', 'listing_contents.state_id')
+          ->where('state_contents.language_id', '=', $languageId);
+      })
+      ->leftJoin('country_contents', function ($join) use ($languageId) {
+        $join->on('country_contents.country_id', '=', 'listing_contents.country_id')
+          ->where('country_contents.language_id', '=', $languageId);
+      })
+      ->where('listing_contents.language_id', $languageId)
+      ->where(function ($query) use ($terms) {
+        foreach ($terms as $term) {
+          $like = '%' . $term . '%';
+          $query->where(function ($locationQuery) use ($like) {
+            $locationQuery
+              ->whereRaw('LOWER(listing_contents.address) LIKE ?', [$like])
+              ->orWhereRaw('LOWER(city_contents.name) LIKE ?', [$like])
+              ->orWhereRaw('LOWER(state_contents.name) LIKE ?', [$like])
+              ->orWhereRaw('LOWER(country_contents.name) LIKE ?', [$like]);
+          });
+        }
+      })
+      ->distinct()
+      ->pluck('listing_contents.listing_id')
+      ->all();
+  }
+
   public function index(Request $request)
   {
     // dd($request->alL());
@@ -242,71 +288,31 @@ class ListingContoller extends Controller
     //search by location
 
     $bs = Basic::select('google_map_api_key_status', 'radius', 'google_map_api_key')->first();
-    $radius = $bs->google_map_api_key_status == 1 ? $bs->radius : 5000;
+    // The configured radius and GeoSearch::getDistance() use kilometres,
+    // while the SQL distance expression returns metres.
+    $radius = $bs->google_map_api_key_status == 1 ? ($bs->radius * 1000) : 5000;
 
     $locationIds = [];
     $lat_long = [];
     $locationSearchPerformed = false;
 
-    if ($request->filled('location')) {
-      $location = $request->location;
+    // The AJAX filter uses location_val, while direct page requests use location.
+    // Accept both so a normal form submit cannot silently drop the location filter.
+    if ($request->filled('location') || $request->filled('location_val')) {
+      $location = $request->input('location', $request->input('location_val'));
       $locationSearchPerformed = true;
-
-      if ($bs->google_map_api_key_status == 1) {
-        $geoResult = GeoSearch::getCoordinates($location, $bs->google_map_api_key);
-        if (is_array($geoResult) && isset($geoResult['lat']) && isset($geoResult['lng'])) {
-          $lat_long = ['lat' => $geoResult['lat'], 'lng' => $geoResult['lng']];
-
-          $locationQuery = Listing::join('listing_contents', 'listings.id', '=', 'listing_contents.listing_id')
-            ->where('listing_contents.language_id', $language->id)
-            ->whereRaw("
-                    (6371000 * acos(
-                        cos(radians(?)) *
-                        cos(radians(listings.latitude)) *
-                        cos(radians(listings.longitude) - radians(?)) +
-                        sin(radians(?)) *
-                        sin(radians(listings.latitude))
-                    )) <= ?
-                ", [$lat_long['lat'], $lat_long['lng'], $lat_long['lat'], $radius])
-            ->where('listings.status', 1)
-            ->where('listings.visibility', 1)
-            ->distinct()
-            ->pluck('listings.id');
-
-          $locationIds = $locationQuery->toArray();
-        }
-      } else {
-        $listingContentResults = ListingContent::where('language_id', $language->id)
-          ->where('address', 'like', '%' . $location . '%')
-          ->distinct()
-          ->pluck('listing_id')
-          ->toArray();
-
-        if (!empty($listingContentResults)) {
-          $firstListing = Listing::whereIn('id', $listingContentResults)
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->first(['latitude', 'longitude', 'id']);
-
-          if ($firstListing) {
-            $lat_long = ['lat' => $firstListing->latitude, 'lng' => $firstListing->longitude];
-
-            $locationQuery = Listing::whereRaw("
-                    (6371000 * acos(
-                        cos(radians(?)) *
-                        cos(radians(latitude)) *
-                        cos(radians(longitude) - radians(?)) +
-                        sin(radians(?)) *
-                        sin(radians(latitude))
-                    )) <= ?
-                ", [$lat_long['lat'], $lat_long['lng'], $lat_long['lat'], $radius])
-              ->where('status', 1)
-              ->where('visibility', 1)
-              ->pluck('id');
-
-            $locationIds = $locationQuery->toArray();
-          }
-        }
+      $locationSearch = GeoSearch::findListingIds(
+        $location,
+        $language->id,
+        $language->code,
+        (bool) $bs->google_map_api_key_status,
+        $bs->google_map_api_key,
+        $radius
+      );
+      $locationIds = $locationSearch['ids'];
+      $lat_long = $locationSearch['coordinates'];
+      if (empty($locationIds)) {
+        $locationIds = $this->findListingIdsByLocalizedAddress($location, $language->id);
       }
     }
 
@@ -1190,67 +1196,25 @@ class ListingContoller extends Controller
     $locationSearchPerformed = false;
 
     $bs = Basic::select('google_map_api_key_status', 'radius', 'google_map_api_key')->first();
-    $radius = $bs->google_map_api_key_status == 1 ? $bs->radius : 5000;
+    // The configured radius and GeoSearch::getDistance() use kilometres,
+    // while the SQL distance expression returns metres.
+    $radius = $bs->google_map_api_key_status == 1 ? ($bs->radius * 1000) : 5000;
 
     if ($request->filled('location_val')) {
       $location = $request->location_val;
       $locationSearchPerformed = true;
-
-      if ($bs->google_map_api_key_status == 1) {
-        $geoResult = GeoSearch::getCoordinates($location, $bs->google_map_api_key);
-        if (is_array($geoResult) && isset($geoResult['lat']) && isset($geoResult['lng'])) {
-          $lat_long = ['lat' => $geoResult['lat'], 'lng' => $geoResult['lng']];
-
-          $locationQuery = Listing::join('listing_contents', 'listings.id', '=', 'listing_contents.listing_id')
-            ->where('listing_contents.language_id', $language->id)
-            ->whereRaw("
-                    (6371000 * acos(
-                        cos(radians(?)) *
-                        cos(radians(listings.latitude)) *
-                        cos(radians(listings.longitude) - radians(?)) +
-                        sin(radians(?)) *
-                        sin(radians(listings.latitude))
-                    )) <= ?
-                ", [$lat_long['lat'], $lat_long['lng'], $lat_long['lat'], $radius])
-            ->where('listings.status', 1)
-            ->where('listings.visibility', 1)
-            ->distinct()
-            ->pluck('listings.id');
-
-          $locationIds = $locationQuery->toArray();
-        }
-      } else {
-        $listingContentResults = ListingContent::where('language_id', $language->id)
-          ->where('address', 'like', '%' . $location . '%')
-          ->distinct()
-          ->pluck('listing_id')
-          ->toArray();
-
-        if (!empty($listingContentResults)) {
-          $firstListing = Listing::whereIn('id', $listingContentResults)
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->first(['latitude', 'longitude', 'id']);
-
-          if ($firstListing) {
-            $lat_long = ['lat' => $firstListing->latitude, 'lng' => $firstListing->longitude];
-
-            $locationQuery = Listing::whereRaw("
-                    (6371000 * acos(
-                        cos(radians(?)) *
-                        cos(radians(latitude)) *
-                        cos(radians(longitude) - radians(?)) +
-                        sin(radians(?)) *
-                        sin(radians(latitude))
-                    )) <= ?
-                ", [$lat_long['lat'], $lat_long['lng'], $lat_long['lat'], $radius])
-              ->where('status', 1)
-              ->where('visibility', 1)
-              ->pluck('id');
-
-            $locationIds = $locationQuery->toArray();
-          }
-        }
+      $locationSearch = GeoSearch::findListingIds(
+        $location,
+        $language->id,
+        $language->code,
+        (bool) $bs->google_map_api_key_status,
+        $bs->google_map_api_key,
+        $radius
+      );
+      $locationIds = $locationSearch['ids'];
+      $lat_long = $locationSearch['coordinates'];
+      if (empty($locationIds)) {
+        $locationIds = $this->findListingIdsByLocalizedAddress($location, $language->id);
       }
     }
 
@@ -1820,7 +1784,9 @@ class ListingContoller extends Controller
   {
     $misc = new MiscellaneousController();
     $vendorId = Listing::where('id', $listingId)->pluck('vendor_id')->first();
-    $information['bs'] = Basic::query()->select('google_recaptcha_status', 'facebook_login_status', 'google_login_status')->first();
+    $information['bs'] = Basic::query()->select('google_recaptcha_status', 'google_recaptcha_site_key', 'facebook_login_status', 'google_login_status')->first();
+    $information['recaptchaV3SiteKey'] = config('services.recaptcha.v3.site_key')
+      ?: ($information['bs']->google_recaptcha_site_key ?? null);
 
     $listing = Listing::with(['listing_content' => function ($query) use ($language) {
       return $query->where('language_id', $language->id);
@@ -1874,10 +1840,17 @@ class ListingContoller extends Controller
         ->first();
     }
 
-    $reviews = ListingReview::query()->where('listing_id', '=', $listingId)->orderByDesc('id')->get();
+    $reviews = ListingReview::query()->where('listing_id', '=', $listingId)
+      ->where('status', 'approved')
+      ->where(function ($q) use ($language) {
+          $q->where('language_id', $language->id)
+            ->orWhereHas('translations', fn ($q) => $q->where('language_id', $language->id));
+      })
+      ->orderByDesc('id')->get();
 
-    $reviews->map(function ($review) {
+    $reviews->map(function ($review) use ($language) {
       $review['user'] = $review->userInfo()->first();
+      ReviewService::setDisplayText($review, $language->id);
     });
 
     $information['reviews'] = $reviews;
@@ -2303,8 +2276,12 @@ class ListingContoller extends Controller
     return response()->json(['message' => 'Message sent successfully'], 200);
   }
 
-  public function storeReview(Request $request, $id)
+  public function storeReview(Request $request, $langOrId, $id = null)
   {
+    // The localized route has an optional {lang} parameter before {id}, while
+    // the default-locale route only passes {id}.
+    $listingId = $id ?? $langOrId;
+
 
     $rule = ['rating' => 'required'];
     $validator = Validator::make($request->all(), $rule);
@@ -2315,48 +2292,85 @@ class ListingContoller extends Controller
         ->withInput();
     }
 
+    if (!$this->verifyListingReviewRecaptcha($request)) {
+      return redirect()->back()
+        ->with('error', __('Please verify that you are not a robot.'))
+        ->withInput();
+    }
+
     $user = Auth::guard('web')->user();
 
     if ($user) {
         $review = ListingReview::updateOrCreate(
-          ['user_id' => $user->id, 'listing_id' => $id],
-          ['review' => $request->review, 'rating' => $request->rating]
+          ['user_id' => $user->id, 'listing_id' => $listingId],
+          [
+            'review' => $request->review,
+            'rating' => $request->rating,
+            'status' => 'pending',
+            'language_id' => ReviewService::languageId(),
+          ]
         ); 
         if ($review->wasRecentlyCreated) {
-          $listing = Listing::find($id);
+          $listing = Listing::find($listingId);
           VendorNotificationService::send(
             $listing?->vendor,
             'vendor_listing_review_received',
             __('New listing review'),
             __('You received a new review on one of your listings.'),
             [
-              'listing_id' => $id,
+              'listing_id' => $listingId,
               'review_id' => $review->id,
             ]
           );
         }
 
-      // now, get the average rating of this product
-      $reviews = ListingReview::where('listing_id', $id)->get();
+      ReviewService::recalculate(ReviewService::TYPE_LISTING, (int) $listingId);
 
-      $totalRating = 0;
-
-      foreach ($reviews as $review) {
-        $totalRating += $review->rating;
-      }
-
-      $numOfReview = count($reviews);
-
-      $averageRating = $totalRating / $numOfReview;
-
-      // finally, store the average rating of this Listing
-      Listing::find($id)->update(['average_rating' => $averageRating]);
-
-      Session::flash('success', __('Your review submitted successfully') . '.');
+      Session::flash('success', __('Your review submitted and is awaiting moderation') . '.');
     } else {
       Session::flash('error', __('You have to Login First!'));
     }
     return redirect()->back();
+  }
+
+  private function verifyListingReviewRecaptcha(Request $request): bool
+  {
+    $settings = Basic::query()
+      ->select('google_recaptcha_status', 'google_recaptcha_secret_key')
+      ->first();
+
+    if (!$settings || (int) $settings->google_recaptcha_status !== 1) {
+      return true;
+    }
+
+    $token = trim((string) $request->input('g-recaptcha-response'));
+    $secretKey = (string) (config('services.recaptcha.v3.secret_key') ?: $settings->google_recaptcha_secret_key);
+
+    if ($token === '' || $secretKey === '') {
+      return false;
+    }
+
+    try {
+      $verification = Http::asForm()
+        ->timeout(5)
+        ->post('https://www.google.com/recaptcha/api/siteverify', [
+          'secret' => $secretKey,
+          'response' => $token,
+          'remoteip' => $request->ip(),
+        ]);
+    } catch (\Throwable $exception) {
+      return false;
+    }
+
+    if (!$verification->successful()) {
+      return false;
+    }
+
+    $result = $verification->json();
+
+    return ($result['success'] ?? false) === true
+      && ($result['action'] ?? null) === config('services.recaptcha.v3.review_action', 'listing_review')
+      && (float) ($result['score'] ?? 0) >= (float) config('services.recaptcha.v3.score_threshold', 0.5);
   }
   public function store_visitor(Request $request)
   {

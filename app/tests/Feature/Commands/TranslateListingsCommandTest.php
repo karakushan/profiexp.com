@@ -5,6 +5,7 @@ namespace Tests\Feature\Commands;
 use App\Models\Language;
 use App\Models\Listing\Listing;
 use App\Models\Listing\ListingContent;
+use App\Services\Ai\ListingTranslationService;
 use App\Models\Vendor;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -22,6 +23,7 @@ class TranslateListingsCommandTest extends TestCase
             ['uniqid' => 12345],
             ['auto_translate_status' => 1]
         );
+        DB::table('basic_settings')->update(['auto_translate_status' => 1]);
 
         $this->defaultLang = Language::create([
             'name' => 'English',
@@ -196,5 +198,59 @@ class TranslateListingsCommandTest extends TestCase
             ->first();
 
         $this->assertEmpty($targetContent->title, 'Already translated listing should not be processed');
+    }
+
+    public function test_command_translates_missing_address_for_an_existing_target_translation(): void
+    {
+        $listing = $this->createListingWithContent();
+        $targetContent = ListingContent::where('listing_id', $listing->id)
+            ->where('language_id', $this->targetLang->id)
+            ->firstOrFail();
+        $targetContent->update([
+            'title' => 'Existing translated title',
+            'address' => '',
+        ]);
+
+        $this->mock(ListingTranslationService::class, function ($mock): void {
+            $mock->shouldReceive('translate')->andReturn([
+                'title' => 'New translated title',
+                'description' => 'New description',
+                'summary' => 'New summary',
+                'address' => 'Translated missing address',
+                'meta_keyword' => 'keyword',
+                'meta_description' => 'description',
+            ]);
+        });
+
+        $this->artisan('listings:translate', ['--batch' => 1000])->assertSuccessful();
+
+        $targetContent->refresh();
+        $this->assertSame('Existing translated title', $targetContent->title);
+        $this->assertSame('Translated missing address', $targetContent->address);
+    }
+
+    public function test_command_never_overwrites_an_existing_target_address(): void
+    {
+        $listing = $this->createListingWithContent();
+        $targetContent = ListingContent::where('listing_id', $listing->id)
+            ->where('language_id', $this->targetLang->id)
+            ->firstOrFail();
+        $targetContent->update(['address' => 'Manually entered address']);
+
+        $this->mock(ListingTranslationService::class, function ($mock): void {
+            $mock->shouldReceive('translate')->andReturn([
+                'title' => 'Translated title',
+                'description' => 'Translated description',
+                'summary' => 'Translated summary',
+                'address' => 'AI replacement address',
+                'meta_keyword' => 'keyword',
+                'meta_description' => 'description',
+            ]);
+        });
+
+        $this->artisan('listings:translate', ['--batch' => 1000])->assertSuccessful();
+
+        $targetContent->refresh();
+        $this->assertSame('Manually entered address', $targetContent->address);
     }
 }

@@ -16,6 +16,7 @@ use App\Models\Shop\Product;
 use App\Models\Shop\ProductCategory;
 use App\Models\Shop\ProductContent;
 use App\Models\Shop\ProductReview;
+use App\Services\ReviewService;
 use App\Models\Vendor;
 use App\Services\VendorNotificationService;
 use Carbon\Carbon;
@@ -169,10 +170,13 @@ class ProductController extends Controller
         $information['details'] = $details;
 
 
-        $reviews = ProductReview::query()->where('product_id', '=', $productId)->orderByDesc('id')->get();
+        $reviews = ProductReview::query()->where('product_id', '=', $productId)
+            ->where('status', 'approved')
+            ->orderByDesc('id')->get();
 
         $reviews->map(function ($review) {
             $review['user'] = $review->userInfo()->first();
+            ReviewService::setDisplayText($review, ReviewService::languageId());
         });
 
         $information['reviews'] = $reviews;
@@ -639,7 +643,12 @@ class ProductController extends Controller
             if ($productPurchased == true) {
                 $review = ProductReview::updateOrCreate(
                     ['user_id' => $user->id, 'product_id' => $id],
-                    ['comment' => $request->comment, 'rating' => $request->rating]
+                    [
+                        'comment' => $request->comment,
+                        'rating' => $request->rating,
+                        'status' => 'pending',
+                        'language_id' => ReviewService::languageId(),
+                    ]
                 );
                 if ($review->wasRecentlyCreated) {
                     $product = Product::find($id);
@@ -657,23 +666,9 @@ class ProductController extends Controller
                     );
                 }
 
-                  // now, get the average rating of this product
-                  $reviews = ProductReview::where('product_id', $id)->get();
+                ReviewService::recalculate(ReviewService::TYPE_PRODUCT, (int) $id);
 
-                $totalRating = 0;
-
-                foreach ($reviews as $review) {
-                    $totalRating += $review->rating;
-                }
-
-                $numOfReview = count($reviews);
-
-                $averageRating = $totalRating / $numOfReview;
-
-                // finally, store the average rating of this product
-                Product::find($id)->update(['average_rating' => $averageRating]);
-
-                Session::flash('success', __('Your review submitted successfully') . '!');
+                Session::flash('success', __('Your review submitted and is awaiting moderation') . '!');
             } else {
                 Session::flash('error', __('You have not bought this product yet!'));
             }

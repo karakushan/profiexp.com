@@ -313,6 +313,16 @@ Route::prefix('/admin')->middleware('auth:admin', 'Demo', 'adminLang')->group(fu
     Route::post('product-bulk-delete', 'Admin\MessageController@productBulkDelete')->name('admin.product.message.bulk_delete.message');
     //End Message
 
+    Route::prefix('/reviews-management')->middleware('permission:Reviews Management')->group(function () {
+        Route::get('/', 'Admin\ReviewController@index')->name('admin.reviews.index');
+        Route::get('/create', 'Admin\ReviewController@create')->name('admin.reviews.create');
+        Route::post('/', 'Admin\ReviewController@store')->name('admin.reviews.store');
+        Route::post('/bulk-status', 'Admin\ReviewController@bulkStatus')->name('admin.reviews.bulk_status');
+        Route::post('/listing/{id}/update', 'Admin\ReviewController@update')->name('admin.reviews.update');
+        Route::post('/listing/{id}/status', 'Admin\ReviewController@updateStatus')->name('admin.reviews.update_status');
+        Route::post('/listing/{id}/delete', 'Admin\ReviewController@destroy')->name('admin.reviews.delete');
+    });
+
     // shop route start
     Route::prefix('/shop-management')->middleware('permission:Shop Management')->group(function () {
         // tax route

@@ -3,75 +3,20 @@ let geocoder;
 let isSubmitting = false;
 
 window.initMap = function () {
-
   geocoder = new google.maps.Geocoder();
-  let input = document.getElementById('location');
-
-  // Listen for 'Enter' key on the input field
-  if (input) {
-    let searchBox = new google.maps.places.SearchBox(input);
-    input.addEventListener('keyup', function (event) {
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        const $sortSelect = $('#select_sort');
-
-        // Prepend new options
-        $sortSelect.prepend(`
-    <option value="close-by" selected>
-      ${$sortSelect.data('close-text') || 'Distance: Closest first'}
-    </option>
-    <option value="distance-away">
-      ${$sortSelect.data('far-text') || 'Distance: Farthest first'}
-    </option>
-  `);
-
-        $sortSelect.niceSelect('destroy');
-        $sortSelect.niceSelect();
-        handleSearch();
-      }
-    });
-    // Listen for place changes in the search box
-    searchBox.addListener('places_changed', function () {
-      const $sortSelect = $('#select_sort');
-
-      // Prepend new options
-      $sortSelect.prepend(`
-    <option value="close-by" selected>
-      ${$sortSelect.data('close-text') || 'Distance: Closest first'}
-    </option>
-    <option value="distance-away">
-      ${$sortSelect.data('far-text') || 'Distance: Farthest first'}
-    </option>
-  `);
-
-      $sortSelect.niceSelect('destroy');
-      $sortSelect.niceSelect();
-      const places = searchBox.getPlaces();
-      if (places.length === 0) {
-        return;
-      }
-
-      // Get the last selected place
-      const place = places[places.length - 1];
-
-      if (!place.geometry) {
-        alert("Returned place contains no geometry");
-        return;
-      }
-      const formattedAddress = decodeURIComponent(place.formatted_address);
-      document.getElementById('location_val').value = formattedAddress;
-      handleSearch();
-    });
-  }
 }
 
 
 // Function to update URL and submit form
-function updateUrl(data) {
+function updateLocationUrl(data) {
 
   let newUrl = new URL(window.location);
   if (data === "location_val") {
-    newUrl.searchParams.set('location', $('#location_val').val());
+    const location = String($('#location_val').val() || '').trim();
+    if (!location || location === 'undefined') {
+      return;
+    }
+    newUrl.searchParams.set('location', location);
   } else {
     newUrl.searchParams.delete('location');
   }
@@ -86,21 +31,22 @@ function updateUrl(data) {
 }
 
 // Function to handle the search process
-function handleSearch() {
-  const locationValue = $('#location').val().trim();
+function handleSearch(typedLocation = null) {
+  const locationValue = String(typedLocation || $('#location').val() || '').trim();
 
   // Check if the form is already submitting
   if (isSubmitting) {
     return;
   }
 
-  if (!locationValue && !isSubmitting) {
+  if ((!locationValue || locationValue === 'undefined') && !isSubmitting) {
     $('#location_val').val('');
-    updateUrl(); // Reset URL if location is blank
+    updateLocationUrl(); // Reset URL if location is blank
     isSubmitting = true;
   } else if (locationValue && !isSubmitting) {
+    window.lastLocationSearchValue = locationValue;
     document.getElementById('location_val').value = locationValue;
-    updateUrl("location_val");
+    updateLocationUrl("location_val");
   }
 }
 
@@ -112,7 +58,7 @@ function geocodeLatLng(latLng) {
 
         $('#location').val(results[0].formatted_address);
         $('#location_val').val(results[0].formatted_address);
-        updateUrl("location_val");
+        updateLocationUrl("location_val");
 
       } else {
         console.log('No results found');
@@ -166,4 +112,3 @@ if (typeof google !== "undefined" && google.maps) {
     setTimeout(() => initMap && initMap(), 100);
   }
 }
-

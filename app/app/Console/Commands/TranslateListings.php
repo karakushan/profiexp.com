@@ -33,9 +33,22 @@ class TranslateListings extends Command
         $totalLangs = Language::count();
         $batchSize = max(1, (int) $this->option('batch'));
 
-        $pending = Listing::select('id')
-            ->selectRaw('(SELECT COUNT(*) FROM listing_contents WHERE listing_id = listings.id AND title IS NOT NULL AND title != "") as filled')
-            ->havingRaw('filled > 0 AND filled < ?', [$totalLangs])
+        $pending = Listing::query()
+            ->whereHas('listing_content', function ($query): void {
+                $query->whereNotNull('title')->where('title', '!=', '');
+            })
+            ->where(function ($query) use ($totalLangs): void {
+                $query
+                    ->whereRaw(
+                        '(SELECT COUNT(*) FROM listing_contents WHERE listing_id = listings.id AND title IS NOT NULL AND title != "") < ?',
+                        [$totalLangs]
+                    )
+                    ->orWhereRaw(
+                        '(SELECT COUNT(*) FROM listing_contents WHERE listing_id = listings.id AND address IS NOT NULL AND address != "") < ?',
+                        [$totalLangs]
+                    );
+            })
+            ->select('id')
             ->limit($batchSize)
             ->get();
 

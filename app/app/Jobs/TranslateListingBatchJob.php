@@ -57,13 +57,15 @@ class TranslateListingBatchJob implements ShouldQueue
         if (!is_array($translatedLangs)) $translatedLangs = [];
 
         foreach ($targetLanguages as $targetLang) {
-            if (!empty($translatedLangs[$targetLang->code])) continue;
-
-            $exists = ListingContent::where('listing_id', $this->listingId)
+            $targetContent = ListingContent::where('listing_id', $this->listingId)
                 ->where('language_id', $targetLang->id)
-                ->whereNotNull('title')->where('title', '!=', '')
-                ->exists();
-            if ($exists) continue;
+                ->first();
+
+            $addressIsFilled = $targetContent && !empty($targetContent->address);
+            if (!empty($translatedLangs[$targetLang->code])) {
+                if (!$targetContent || empty($targetContent->title) || $addressIsFilled) continue;
+            }
+            if ($targetContent && !empty($targetContent->title) && $addressIsFilled) continue;
 
             try {
                 $translated = $translator->translate(
@@ -72,9 +74,15 @@ class TranslateListingBatchJob implements ShouldQueue
                     $targetLang->name
                 );
 
-                $targetContent = ListingContent::where('listing_id', $this->listingId)
-                    ->where('language_id', $targetLang->id)
-                    ->first();
+                if ($targetContent && !empty($targetContent->title)) {
+                    if (empty($targetContent->address) && !empty($translated['address'])) {
+                        $targetContent->address = $translated['address'];
+                        $targetContent->save();
+                    }
+
+                    $translatedLangs[$targetLang->code] = true;
+                    continue;
+                }
 
                 if (!$targetContent) {
                     $targetContent = new ListingContent();
@@ -102,7 +110,9 @@ class TranslateListingBatchJob implements ShouldQueue
                 $targetContent->slug = Str::slug($slugTitle);
                 $targetContent->description = $translated['description'] ?? ($sourceContent->description ?? '');
                 $targetContent->summary = $translated['summary'] ?? '';
-                $targetContent->address = $translated['address'] ?? '';
+                if (empty($targetContent->address)) {
+                    $targetContent->address = $translated['address'] ?? '';
+                }
                 $targetContent->meta_keyword = $translated['meta_keyword'] ?? '';
                 $targetContent->meta_description = $translated['meta_description'] ?? '';
                 $targetContent->save();

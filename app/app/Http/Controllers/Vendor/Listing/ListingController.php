@@ -416,7 +416,6 @@ class ListingController extends Controller
             $listingContent->meta_keyword = $request[$code . '_meta_keyword'];
             $listingContent->summary = $request[$code . '_summary'];
             $listingContent->meta_description = $request[$code . '_meta_description'];
-            $listingContent->aminities = json_encode($request->input('aminities', []));
             $listingContent->save();
 
             $this->syncListingAmenities($listing->id, $request->input('aminities', []));
@@ -749,7 +748,6 @@ Thank you for your attention to this matter.";
         $listingContent->meta_keyword = $request[$code . '_meta_keyword'];
         $listingContent->summary = $request[$code . '_summary'];
         $listingContent->meta_description = $request[$code . '_meta_description'];
-        $listingContent->aminities = json_encode($request->input('aminities', []));
         $listingContent->save();
 
         $this->syncListingAmenities($listing->id, $request->input('aminities', []));
@@ -761,8 +759,9 @@ Thank you for your attention to this matter.";
 
     private function syncListingAmenities(int $listingId, array $amenities): void
     {
-        ListingContent::where('listing_id', $listingId)
-            ->update(['aminities' => json_encode(array_values($amenities))]);
+        $listing = Listing::findOrFail($listingId);
+        $listing->aminities = array_values($amenities);
+        $listing->save();
     }
 
     public function videoImageRemove($id)

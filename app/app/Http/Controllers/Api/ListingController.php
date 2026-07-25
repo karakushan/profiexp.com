@@ -32,6 +32,7 @@ use App\Models\Location\State;
 use App\Models\Shop\Product;
 use App\Models\Vendor;
 use App\Services\VendorNotificationService;
+use App\Services\ReviewService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -98,63 +99,16 @@ class ListingController extends Controller
         if ($request->filled('location')) {
             $location = $request->location;
             $locationSearchPerformed = true;
-
-            if ($bs->google_map_api_key_status == 1) {
-                $geoResult = GeoSearch::getCoordinates($location, $bs->google_map_api_key);
-                if (is_array($geoResult) && isset($geoResult['lat']) && isset($geoResult['lng'])) {
-                    $lat_long = ['lat' => $geoResult['lat'], 'lng' => $geoResult['lng']];
-
-                    $locationQuery = Listing::join('listing_contents', 'listings.id', '=', 'listing_contents.listing_id')
-                        ->where('listing_contents.language_id', $language->id)
-                        ->whereRaw("
-                    (6371000 * acos(
-                        cos(radians(?)) *
-                        cos(radians(listings.latitude)) *
-                        cos(radians(listings.longitude) - radians(?)) +
-                        sin(radians(?)) *
-                        sin(radians(listings.latitude))
-                    )) <= ?
-                ", [$lat_long['lat'], $lat_long['lng'], $lat_long['lat'], $radius])
-                        ->where('listings.status', 1)
-                        ->where('listings.visibility', 1)
-                        ->distinct()
-                        ->pluck('listings.id');
-
-                    $locationIds = $locationQuery->toArray();
-                }
-            } else {
-                $listingContentResults = ListingContent::where('language_id', $language->id)
-                    ->where('address', 'like', '%' . $location . '%')
-                    ->distinct()
-                    ->pluck('listing_id')
-                    ->toArray();
-
-                if (!empty($listingContentResults)) {
-                    $firstListing = Listing::whereIn('id', $listingContentResults)
-                        ->whereNotNull('latitude')
-                        ->whereNotNull('longitude')
-                        ->first(['latitude', 'longitude', 'id']);
-
-                    if ($firstListing) {
-                        $lat_long = ['lat' => $firstListing->latitude, 'lng' => $firstListing->longitude];
-
-                        $locationQuery = Listing::whereRaw("
-                    (6371000 * acos(
-                        cos(radians(?)) *
-                        cos(radians(latitude)) *
-                        cos(radians(longitude) - radians(?)) +
-                        sin(radians(?)) *
-                        sin(radians(latitude))
-                    )) <= ?
-                ", [$lat_long['lat'], $lat_long['lng'], $lat_long['lat'], $radius])
-                            ->where('status', 1)
-                            ->where('visibility', 1)
-                            ->pluck('id');
-
-                        $locationIds = $locationQuery->toArray();
-                    }
-                }
-            }
+            $locationSearch = GeoSearch::findListingIds(
+                $location,
+                $language->id,
+                $language->code,
+                (bool) $bs->google_map_api_key_status,
+                $bs->google_map_api_key,
+                $radius
+            );
+            $locationIds = $locationSearch['ids'];
+            $lat_long = $locationSearch['coordinates'];
         }
 
         $category_listingIds = [];
@@ -705,10 +659,17 @@ class ListingController extends Controller
             $information['vendor'] = HelperController::formatVendorForApi($vendor_id, $language->id, 'vendor');
         }
 
-        $reviews = ListingReview::query()->where('listing_id', '=', $id)->orderByDesc('id')->get();
+        $reviews = ListingReview::query()->where('listing_id', '=', $id)
+            ->where('status', 'approved')
+            ->where(function ($q) use ($language) {
+                $q->where('language_id', $language->id)
+                  ->orWhereHas('translations', fn ($q) => $q->where('language_id', $language->id));
+            })
+            ->orderByDesc('id')->get();
 
-        $reviews = $reviews->map(function ($review) {
+        $reviews = $reviews->map(function ($review) use ($language) {
             $user = $review->userInfo()->select('id', 'name', 'username', 'image')->first();
+            ReviewService::setDisplayText($review, $language->id);
 
             return [
                 'id'         => $review->id,
@@ -739,10 +700,10 @@ class ListingController extends Controller
                 ];
             });
 
-        $listing_aminites =   $listing->listing_content->first()->aminities ??  [];
+        $listing_aminites = $listing->aminities ?? [];
         $aminiteIds = AminiteContent::where('language_id', $language->id)->pluck('aminite_id');
         $information['aminities'] = Aminite::whereIn('id', $aminiteIds)->get()->filter(function ($item) use ($listing_aminites) {
-            return in_array($item->id, json_decode($listing_aminites));
+            return in_array($item->id, $listing_aminites);
         });
 
         $information['listing_features'] = ListingFeature::join(
@@ -810,7 +771,12 @@ class ListingController extends Controller
         if ($user) {
             $review = ListingReview::updateOrCreate(
                 ['user_id' => $user->id, 'listing_id' => $id],
-                ['review' => $request->review, 'rating' => $request->rating]
+                [
+                    'review' => $request->review,
+                    'rating' => $request->rating,
+                    'status' => 'pending',
+                    'language_id' => ReviewService::languageId($request->header('Accept-Language')),
+                ]
             );
             if ($review->wasRecentlyCreated) {
                 $listing = Listing::find($id);
@@ -826,25 +792,11 @@ class ListingController extends Controller
                 );
             }
 
-            // now, get the average rating of this product
-            $reviews = ListingReview::where('listing_id', $id)->get();
-
-            $totalRating = 0;
-
-            foreach ($reviews as $review) {
-                $totalRating += $review->rating;
-            }
-
-            $numOfReview = count($reviews);
-
-            $averageRating = $totalRating / $numOfReview;
-
-            // finally, store the average rating of this Listing
-            Listing::find($id)->update(['average_rating' => $averageRating]);
+            ReviewService::recalculate(ReviewService::TYPE_LISTING, (int) $id);
 
             return response()->json([
                 'success' => true,
-                'message' =>  __('Your review submitted successfully')
+                'message' =>  __('Your review submitted and is awaiting moderation')
             ], 200);
         } else {
             return response()->json([

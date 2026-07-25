@@ -271,9 +271,7 @@
                                         <ul class="amenities-list list-unstyled p-0 m-0">
                                             @php
                                                 $aminities = App\Models\Aminite::with('contents')->get();
-                                                $hasaminitie = json_decode(
-                                                    $listing->listing_content->first()->aminities,
-                                                ) ?? [];
+                                                $hasaminitie = $listing->aminities ?? [];
                                             @endphp
                                             @if (is_array($hasaminitie))
                                             @foreach ($aminities as $aminitie)
@@ -421,7 +419,7 @@
                                                                 <h6 class="m-0">{{ $review->user->username }}</h6>
 
                                                                 <span
-                                                                    class="font-sm">{{ date('dS F Y, h.i A', strtotime($review->updated_at)) }}</span>
+                                                                    class="font-sm">{{ \Carbon\Carbon::parse($review->updated_at)->translatedFormat('j F Y, H:i') }}</span>
                                                                 <div class="product-ratings mb-1">
                                                                     <div class="ratings">
                                                                         <div class="rate"
@@ -493,6 +491,13 @@
                                             </div>
                                             <input type="hidden" id="rating-id" name="rating">
 
+                                            @if (($bs->google_recaptcha_status ?? 0) == 1)
+                                                <input type="hidden" name="g-recaptcha-response" id="listing-review-recaptcha-response">
+                                                <p class="text-danger d-none" id="listing-review-recaptcha-error">
+                                                    {{ __('Please verify that you are not a robot.') }}
+                                                </p>
+                                            @endif
+
                                             <div class="form-group mt-10">
                                                 <button type="submit"
                                                     class="btn btn-lg btn-primary">{{ __('Submit Review') }}</button>
@@ -503,12 +508,9 @@
                                 @endauth
                                 @guest('web')
                                     <div class="login-text mb-40">
-                                        <span>{{ __('Please') }} <a
-                                                href="{{ route('user.login', ['redirectPath' => 'listingDetails']) }}"
-                                                title="Login">{{ __('Login') }}</a>
-                                            {{ __('To Give Your Review') }}
-                                            .</span>
-
+                                        <span>{!! __('Please login to give your review', [
+                                            'url' => route('user.login', ['redirectPath' => 'listingDetails']),
+                                        ]) !!}</span>
                                     </div>
                                 @endguest
                                 @if (!empty(showAd(3)))
@@ -747,6 +749,46 @@
     {{-- @include('frontend.listing.product-details', $product_contents); --}}
 @endsection
 @section('script')
+    @if (($bs->google_recaptcha_status ?? 0) == 1 && !empty($recaptchaV3SiteKey))
+        <script src="https://www.google.com/recaptcha/api.js?render={{ urlencode($recaptchaV3SiteKey) }}"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('reviewSubmitForm');
+                const tokenInput = document.getElementById('listing-review-recaptcha-response');
+                const error = document.getElementById('listing-review-recaptcha-error');
+                const action = @json(config('services.recaptcha.v3.review_action', 'listing_review'));
+                const siteKey = @json($recaptchaV3SiteKey);
+
+                if (!form || !tokenInput) {
+                    return;
+                }
+
+                form.addEventListener('submit', function(event) {
+                    if (tokenInput.value) {
+                        return;
+                    }
+
+                    event.preventDefault();
+
+                    if (!window.grecaptcha) {
+                        error?.classList.remove('d-none');
+                        return;
+                    }
+
+                    grecaptcha.ready(function() {
+                        grecaptcha.execute(siteKey, { action: action })
+                            .then(function(token) {
+                                tokenInput.value = token;
+                                form.submit();
+                            })
+                            .catch(function() {
+                                error?.classList.remove('d-none');
+                            });
+                    });
+                });
+            });
+        </script>
+    @endif
     <script>
         "use strict";
         var visitor_store_url = "{{ route('frontend.store_visitor') }}";

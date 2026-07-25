@@ -52,7 +52,7 @@ class TranslateListingJob implements ShouldQueue
                 ->where('language_id', $this->targetLangId)
                 ->first();
 
-            if ($targetContent && !empty($targetContent->title)) {
+            if ($targetContent && !empty($targetContent->title) && !empty($targetContent->address)) {
                 Log::channel('translate')->info("TranslateListingJob [listing_id={$this->listingId}]: already translated to {$this->targetLangCode}");
                 return;
             }
@@ -66,6 +66,15 @@ class TranslateListingJob implements ShouldQueue
             );
 
             Log::channel('translate')->info("TranslateListingJob [listing_id={$this->listingId}]: translate response to {$this->targetLangCode}: " . json_encode($translated));
+
+            if ($targetContent && !empty($targetContent->title)) {
+                if (empty($targetContent->address) && !empty($translated['address'])) {
+                    $targetContent->address = $translated['address'];
+                    $targetContent->save();
+                }
+
+                return;
+            }
 
             if (!$targetContent) {
                 $targetContent = new ListingContent();
@@ -85,7 +94,9 @@ class TranslateListingJob implements ShouldQueue
             );
             $targetContent->description = $translated['description'] ?? ($sourceContent->description ?? '');
             $targetContent->summary = $translated['summary'] ?? '';
-            $targetContent->address = $translated['address'] ?? '';
+            if (empty($targetContent->address)) {
+                $targetContent->address = $translated['address'] ?? '';
+            }
             $targetContent->meta_keyword = $translated['meta_keyword'] ?? '';
             $targetContent->meta_description = $translated['meta_description'] ?? '';
             $targetContent->aminities = $sourceContent->aminities ?? json_encode([]);

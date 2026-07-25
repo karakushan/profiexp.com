@@ -571,9 +571,7 @@
                                                 <div class="col-lg-12">
                                                     @php
                                                         $aminities = App\Models\Aminite::with('contents')->get();
-                                                        $hasaminitie = $defaultListingContent
-                                                            ? json_decode($defaultListingContent->aminities)
-                                                            : [];
+                                                        $hasaminitie = $listing->aminities ?? [];
                                                     @endphp
                                                     <div class="dropdown-content" id="checkboxes">
                                                         @foreach ($aminities as $aminitie)

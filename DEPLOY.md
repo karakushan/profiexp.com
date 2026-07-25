@@ -5,11 +5,13 @@
 ## Общие правила
 
 - Production работает на обычном PHP/FastPanel, не в Docker.
+- Для SSH/SFTP брать `host`, `port`, `username`, `privateKeyPath` и базовую область подключения из `.vscode/sftp.json`.
+- Данные из `.vscode/sftp.json` использовать для подключения к обоим сайтам; различаются только production-пути, указанные ниже.
 - Порядок действий: проверить ветку и изменения → сделать `git commit` → выполнить `git push` → проверить, что production-клон видит тот же commit → выполнить деплой.
 - Перед деплоем сделать DB backup командой `php artisan backup:run --only-db`.
 - Не деплоить неприкоммиченные или непушенные изменения.
 - Сохранять `.env`, пользовательские uploads и production-only `queue-worker.sh`.
-- После синхронизации выполнить `composer install`, `php artisan migrate --force`, `php artisan optimize:clear`, `php artisan config:cache` и `php artisan view:cache` от пользователя сайта.
+- После синхронизации выполнить `composer install`, `npm ci && npm run production`, `php artisan migrate --force`, `php artisan optimize:clear`, `php artisan config:cache` и `php artisan view:cache` от пользователя сайта.
 
 ## profiexp.com
 

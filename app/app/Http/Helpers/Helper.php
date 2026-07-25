@@ -919,7 +919,9 @@ if (!function_exists('convertUtf8')) {
 if (!function_exists('totalListingReview')) {
     function totalListingReview($listing_id)
     {
-        $totalReview = ListingReview::Where('listing_id', $listing_id)->count();
+        $totalReview = ListingReview::Where('listing_id', $listing_id)
+            ->where('status', 'approved')
+            ->count();
 
         return $totalReview;
     }

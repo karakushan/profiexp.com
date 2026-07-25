@@ -481,7 +481,7 @@ $listing_content->category_id
 
     <form action="{{ route('frontend.listings') }}" id="searchForm" method="GET">
         <input type="hidden" name="title" id="title" value="{{ request()->input('title') }}">
-        <input type="hidden" name="location_val" id="location_val" value="{{ request()->input('location') }}">
+        <input type="hidden" name="location_val" id="location_val" value="{{ request()->input('location') === 'undefined' ? '' : request()->input('location') }}">
         <input type="hidden" name="category_id" id="category_id" value="{{ request()->input('category_id') }}">
         <input type="hidden" name="max_val" id="max_val" value="{{ request()->input('max_val') }}">
         <input type="hidden" name="min_val" id="min_val" value="{{ request()->input('min_val') }}">
@@ -511,7 +511,7 @@ $listing_content->category_id
     </script>
     <!-- Map JS -->
     @if ($basicInfo->google_map_api_key_status == 1)
-        <script src="{{ asset('assets/front/js/api-search-2.js') }}"></script>
+        <script src="{{ asset('assets/front/js/api-search-2.js') }}?v={{ filemtime(public_path('assets/front/js/api-search-2.js')) }}"></script>
         <script
             src="https://maps.googleapis.com/maps/api/js?key={{ $basicInfo->google_map_api_key }}&libraries=places&callback=initMap"
             async defer></script>
@@ -532,5 +532,5 @@ $listing_content->category_id
         var claimErrMsg = "{{ __('Please login first to claim this listing') . '.' }}";
         var currentUser = @json(Auth::guard('web')->check() ? Auth::guard('web')->user() : null);
     </script>
-    <script src="{{ asset('assets/front/js/search.js') }}"></script>
+    <script src="{{ asset('assets/front/js/search.js') }}?v={{ filemtime(public_path('assets/front/js/search.js')) }}"></script>
 @endsection
