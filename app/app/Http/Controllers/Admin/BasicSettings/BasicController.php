@@ -368,7 +368,7 @@ class BasicController extends Controller
     public function plugins()
     {
         $data = DB::table('basic_settings')
-            ->select('disqus_status', 'disqus_short_name', 'google_recaptcha_status', 'google_recaptcha_site_key', 'google_recaptcha_secret_key', 'whatsapp_status', 'whatsapp_number', 'whatsapp_header_title', 'whatsapp_popup_status', 'whatsapp_popup_message', 'facebook_login_status', 'facebook_app_id', 'facebook_app_secret', 'google_login_status', 'google_client_id', 'google_client_secret', 'tawkto_status', 'tawkto_direct_chat_link', 'google_map_api_key', 'google_map_api_key_status','radius',
+            ->select('disqus_status', 'disqus_short_name', 'google_recaptcha_status', 'google_recaptcha_project_id', 'google_recaptcha_site_key', 'google_recaptcha_secret_key', 'google_recaptcha_api_key', 'whatsapp_status', 'whatsapp_number', 'whatsapp_header_title', 'whatsapp_popup_status', 'whatsapp_popup_message', 'facebook_login_status', 'facebook_app_id', 'facebook_app_secret', 'google_login_status', 'google_client_id', 'google_client_secret', 'tawkto_status', 'tawkto_direct_chat_link', 'google_map_api_key', 'google_map_api_key_status','radius',
             'openai_api_key',
             'openai_text_model',
             'openai_image_model',
@@ -448,8 +448,10 @@ class BasicController extends Controller
     {
         $rules = [
             'google_recaptcha_status' => 'required',
+            'google_recaptcha_project_id' => 'nullable|string|max:255',
             'google_recaptcha_site_key' => 'required',
-            'google_recaptcha_secret_key' => 'required'
+            'google_recaptcha_secret_key' => 'required',
+            'google_recaptcha_api_key' => 'nullable|string|max:255',
         ];
 
         $messages = [
@@ -467,9 +469,11 @@ class BasicController extends Controller
         DB::table('basic_settings')->updateOrInsert(
             ['uniqid' => 12345],
             [
-                'google_recaptcha_status' => $request->google_recaptcha_status,
+            'google_recaptcha_status' => $request->google_recaptcha_status,
+                'google_recaptcha_project_id' => $request->google_recaptcha_project_id,
                 'google_recaptcha_site_key' => $request->google_recaptcha_site_key,
-                'google_recaptcha_secret_key' => $request->google_recaptcha_secret_key
+                'google_recaptcha_secret_key' => $request->google_recaptcha_secret_key,
+                'google_recaptcha_api_key' => $request->google_recaptcha_api_key,
             ]
         );
 

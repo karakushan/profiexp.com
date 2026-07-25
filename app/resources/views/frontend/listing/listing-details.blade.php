@@ -547,9 +547,7 @@
                                                         aria-labelledby="headingOne_{{ $faq->id }}"
                                                         data-bs-parent="#faqAccordion">
                                                         <div class="accordion-body">
-                                                            <p>
-                                                                {{ $faq->answer }}
-                                                            </p>
+                                                            {!! \Mews\Purifier\Facades\Purifier::clean($faq->answer) !!}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -750,13 +748,13 @@
 @endsection
 @section('script')
     @if (($bs->google_recaptcha_status ?? 0) == 1 && !empty($recaptchaV3SiteKey))
-        <script src="https://www.google.com/recaptcha/api.js?render={{ urlencode($recaptchaV3SiteKey) }}"></script>
+        <script src="https://www.google.com/recaptcha/enterprise.js?render={{ urlencode($recaptchaV3SiteKey) }}"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const form = document.getElementById('reviewSubmitForm');
                 const tokenInput = document.getElementById('listing-review-recaptcha-response');
                 const error = document.getElementById('listing-review-recaptcha-error');
-                const action = @json(config('services.recaptcha.v3.review_action', 'listing_review'));
+                const action = @json(config('services.recaptcha.enterprise.review_action', 'listing_review'));
                 const siteKey = @json($recaptchaV3SiteKey);
 
                 if (!form || !tokenInput) {
@@ -770,13 +768,13 @@
 
                     event.preventDefault();
 
-                    if (!window.grecaptcha) {
+                    if (!window.grecaptcha?.enterprise) {
                         error?.classList.remove('d-none');
                         return;
                     }
 
-                    grecaptcha.ready(function() {
-                        grecaptcha.execute(siteKey, { action: action })
+                    grecaptcha.enterprise.ready(function() {
+                        grecaptcha.enterprise.execute(siteKey, { action: action })
                             .then(function(token) {
                                 tokenInput.value = token;
                                 form.submit();

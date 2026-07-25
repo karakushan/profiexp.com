@@ -51,6 +51,12 @@ return [
       'score_threshold' => (float) env('RECAPTCHA_V3_SCORE_THRESHOLD', 0.5),
       'review_action' => env('RECAPTCHA_V3_REVIEW_ACTION', 'listing_review'),
     ],
+    'enterprise' => [
+      'project_id' => env('RECAPTCHA_ENTERPRISE_PROJECT_ID'),
+      'api_key' => env('RECAPTCHA_ENTERPRISE_API_KEY'),
+      'score_threshold' => (float) env('RECAPTCHA_ENTERPRISE_SCORE_THRESHOLD', 0.5),
+      'review_action' => env('RECAPTCHA_ENTERPRISE_REVIEW_ACTION', 'listing_review'),
+    ],
   ],
 
 ];

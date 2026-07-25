@@ -192,6 +192,12 @@
                                 </div>
 
                                 <div class="form-group">
+                                    <label>Recaptcha Enterprise Project ID</label>
+                                    <input type="text" class="form-control" name="google_recaptcha_project_id"
+                                        value="{{ $data->google_recaptcha_project_id }}">
+                                </div>
+
+                                <div class="form-group">
                                     <label>{{ __('Recaptcha Site Key') . '*' }}</label>
                                     <input type="text" class="form-control" name="google_recaptcha_site_key"
                                         value="{{ $data->google_recaptcha_site_key }}">
@@ -200,6 +206,12 @@
                                         <p class="mt-1 mb-0 text-danger">{{ $errors->first('google_recaptcha_site_key') }}
                                         </p>
                                     @endif
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Recaptcha Enterprise API Key</label>
+                                    <input type="text" class="form-control" name="google_recaptcha_api_key"
+                                        value="{{ $data->google_recaptcha_api_key }}">
                                 </div>
 
                                 <div class="form-group">
