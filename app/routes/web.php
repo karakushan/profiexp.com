@@ -70,9 +70,9 @@ Route::middleware('change.lang')->group(function () use ($dynamicPageSlugPattern
     Route::get('/get-states', 'FrontEnd\ListingContoller@getState')->name('frontend.listings.get-state');
     Route::post('/get-cities', 'FrontEnd\ListingContoller@getCity')->name('frontend.listings.get-city');
     Route::get('/get-address', 'FrontEnd\ListingContoller@getAddress')->name('frontend.listings.get-address');
+    Route::get('/store-visitor', 'FrontEnd\ListingContoller@store_visitor')->name('frontend.store_visitor');
     Route::get('/{slug}', 'FrontEnd\ListingContoller@showBySlug')->name('frontend.listing.details');
     Route::post('/listing-review/{id}/store-review', 'FrontEnd\ListingContoller@storeReview')->name('listing.listing_details.store_review');
-    Route::get('/store-visitor', 'FrontEnd\ListingContoller@store_visitor')->name('frontend.store_visitor');
     Route::get('addto/wishlist/{id}', 'FrontEnd\UserController@add_to_wishlist')->name('addto.wishlist');
     Route::get('remove/wishlist/{id}', 'FrontEnd\UserController@remove_wishlist')->name('remove.wishlist');
     Route::post('/contact-message', 'FrontEnd\ListingContoller@contact')->name('frontend.listings.contact_message');
@@ -128,9 +128,9 @@ Route::prefix('{lang?}')
 
     Route::get('/{slug}/{id}', 'FrontEnd\ListingContoller@detailsLocalized')
       ->name('frontend.listing.details.localized_legacy');
+    Route::get('/store-visitor', 'FrontEnd\ListingContoller@store_visitor')->name('frontend.store_visitor');
     Route::get('/{slug}', 'FrontEnd\ListingContoller@showBySlug')->name('frontend.listing.details');
     Route::post('/listing-review/{id}/store-review', 'FrontEnd\ListingContoller@storeReview')->name('listing.listing_details.store_review');
-    Route::get('/store-visitor', 'FrontEnd\ListingContoller@store_visitor')->name('frontend.store_visitor');
     Route::get('addto/wishlist/{id}', 'FrontEnd\UserController@add_to_wishlist')->name('addto.wishlist');
     Route::get('remove/wishlist/{id}', 'FrontEnd\UserController@remove_wishlist')->name('remove.wishlist');
     Route::post('/contact-message', 'FrontEnd\ListingContoller@contact')->name('frontend.listings.contact_message');
