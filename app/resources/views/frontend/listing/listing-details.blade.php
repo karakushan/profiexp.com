@@ -630,13 +630,10 @@
                                         <div class="help-block with-errors"></div>
                                     </div>
                                     @if ($bs->google_recaptcha_status == 1)
-                                        <div class="form-group mb-20 listing-contract">
-                                            {!! NoCaptcha::renderJs() !!}
-                                            {!! NoCaptcha::display() !!}
-                                            @error('g-recaptcha-response')
-                                                <p class="mt-1 text-danger">{{ $message }}</p>
-                                            @enderror
-                                        </div>
+                                        <input type="hidden" name="g-recaptcha-response" id="listing-contact-recaptcha-response">
+                                        <p class="text-danger d-none" id="listing-contact-recaptcha-error">
+                                            {{ __('Please verify that you are not a robot.') }}
+                                        </p>
                                     @endif
                                     <input type="hidden" id="vendor_id" value="{{ $listing->vendor_id }}"
                                         name="vendor_id">
@@ -751,37 +748,43 @@
         <script src="https://www.google.com/recaptcha/enterprise.js?render={{ urlencode($recaptchaV3SiteKey) }}"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                const form = document.getElementById('reviewSubmitForm');
-                const tokenInput = document.getElementById('listing-review-recaptcha-response');
-                const error = document.getElementById('listing-review-recaptcha-error');
-                const action = @json(config('services.recaptcha.enterprise.review_action', 'listing_review'));
+                const forms = [
+                    ['reviewSubmitForm', 'listing-review-recaptcha-response', 'listing-review-recaptcha-error'],
+                    ['contactForm', 'listing-contact-recaptcha-response', 'listing-contact-recaptcha-error'],
+                ];
                 const siteKey = @json($recaptchaV3SiteKey);
 
-                if (!form || !tokenInput) {
-                    return;
-                }
+                forms.forEach(function(ids) {
+                    const form = document.getElementById(ids[0]);
+                    const tokenInput = document.getElementById(ids[1]);
+                    const error = document.getElementById(ids[2]);
 
-                form.addEventListener('submit', function(event) {
-                    if (tokenInput.value) {
+                    if (!form || !tokenInput) {
                         return;
                     }
 
-                    event.preventDefault();
+                    form.addEventListener('submit', function(event) {
+                        if (tokenInput.value) {
+                            return;
+                        }
 
-                    if (!window.grecaptcha?.enterprise) {
-                        error?.classList.remove('d-none');
-                        return;
-                    }
+                        event.preventDefault();
 
-                    grecaptcha.enterprise.ready(function() {
-                        grecaptcha.enterprise.execute(siteKey, { action: action })
-                            .then(function(token) {
-                                tokenInput.value = token;
-                                form.submit();
-                            })
-                            .catch(function() {
-                                error?.classList.remove('d-none');
-                            });
+                        if (!window.grecaptcha?.enterprise) {
+                            error?.classList.remove('d-none');
+                            return;
+                        }
+
+                        grecaptcha.enterprise.ready(function() {
+                            grecaptcha.enterprise.execute(siteKey, { action: 'listing_review' })
+                                .then(function(token) {
+                                    tokenInput.value = token;
+                                    form.submit();
+                                })
+                                .catch(function() {
+                                    error?.classList.remove('d-none');
+                                });
+                        });
                     });
                 });
             });
