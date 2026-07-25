@@ -2313,16 +2313,15 @@ class ListingContoller extends Controller
     $user = Auth::guard('web')->user();
 
     if ($user) {
-        $review = ListingReview::updateOrCreate(
-          ['user_id' => $user->id, 'listing_id' => $listingId],
-          [
-            'review' => $request->review,
-            'rating' => $request->rating,
-            'status' => 'pending',
-            'language_id' => ReviewService::languageId(),
-          ]
-        ); 
-        if ($review->wasRecentlyCreated) {
+        $review = ListingReview::create([
+          'user_id' => $user->id,
+          'listing_id' => $listingId,
+          'review' => $request->review,
+          'rating' => $request->rating,
+          'status' => 'pending',
+          'language_id' => ReviewService::languageId(),
+        ]);
+        if ($review) {
           $listing = Listing::find($listingId);
           VendorNotificationService::send(
             $listing?->vendor,
