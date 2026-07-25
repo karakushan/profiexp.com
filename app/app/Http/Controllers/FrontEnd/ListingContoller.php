@@ -41,6 +41,10 @@ use App\Models\Vendor;
 use App\Models\VendorInfo;
 use App\Models\Visitor;
 use App\Services\VendorNotificationService;
+use Google\Cloud\RecaptchaEnterprise\V1\Assessment;
+use Google\Cloud\RecaptchaEnterprise\V1\Client\RecaptchaEnterpriseServiceClient;
+use Google\Cloud\RecaptchaEnterprise\V1\CreateAssessmentRequest;
+use Google\Cloud\RecaptchaEnterprise\V1\Event;
 use Config;
 use DB;
 use Exception;
@@ -2349,30 +2353,36 @@ class ListingContoller extends Controller
     $siteKey = trim((string) ($settings->google_recaptcha_site_key ?? ''));
 
     if ($projectId !== '' && $apiKey !== '' && $siteKey !== '') {
+      $client = null;
+
       try {
-        $verification = Http::asJson()
-          ->timeout(5)
-          ->post('https://recaptchaenterprise.googleapis.com/v1/projects/' . rawurlencode($projectId) . '/assessments?key=' . rawurlencode($apiKey), [
-            'event' => [
-              'token' => $token,
-              'siteKey' => $siteKey,
-              'userAgent' => (string) $request->userAgent(),
-              'userIpAddress' => (string) $request->ip(),
-              'expectedAction' => config('services.recaptcha.enterprise.review_action', 'listing_review'),
-            ],
-          ]);
+        $client = new RecaptchaEnterpriseServiceClient(['apiKey' => $apiKey]);
+        $event = (new Event())
+          ->setToken($token)
+          ->setSiteKey($siteKey)
+          ->setUserAgent((string) $request->userAgent())
+          ->setUserIpAddress((string) $request->ip())
+          ->setExpectedAction(config('services.recaptcha.enterprise.review_action', 'listing_review'));
+        $assessment = (new Assessment())->setEvent($event);
+        $response = $client->createAssessment(
+          (new CreateAssessmentRequest())
+            ->setParent(RecaptchaEnterpriseServiceClient::projectName($projectId))
+            ->setAssessment($assessment)
+        );
       } catch (\Throwable $exception) {
         return false;
+      } finally {
+        $client?->close();
       }
 
-      if (!$verification->successful()) {
-        return false;
-      }
+      $tokenProperties = $response->getTokenProperties();
+      $riskAnalysis = $response->getRiskAnalysis();
 
-      $result = $verification->json();
-      return ($result['tokenProperties']['valid'] ?? false) === true
-        && ($result['tokenProperties']['action'] ?? null) === config('services.recaptcha.enterprise.review_action', 'listing_review')
-        && (float) ($result['riskAnalysis']['score'] ?? 0) >= (float) config('services.recaptcha.enterprise.score_threshold', 0.5);
+      return $tokenProperties
+        && $tokenProperties->getValid()
+        && $tokenProperties->getAction() === config('services.recaptcha.enterprise.review_action', 'listing_review')
+        && $riskAnalysis
+        && $riskAnalysis->getScore() >= (float) config('services.recaptcha.enterprise.score_threshold', 0.5);
     }
 
     $secretKey = (string) (config('services.recaptcha.v3.secret_key') ?: $settings->google_recaptcha_secret_key);
