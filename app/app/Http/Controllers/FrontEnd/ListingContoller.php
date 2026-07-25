@@ -1789,8 +1789,7 @@ class ListingContoller extends Controller
     $misc = new MiscellaneousController();
     $vendorId = Listing::where('id', $listingId)->pluck('vendor_id')->first();
     $information['bs'] = Basic::query()->select('google_recaptcha_status', 'google_recaptcha_project_id', 'google_recaptcha_site_key', 'google_recaptcha_api_key', 'facebook_login_status', 'google_login_status')->first();
-    $information['recaptchaV3SiteKey'] = config('services.recaptcha.v3.site_key')
-      ?: ($information['bs']->google_recaptcha_site_key ?? null);
+    $information['recaptchaV3SiteKey'] = $information['bs']->google_recaptcha_site_key ?? null;
 
     $listing = Listing::with(['listing_content' => function ($query) use ($language) {
       return $query->where('language_id', $language->id);
@@ -1903,14 +1902,13 @@ class ListingContoller extends Controller
     // Fetch the Google reCAPTCHA status
     $info = Basic::select('google_recaptcha_status')->first();
     if ($info->google_recaptcha_status == 1) {
-      $rules['g-recaptcha-response'] = 'required|captcha';
+      $rules['g-recaptcha-response'] = 'required';
     }
 
     // Define custom validation messages
     $messages = [];
     if ($info->google_recaptcha_status == 1) {
       $messages['g-recaptcha-response.required'] = 'Please verify that you are not a robot.';
-      $messages['g-recaptcha-response.captcha'] = 'Captcha error! Try again later or contact site admin.';
     }
 
     // Create a validator instance
@@ -1920,6 +1918,12 @@ class ListingContoller extends Controller
     if ($validator->fails()) {
       return redirect()->back()
         ->withErrors($validator) // This will include the validation error messages
+        ->withInput();
+    }
+
+    if ($info->google_recaptcha_status == 1 && !$this->verifyListingReviewRecaptcha($request)) {
+      return redirect()->back()
+        ->withErrors(['g-recaptcha-response' => 'Please verify that you are not a robot.'])
         ->withInput();
     }
 
@@ -2340,7 +2344,7 @@ class ListingContoller extends Controller
   private function verifyListingReviewRecaptcha(Request $request): bool
   {
     $settings = Basic::query()
-      ->select('google_recaptcha_status', 'google_recaptcha_project_id', 'google_recaptcha_site_key', 'google_recaptcha_secret_key', 'google_recaptcha_api_key')
+      ->select('google_recaptcha_status', 'google_recaptcha_project_id', 'google_recaptcha_site_key', 'google_recaptcha_api_key')
       ->first();
 
     if (!$settings || (int) $settings->google_recaptcha_status !== 1) {
@@ -2349,7 +2353,7 @@ class ListingContoller extends Controller
 
     $token = trim((string) $request->input('g-recaptcha-response'));
     $projectId = trim((string) (config('services.recaptcha.enterprise.project_id') ?: ($settings->google_recaptcha_project_id ?? '')));
-    $apiKey = trim((string) (config('services.recaptcha.enterprise.api_key') ?: ($settings->google_recaptcha_api_key ?: ($settings->google_recaptcha_secret_key ?? ''))));
+    $apiKey = trim((string) (config('services.recaptcha.enterprise.api_key') ?: ($settings->google_recaptcha_api_key ?? '')));
     $siteKey = trim((string) ($settings->google_recaptcha_site_key ?? ''));
 
     if ($projectId !== '' && $apiKey !== '' && $siteKey !== '') {
@@ -2385,33 +2389,7 @@ class ListingContoller extends Controller
         && $riskAnalysis->getScore() >= (float) config('services.recaptcha.enterprise.score_threshold', 0.5);
     }
 
-    $secretKey = (string) (config('services.recaptcha.v3.secret_key') ?: $settings->google_recaptcha_secret_key);
-
-    if ($token === '' || $secretKey === '') {
-      return false;
-    }
-
-    try {
-      $verification = Http::asForm()
-        ->timeout(5)
-        ->post('https://www.google.com/recaptcha/api/siteverify', [
-          'secret' => $secretKey,
-          'response' => $token,
-          'remoteip' => $request->ip(),
-        ]);
-    } catch (\Throwable $exception) {
-      return false;
-    }
-
-    if (!$verification->successful()) {
-      return false;
-    }
-
-    $result = $verification->json();
-
-    return ($result['success'] ?? false) === true
-      && ($result['action'] ?? null) === config('services.recaptcha.v3.review_action', 'listing_review')
-      && (float) ($result['score'] ?? 0) >= (float) config('services.recaptcha.v3.score_threshold', 0.5);
+    return false;
   }
   public function store_visitor(Request $request)
   {

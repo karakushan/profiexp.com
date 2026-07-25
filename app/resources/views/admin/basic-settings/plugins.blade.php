@@ -198,7 +198,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label>{{ __('Recaptcha Site Key') . '*' }}</label>
+                                    <label>Recaptcha Enterprise Site Key*</label>
                                     <input type="text" class="form-control" name="google_recaptcha_site_key"
                                         value="{{ $data->google_recaptcha_site_key }}">
 
@@ -214,16 +214,6 @@
                                         value="{{ $data->google_recaptcha_api_key }}">
                                 </div>
 
-                                <div class="form-group">
-                                    <label>{{ __('Recaptcha Secret Key') . '*' }}</label>
-                                    <input type="text" class="form-control" name="google_recaptcha_secret_key"
-                                        value="{{ $data->google_recaptcha_secret_key }}">
-
-                                    @if ($errors->has('google_recaptcha_secret_key'))
-                                        <p class="mt-1 mb-0 text-danger">
-                                            {{ $errors->first('google_recaptcha_secret_key') }}</p>
-                                    @endif
-                                </div>
                             </div>
                         </div>
                     </div>
