@@ -492,10 +492,7 @@
                                             <input type="hidden" id="rating-id" name="rating">
 
                                             @if (($bs->google_recaptcha_status ?? 0) == 1)
-                                                <input type="hidden" name="g-recaptcha-response" id="listing-review-recaptcha-response">
-                                                <p class="text-danger d-none" id="listing-review-recaptcha-error">
-                                                    {{ __('Please verify that you are not a robot.') }}
-                                                </p>
+                                                @include('frontend.partials.recaptcha-enterprise', ['action' => 'listing_review'])
                                             @endif
 
                                             <div class="form-group mt-10">
@@ -630,10 +627,7 @@
                                         <div class="help-block with-errors"></div>
                                     </div>
                                     @if ($bs->google_recaptcha_status == 1)
-                                        <input type="hidden" name="g-recaptcha-response" id="listing-contact-recaptcha-response">
-                                        <p class="text-danger d-none" id="listing-contact-recaptcha-error">
-                                            {{ __('Please verify that you are not a robot.') }}
-                                        </p>
+                                        @include('frontend.partials.recaptcha-enterprise', ['action' => 'listing_contact'])
                                     @endif
                                     <input type="hidden" id="vendor_id" value="{{ $listing->vendor_id }}"
                                         name="vendor_id">
@@ -744,52 +738,6 @@
     {{-- @include('frontend.listing.product-details', $product_contents); --}}
 @endsection
 @section('script')
-    @if (($bs->google_recaptcha_status ?? 0) == 1 && !empty($recaptchaV3SiteKey))
-        <script src="https://www.google.com/recaptcha/enterprise.js?render={{ urlencode($recaptchaV3SiteKey) }}"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const forms = [
-                    ['reviewSubmitForm', 'listing-review-recaptcha-response', 'listing-review-recaptcha-error'],
-                    ['contactForm', 'listing-contact-recaptcha-response', 'listing-contact-recaptcha-error'],
-                ];
-                const siteKey = @json($recaptchaV3SiteKey);
-
-                forms.forEach(function(ids) {
-                    const form = document.getElementById(ids[0]);
-                    const tokenInput = document.getElementById(ids[1]);
-                    const error = document.getElementById(ids[2]);
-
-                    if (!form || !tokenInput) {
-                        return;
-                    }
-
-                    form.addEventListener('submit', function(event) {
-                        if (tokenInput.value) {
-                            return;
-                        }
-
-                        event.preventDefault();
-
-                        if (!window.grecaptcha?.enterprise) {
-                            error?.classList.remove('d-none');
-                            return;
-                        }
-
-                        grecaptcha.enterprise.ready(function() {
-                            grecaptcha.enterprise.execute(siteKey, { action: 'listing_review' })
-                                .then(function(token) {
-                                    tokenInput.value = token;
-                                    form.submit();
-                                })
-                                .catch(function() {
-                                    error?.classList.remove('d-none');
-                                });
-                        });
-                    });
-                });
-            });
-        </script>
-    @endif
     <script>
         "use strict";
         var visitor_store_url = "{{ route('frontend.store_visitor') }}";

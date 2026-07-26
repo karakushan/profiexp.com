@@ -10,6 +10,7 @@ use App\Models\Listing\Listing;
 use App\Models\ListingCategory;
 use App\Models\Vendor;
 use App\Models\VendorInfo;
+use App\Rules\RecaptchaEnterpriseRule;
 use Carbon\Carbon;
 use Config;
 use Illuminate\Http\Request;
@@ -159,13 +160,13 @@ class VendorController extends Controller
 
         $info = Basic::select('google_recaptcha_status')->first();
         if ($info->google_recaptcha_status == 1) {
-            $rules['g-recaptcha-response'] = 'required|captcha';
+            $rules['g-recaptcha-response'] = ['required', new RecaptchaEnterpriseRule('vendor_contact', $request)];
         }
         $messageArray = [];
 
         if ($info->google_recaptcha_status == 1) {
             $messageArray['g-recaptcha-response.required'] = 'Please verify that you are not a robot.';
-            $messageArray['g-recaptcha-response.captcha'] = 'Captcha error! try again later or contact site admin.';
+            $messageArray['g-recaptcha-response.RecaptchaEnterpriseRule'] = 'Captcha error! try again later or contact site admin.';
         }
 
         $validator = Validator::make($request->all(), $rules, $messageArray);

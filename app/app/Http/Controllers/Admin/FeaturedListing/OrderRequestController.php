@@ -242,11 +242,6 @@ class OrderRequestController extends Controller
 
         $vendor = VendorInfo::Where('vendor_id', $order->vendor_id)->first();
 
-        $info = Basic::select('google_recaptcha_status')->first();
-        if ($info->google_recaptcha_status == 1) {
-            $rules['g-recaptcha-response'] = 'required|captcha';
-        }
-
         $be = Basic::select('smtp_status', 'smtp_host', 'smtp_port', 'encryption', 'smtp_username', 'smtp_password', 'from_mail', 'from_name', 'to_mail', 'website_title')->firstOrFail();
 
 
@@ -450,11 +445,6 @@ class OrderRequestController extends Controller
         $order = FeatureOrder::find($id);
 
         $vendor = VendorInfo::Where('vendor_id', $order->vendor_id)->first();
-
-        $info = Basic::select('google_recaptcha_status')->first();
-        if ($info->google_recaptcha_status == 1) {
-            $rules['g-recaptcha-response'] = 'required|captcha';
-        }
 
         $be = Basic::select('smtp_status', 'smtp_host', 'smtp_port', 'encryption', 'smtp_username', 'smtp_password', 'from_mail', 'from_name', 'to_mail', 'website_title')->firstOrFail();
 

@@ -17,6 +17,7 @@ use App\Models\Vendor;
 use App\Models\VendorInfo;
 use App\Rules\MatchEmailRule;
 use App\Rules\MatchOldPasswordRule;
+use App\Rules\RecaptchaEnterpriseRule;
 use Carbon\Carbon;
 use Config;
 use DateTime;
@@ -83,7 +84,7 @@ class VendorController extends Controller
 
         $info = Basic::select('google_recaptcha_status')->first();
         if ($info->google_recaptcha_status == 1) {
-            $rules['g-recaptcha-response'] = 'required|captcha';
+            $rules['g-recaptcha-response'] = ['required', new RecaptchaEnterpriseRule('vendor_signup', $request)];
         }
 
         $messages = [
@@ -100,7 +101,7 @@ class VendorController extends Controller
 
         if ($info->google_recaptcha_status == 1) {
             $messages['g-recaptcha-response.required'] = __('Please verify that you are not a robot.');
-            $messages['g-recaptcha-response.captcha'] = __('Captcha error! Try again later or contact site admin.');
+            $messages['g-recaptcha-response.RecaptchaEnterpriseRule'] = __('Captcha error! Try again later or contact site admin.');
         }
 
         $validator = Validator::make($request->all(), $rules, $messages);
@@ -282,14 +283,14 @@ class VendorController extends Controller
 
         $info = Basic::select('google_recaptcha_status')->first();
         if ($info->google_recaptcha_status == 1) {
-            $rules['g-recaptcha-response'] = 'required|captcha';
+            $rules['g-recaptcha-response'] = ['required', new RecaptchaEnterpriseRule('vendor_login', $request)];
         }
 
         $messages = [];
 
         if ($info->google_recaptcha_status == 1) {
             $messages['g-recaptcha-response.required'] = 'Please verify that you are not a robot.';
-            $messages['g-recaptcha-response.captcha'] = 'Captcha error! try again later or contact site admin.';
+            $messages['g-recaptcha-response.RecaptchaEnterpriseRule'] = 'Captcha error! try again later or contact site admin.';
         }
 
         $validator = Validator::make($request->all(), $rules, $messages);
