@@ -28,4 +28,3 @@
 - Копия script: `/root/bizoo-repo/scripts/deploy-bizoo.sh`.
 - Перед запуском проверить, что серверный `origin/spain` совпадает с нужным локальным commit; если нет — синхронизировать локальную ветку напрямую.
 - Сохранять `vendor`, `node_modules`, `public/assets`, `public/storage`, `public/hot` и `queue-worker.sh`.
-- После деплоя проверить сайт curl-запросом и выполнить `city-categories:translate --batch=1`; worker запускается cron из `queue-worker.sh`.
