@@ -151,12 +151,12 @@
 </li>
 
 <li>
-  <i class="@if (is_array($permissions) && in_array('SEO Optimized Business Card', $permissions)) fal fa-check @else fal fa-times not-active @endif"></i>
+  <i class="fal fa-check"></i>
   {{ $package->number_of_listing > 1 ? __('Pricing SEO Optimized Business Cards') : __('Pricing SEO Optimized Business Card') }}
 </li>
 
 <li>
-  <i class="@if (is_array($permissions) && in_array('IVA Included', $permissions)) fal fa-check @else fal fa-times not-active @endif"></i>
+  <i class="fal fa-check"></i>
   {{ __('Pricing IVA Included') }}
 </li>
 

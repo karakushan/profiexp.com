@@ -105,16 +105,6 @@
                                  <span class="selectgroup-button">{{ __('Business Hours') }}</span>
                              </label>
                              <label class="selectgroup-item">
-                                 <input type="checkbox" name="features[]" value="SEO Optimized Business Card"
-                                     class="selectgroup-input">
-                                 <span class="selectgroup-button">{{ __('Pricing SEO Optimized Business Card') }}</span>
-                             </label>
-                             <label class="selectgroup-item">
-                                 <input type="checkbox" name="features[]" value="IVA Included"
-                                     class="selectgroup-input">
-                                 <span class="selectgroup-button">{{ __('Pricing IVA Included') }}</span>
-                             </label>
-                             <label class="selectgroup-item">
                                  <input type="checkbox" name="features[]" value="Products"
                                      class="selectgroup-input">
                                  <span class="selectgroup-button">{{ __('Products') }}</span>
