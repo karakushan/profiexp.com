@@ -24,6 +24,8 @@ class Package extends Model
         'slug',
         'number_of_amenities_per_listing',
         'custom_features',
+        'pricing_features_title',
+        'pricing_features_description',
         'features',
         'number_of_faq',
         'number_of_social_links',

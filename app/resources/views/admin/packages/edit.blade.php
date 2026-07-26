@@ -72,6 +72,22 @@
                 </div>
 
                 <div class="form-group">
+                  <label for="pricing_features_title">{{ __('Included features title') }}</label>
+                  <input id="pricing_features_title" type="text" class="form-control"
+                    name="pricing_features_title" value="{{ $package->pricing_features_title }}"
+                    placeholder="{{ __('Example: What\'s Included') }}">
+                  <p id="err_pricing_features_title" class="mt-2 mb-0 text-danger em"></p>
+                </div>
+
+                <div class="form-group">
+                  <label for="pricing_features_description">{{ __('Included features description') }}</label>
+                  <textarea id="pricing_features_description" class="form-control"
+                    name="pricing_features_description" rows="3"
+                    placeholder="{{ __('Short description shown above the features') }}">{{ $package->pricing_features_description }}</textarea>
+                  <p id="err_pricing_features_description" class="mt-2 mb-0 text-danger em"></p>
+                </div>
+
+                <div class="form-group">
                   <label for="price">{{ __('Price') }} ({{ $settings->base_currency_text }})*</label>
                   <input id="price" type="number" class="form-control" name="price"
                     placeholder="{{ __('Enter Package price') }}" value="{{ $package->price }}">
@@ -158,6 +174,16 @@
                       <input type="checkbox" name="features[]" value="Business Hours"
                         class="selectgroup-input"@if (is_array($permissions) && in_array('Business Hours', $permissions)) checked @endif>
                       <span class="selectgroup-button">{{ __('Business Hours') }}</span>
+                    </label>
+                    <label class="selectgroup-item">
+                      <input type="checkbox" name="features[]" value="SEO Optimized Business Card"
+                        class="selectgroup-input"@if (is_array($permissions) && in_array('SEO Optimized Business Card', $permissions)) checked @endif>
+                      <span class="selectgroup-button">{{ __('Pricing SEO Optimized Business Card') }}</span>
+                    </label>
+                    <label class="selectgroup-item">
+                      <input type="checkbox" name="features[]" value="IVA Included"
+                        class="selectgroup-input"@if (is_array($permissions) && in_array('IVA Included', $permissions)) checked @endif>
+                      <span class="selectgroup-button">{{ __('Pricing IVA Included') }}</span>
                     </label>
                     <label class="selectgroup-item">
                       <input type="checkbox" name="features[]" value="Products"

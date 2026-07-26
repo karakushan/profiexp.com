@@ -4264,8 +4264,8 @@ Lazyload CSS
 }
 
 .pricing-item .text {
-  margin-top: 20px;
-  margin-bottom: 30px;
+  margin-top: 0;
+  margin-bottom: 20px;
 }
 
 .pricing-item .price {
@@ -4280,7 +4280,7 @@ Lazyload CSS
 
 .pricing-item h5 {
   margin-top: 5px;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
 }
 
 .pricing-item .item-list {
@@ -4290,6 +4290,14 @@ Lazyload CSS
 
 .pricing-item .item-list li {
   margin-bottom: 10px;
+}
+
+.pricing-item .pricing-feature-note {
+  display: block;
+  margin-top: 3px;
+  color: rgba(var(--color-dark-rgb), 0.62);
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .pricing-item .item-list .pricing-feature-group {
@@ -4392,6 +4400,10 @@ Lazyload CSS
 .pricing-item:is(.pricing-item:hover, .pricing-item.active)
   :is(h3, .text, .price, .period, h5, .item-list, .show-more) {
   color: var(--color-white);
+}
+
+.pricing-item:is(.pricing-item:hover, .pricing-item.active) .pricing-feature-note {
+  color: rgba(var(--color-white-rgb), 0.78);
 }
 
 .pricing-item:is(.pricing-item:hover, .pricing-item.active) .icon {

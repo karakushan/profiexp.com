@@ -95,6 +95,8 @@ class PackageController extends Controller
             $in['features'] = $features;
             $in['slug'] = createSlug($request->title);
             $in['custom_features'] = Purifier::clean($request->custom_features);
+            $in['pricing_features_title'] = Purifier::clean($request->pricing_features_title);
+            $in['pricing_features_description'] = Purifier::clean($request->pricing_features_description);
             $in['ai_engine'] = $aiEnabled ? $request->ai_engine : null;
             $in['ai_token_limit'] = $aiEnabled ? $request->ai_token_limit : 0;
             $in['ai_image_limit'] = $aiEnabled ? $request->ai_image_limit : 0;
@@ -154,6 +156,8 @@ class PackageController extends Controller
                         'slug' => createSlug($request->title),
                         'features' => $features,
                         'custom_features' => Purifier::clean($request->custom_features),
+                        'pricing_features_title' => Purifier::clean($request->pricing_features_title),
+                        'pricing_features_description' => Purifier::clean($request->pricing_features_description),
                         'ai_engine' => $aiEnabled ? $request->ai_engine : null,
                         'ai_token_limit' => $aiEnabled ? $request->ai_token_limit : 0,
                         'ai_image_limit' => $aiEnabled ? $request->ai_image_limit : 0,

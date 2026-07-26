@@ -672,7 +672,6 @@
 
                                                             </div>
                                                         </div>
-                                                        <p class="text"></p>
                                                         <div class="d-flex align-items-center">
                                                             <span
                                                                 class="price">{{ symbolPrice($package->price) }}</span>
@@ -684,7 +683,8 @@
                                                                 <span class="period">/ {{ __('Lifetime') }}</span>
                                                             @endif
                                                         </div>
-                                                        <h5>{{ __('What\'s Included') }}</h5>
+                                                        <h5>{{ $package->pricing_features_title ?: __('What\'s Included') }}</h5>
+                                                        <p class="text">{{ $package->pricing_features_description }}</p>
                                                         <ul class="item-list list-unstyled p-0 pricing-list">
                                                             @include('frontend.partials.package-feature-list', [
                                                                 'package' => $package,

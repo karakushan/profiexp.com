@@ -60,6 +60,8 @@ class PackageStoreRequest extends FormRequest
 
         return [
             'title' => 'required|max:255',
+            'pricing_features_title' => 'nullable|string|max:255',
+            'pricing_features_description' => 'nullable|string|max:2000',
             'price' => 'required',
             'number_of_images_per_listing' => 'required',
             'number_of_listing' => 'required',
