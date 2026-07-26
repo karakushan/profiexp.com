@@ -672,7 +672,7 @@
 
                                                             </div>
                                                         </div>
-                                                        <div class="d-flex align-items-center">
+                                                        <div class="pricing-price d-flex align-items-center">
                                                             <span
                                                                 class="price">{{ symbolPrice($package->price) }}</span>
                                                             @if ($package->term == 'monthly')

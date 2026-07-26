@@ -18,6 +18,18 @@
       @if ($package->number_of_listing == 1)
         <br>
         <small class="pricing-feature-note">{{ __('1 card = 1 category + 1 city') }}</small>
+      @elseif ($package->number_of_listing > 1)
+        <br>
+        <small class="pricing-feature-note">
+          {{ $package->number_of_listing }}
+          @if ($package->number_of_listing % 10 == 1 && $package->number_of_listing % 100 != 11)
+            {{ __('Pricing category and/or city') }}
+          @elseif ($package->number_of_listing % 10 >= 2 && $package->number_of_listing % 10 <= 4 && ($package->number_of_listing % 100 < 12 || $package->number_of_listing % 100 > 14))
+            {{ __('Pricing categories and/or cities') }}
+          @else
+            {{ __('Pricing categories genitive and/or cities genitive') }}
+          @endif
+        </small>
       @endif
     </span>
   @endif
@@ -89,12 +101,12 @@
     @if ($package->number_of_social_links == 999999)
       {{ __('Pricing Company Links (Unlimited)') }}
     @elseif($package->number_of_social_links == 1)
-      {{ __('Pricing Company Link') }} — {{ $package->number_of_social_links }}
+      {{ __('Pricing Social Network') }} — {{ $package->number_of_social_links }}
     @else
-      {{ __('Pricing Company Links') }} — {{ $package->number_of_social_links }}
+      {{ __('Pricing Social Networks') }} — {{ $package->number_of_social_links }}
     @endif
   @else
-    {{ __('Pricing Company Links') }}
+    {{ __('Pricing Social Networks') }}
   @endif
 </li>
 
@@ -140,7 +152,7 @@
 
 <li>
   <i class="@if (is_array($permissions) && in_array('SEO Optimized Business Card', $permissions)) fal fa-check @else fal fa-times not-active @endif"></i>
-  {{ __('Pricing SEO Optimized Business Card') }}
+  {{ $package->number_of_listing > 1 ? __('Pricing SEO Optimized Business Cards') : __('Pricing SEO Optimized Business Card') }}
 </li>
 
 <li>

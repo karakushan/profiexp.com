@@ -4268,6 +4268,10 @@ Lazyload CSS
   margin-bottom: 20px;
 }
 
+.pricing-item .pricing-price {
+  margin-top: 25px;
+}
+
 .pricing-item .price {
   font-family: var(--font-heading);
   font-weight: 700;
