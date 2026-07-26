@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Rules\ImageMimeTypeRule;
 use App\Rules\MatchEmailRule;
 use App\Rules\MatchOldPasswordRule;
+use App\Rules\RecaptchaEnterpriseRule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -171,14 +172,14 @@ class UserController extends Controller
 
     $info = Basic::select('google_recaptcha_status')->first();
     if ($info->google_recaptcha_status == 1) {
-      $rules['g-recaptcha-response'] = 'required|captcha';
+      $rules['g-recaptcha-response'] = ['required', new RecaptchaEnterpriseRule('user_login', $request)];
     }
 
     $messages = [];
 
     if ($info->google_recaptcha_status == 1) {
       $messages['g-recaptcha-response.required'] = 'Please verify that you are not a robot.';
-      $messages['g-recaptcha-response.captcha'] = 'Captcha error! try again later or contact site admin.';
+      $messages['g-recaptcha-response.RecaptchaEnterpriseRule'] = 'Captcha error! try again later or contact site admin.';
     }
 
     $validator = Validator::make($request->all(), $rules, $messages);
@@ -374,7 +375,7 @@ class UserController extends Controller
     ];
 
     if ($info->google_recaptcha_status == 1) {
-      $rules['g-recaptcha-response'] = 'required|captcha';
+      $rules['g-recaptcha-response'] = ['required', new RecaptchaEnterpriseRule('user_signup', $request)];
     }
 
     $messages = [
@@ -389,13 +390,13 @@ class UserController extends Controller
       'password.confirmed' => __('The password confirmation does not match.'),
       'password_confirmation.required' => __('The password confirmation field is required.'),
       'g-recaptcha-response.required' => __('Please verify that you are not a robot.'),
-      'g-recaptcha-response.captcha' => __('Captcha error! Try again later or contact site admin.'),
+      'g-recaptcha-response.RecaptchaEnterpriseRule' => __('Captcha error! Try again later or contact site admin.'),
     ];
 
 
     if ($info->google_recaptcha_status == 1) {
       $messages['g-recaptcha-response.required'] =  __('Please verify that you are not a robot.');
-      $messages['g-recaptcha-response.captcha'] = __('Captcha error! Try again later or contact site admin.');
+      $messages['g-recaptcha-response.RecaptchaEnterpriseRule'] = __('Captcha error! Try again later or contact site admin.');
     }
 
     $validator = Validator::make($request->all(), $rules, $messages);

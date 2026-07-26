@@ -66,9 +66,7 @@
           </div>
           @if ($recaptchaInfo->google_recaptcha_status == 1)
             <div class="form-group mb-30">
-              {!! NoCaptcha::renderJs() !!}
-              {!! NoCaptcha::display() !!}
-
+              @include('frontend.partials.recaptcha-enterprise', ['action' => 'vendor_signup'])
               @error('g-recaptcha-response')
                 <p class="mt-1 text-danger">{{ $message }}</p>
               @enderror

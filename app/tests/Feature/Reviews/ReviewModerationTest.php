@@ -6,6 +6,7 @@ use App\Models\Language;
 use App\Models\Listing\ListingReview;
 use App\Models\ReviewTranslation;
 use App\Models\User;
+use App\Services\RecaptchaEnterpriseService;
 use App\Jobs\TranslateReviewJob;
 use App\Services\Ai\ReviewTranslationService;
 use App\Services\ReviewService;
@@ -161,7 +162,7 @@ class ReviewModerationTest extends TestCase
         ]);
     }
 
-    public function test_listing_review_accepts_valid_v3_recaptcha_action_and_score(): void
+    public function test_listing_review_accepts_valid_enterprise_recaptcha_action_and_score(): void
     {
         DB::table('basic_settings')->updateOrInsert(
             ['uniqid' => 12345],
@@ -171,13 +172,13 @@ class ReviewModerationTest extends TestCase
                 'google_recaptcha_secret_key' => 'test-secret-key',
             ]
         );
-        Http::fake([
-            'https://www.google.com/recaptcha/api/siteverify' => Http::response([
-                'success' => true,
-                'score' => 0.9,
-                'action' => 'listing_review',
-            ], 200),
-        ]);
+        $this->mock(RecaptchaEnterpriseService::class, function ($mock) {
+            $mock->shouldReceive('verify')
+                ->once()
+                ->withArgs(fn ($request, $action) => $action === 'listing_review'
+                    && $request->input('g-recaptcha-response') === 'test-token')
+                ->andReturnTrue();
+        });
         Auth::guard('web')->login(User::query()->findOrFail(1));
 
         $this->post('/ru/listings/listing-review/' . $this->listingId . '/store-review', [
@@ -186,11 +187,6 @@ class ReviewModerationTest extends TestCase
             'g-recaptcha-response' => 'test-token',
         ])->assertRedirect();
 
-        Http::assertSent(function ($request) {
-            return $request->url() === 'https://www.google.com/recaptcha/api/siteverify'
-                && $request['secret'] === 'test-secret-key'
-                && $request['response'] === 'test-token';
-        });
         $this->assertDatabaseHas('listing_reviews', [
             'user_id' => 1,
             'listing_id' => $this->listingId,

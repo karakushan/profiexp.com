@@ -13,6 +13,9 @@ app/.env.backup
 app/vendor/
 app/node_modules/
 
+# Uploaded listing and venue images
+/app/public/assets/img/
+
 # Runtime files
 app/*.log
 app/*.pid

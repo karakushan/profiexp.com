@@ -117,13 +117,46 @@ class HomeController extends Controller
 
     $information['locationSecInfo'] = $language->locationSection()->first();
 
+    $activeCategories = ListingCategory::active()->get(['id', 'parent_id']);
+    $childrenByParent = $activeCategories->groupBy('parent_id');
+    $rootIdByCategoryId = [];
+
+    foreach ($activeCategories->whereNull('parent_id') as $rootCategory) {
+      $rootIdByCategoryId[$rootCategory->id] = $rootCategory->id;
+      $pendingCategoryIds = [$rootCategory->id];
+
+      while ($pendingCategoryIds) {
+        $parentId = array_pop($pendingCategoryIds);
+
+        foreach ($childrenByParent->get($parentId, collect()) as $childCategory) {
+          $rootIdByCategoryId[$childCategory->id] = $rootCategory->id;
+          $pendingCategoryIds[] = $childCategory->id;
+        }
+      }
+    }
+
+    $listingIdsByRoot = [];
+    ListingContent::query()
+      ->select('category_id', 'listing_id')
+      ->whereIn('category_id', $activeCategories->pluck('id'))
+      ->distinct()
+      ->get()
+      ->each(function ($listingContent) use (&$listingIdsByRoot, $rootIdByCategoryId) {
+        $rootId = $rootIdByCategoryId[$listingContent->category_id] ?? null;
+
+        if ($rootId !== null) {
+          $listingIdsByRoot[$rootId][$listingContent->listing_id] = true;
+        }
+      });
+
     $categories = ListingCategory::with('contents')
-      ->withCount(['listing_contents as distinct_listing_count' => function ($q) {
-          $q->select(DB::raw('COUNT(DISTINCT listing_id)'));
-      }])
       ->forLanguage($language->id)->active()->root()
-      ->orderBy('distinct_listing_count', 'desc')
-      ->get();
+      ->get()
+      ->each(function ($category) use ($listingIdsByRoot) {
+        $category->distinct_listing_count = count($listingIdsByRoot[$category->id] ?? []);
+      })
+      ->sortByDesc('distinct_listing_count')
+      ->values();
 
     $information['categories'] = $categories;
 

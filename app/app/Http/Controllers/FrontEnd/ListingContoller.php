@@ -41,6 +41,7 @@ use App\Models\Vendor;
 use App\Models\VendorInfo;
 use App\Models\Visitor;
 use App\Services\VendorNotificationService;
+use App\Rules\RecaptchaEnterpriseRule;
 use Google\Cloud\RecaptchaEnterprise\V1\Assessment;
 use Google\Cloud\RecaptchaEnterprise\V1\Client\RecaptchaEnterpriseServiceClient;
 use Google\Cloud\RecaptchaEnterprise\V1\CreateAssessmentRequest;
@@ -1906,7 +1907,7 @@ class ListingContoller extends Controller
     // Fetch the Google reCAPTCHA status
     $info = Basic::select('google_recaptcha_status')->first();
     if ($info->google_recaptcha_status == 1) {
-      $rules['g-recaptcha-response'] = 'required';
+      $rules['g-recaptcha-response'] = ['required', new RecaptchaEnterpriseRule('listing_contact', $request)];
     }
 
     // Define custom validation messages
@@ -1922,12 +1923,6 @@ class ListingContoller extends Controller
     if ($validator->fails()) {
       return redirect()->back()
         ->withErrors($validator) // This will include the validation error messages
-        ->withInput();
-    }
-
-    if ($info->google_recaptcha_status == 1 && !$this->verifyListingReviewRecaptcha($request)) {
-      return redirect()->back()
-        ->withErrors(['g-recaptcha-response' => 'Please verify that you are not a robot.'])
         ->withInput();
     }
 
@@ -1949,7 +1944,7 @@ class ListingContoller extends Controller
 
     $info = Basic::select('google_recaptcha_status')->first();
     if ($info->google_recaptcha_status == 1) {
-      $rules['g-recaptcha-response'] = 'required|captcha';
+      $rules['g-recaptcha-response'] = ['required', new RecaptchaEnterpriseRule('listing_contact', $request)];
     }
 
     $be = Basic::select('smtp_status', 'smtp_host', 'smtp_port', 'encryption', 'smtp_username', 'smtp_password', 'from_mail', 'from_name', 'to_mail', 'website_title')->firstOrFail();
@@ -2080,7 +2075,7 @@ class ListingContoller extends Controller
     ];
 
     if ($info->google_recaptcha_status == 1) {
-      $rules['g-recaptcha-response'] = ['required', 'captcha'];
+      $rules['g-recaptcha-response'] = ['required', new RecaptchaEnterpriseRule('listing_contact', $request)];
     }
 
     // Add rules for dynamic inputs
@@ -2346,53 +2341,7 @@ class ListingContoller extends Controller
 
   private function verifyListingReviewRecaptcha(Request $request): bool
   {
-    $settings = Basic::query()
-      ->select('google_recaptcha_status', 'google_recaptcha_project_id', 'google_recaptcha_site_key', 'google_recaptcha_api_key')
-      ->first();
-
-    if (!$settings || (int) $settings->google_recaptcha_status !== 1) {
-      return true;
-    }
-
-    $token = trim((string) $request->input('g-recaptcha-response'));
-    $projectId = trim((string) (config('services.recaptcha.enterprise.project_id') ?: ($settings->google_recaptcha_project_id ?? '')));
-    $apiKey = trim((string) (config('services.recaptcha.enterprise.api_key') ?: ($settings->google_recaptcha_api_key ?? '')));
-    $siteKey = trim((string) ($settings->google_recaptcha_site_key ?? ''));
-
-    if ($projectId !== '' && $apiKey !== '' && $siteKey !== '') {
-      $client = null;
-
-      try {
-        $client = new RecaptchaEnterpriseServiceClient(['apiKey' => $apiKey]);
-        $event = (new Event())
-          ->setToken($token)
-          ->setSiteKey($siteKey)
-          ->setUserAgent((string) $request->userAgent())
-          ->setUserIpAddress((string) $request->ip())
-          ->setExpectedAction(config('services.recaptcha.enterprise.review_action', 'listing_review'));
-        $assessment = (new Assessment())->setEvent($event);
-        $response = $client->createAssessment(
-          (new CreateAssessmentRequest())
-            ->setParent(RecaptchaEnterpriseServiceClient::projectName($projectId))
-            ->setAssessment($assessment)
-        );
-      } catch (\Throwable $exception) {
-        return false;
-      } finally {
-        $client?->close();
-      }
-
-      $tokenProperties = $response->getTokenProperties();
-      $riskAnalysis = $response->getRiskAnalysis();
-
-      return $tokenProperties
-        && $tokenProperties->getValid()
-        && $tokenProperties->getAction() === config('services.recaptcha.enterprise.review_action', 'listing_review')
-        && $riskAnalysis
-        && $riskAnalysis->getScore() >= (float) config('services.recaptcha.enterprise.score_threshold', 0.5);
-    }
-
-    return false;
+    return app(\App\Services\RecaptchaEnterpriseService::class)->verify($request, 'listing_review');
   }
   public function store_visitor(Request $request)
   {

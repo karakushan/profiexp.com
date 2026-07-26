@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\BasicSettings\Basic;
+use App\Rules\RecaptchaEnterpriseRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class MailFromUserRequest extends FormRequest
@@ -31,7 +32,9 @@ class MailFromUserRequest extends FormRequest
       'email' => 'required|email:rfc,dns',
       'subject' => 'required',
       'message' => 'required',
-      'g-recaptcha-response' => $info->google_recaptcha_status == 1 ? 'required|captcha' : ''
+      'g-recaptcha-response' => $info->google_recaptcha_status == 1
+        ? ['required', new RecaptchaEnterpriseRule('contact', $this)]
+        : ''
     ];
   }
 
@@ -48,7 +51,7 @@ class MailFromUserRequest extends FormRequest
 
     if ($info->google_recaptcha_status == 1) {
       $messageArray['g-recaptcha-response.required'] = 'Please verify that you are not a robot.';
-      $messageArray['g-recaptcha-response.captcha'] = 'Captcha error! try again later or contact site admin.';
+      $messageArray['g-recaptcha-response.RecaptchaEnterpriseRule'] = 'Captcha error! try again later or contact site admin.';
     }
 
     return $messageArray;

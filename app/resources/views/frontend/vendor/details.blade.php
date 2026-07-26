@@ -630,8 +630,7 @@
                             @if ($info->google_recaptcha_status == 1)
                                 <div class="col-md-12">
                                     <div class="form-group mb-20">
-                                        {!! NoCaptcha::renderJs() !!}
-                                        {!! NoCaptcha::display() !!}
+                                        @include('frontend.partials.recaptcha-enterprise', ['action' => 'vendor_contact'])
                                         <p class="text-danger em" id="err_g-recaptcha-response"></p>
                                     </div>
                                 </div>

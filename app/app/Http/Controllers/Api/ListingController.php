@@ -970,10 +970,6 @@ class ListingController extends Controller
         $inputFields = $form ? $form->input()->orderBy('order_no', 'asc')->get() : collect();
 
 
-        // if ($info->google_recaptcha_status == 1) {
-        //     $rules['g-recaptcha-response'] = ['required', 'captcha'];
-        // }
-
         // Add rules for dynamic inputs
         foreach ($inputFields as $field) {
             $baseName = $field->name;
