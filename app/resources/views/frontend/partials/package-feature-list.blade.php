@@ -16,6 +16,7 @@
     <span>
       {{ __('Pricing Business Cards') }} — {{ $package->number_of_listing }}
       @if ($package->number_of_listing == 1)
+        <br>
         <small class="pricing-feature-note">{{ __('1 card = 1 category + 1 city') }}</small>
       @endif
     </span>
