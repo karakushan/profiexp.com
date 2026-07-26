@@ -150,18 +150,6 @@
   {{ __('Tawk.To') }}
 </li>
 
-<li>
-  <i class="fal fa-check"></i>
-  {{ $package->number_of_listing > 1 ? __('Pricing SEO Optimized Business Cards') : __('Pricing SEO Optimized Business Card') }}
-</li>
-
-<li>
-  <i class="fal fa-check"></i>
-  {{ __('Pricing IVA Included') }}
-</li>
-
-
-
 @foreach ($customFeatures as $feature)
   <li><i class="fal fa-check"></i>{{ __($feature) }}</li>
 @endforeach
