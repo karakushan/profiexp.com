@@ -446,6 +446,7 @@ class HomeController extends Controller
     $information['pageHeading'] = $misc->getPageHeading($language);
 
     $information['bgImg'] = $misc->getBreadcrumb();
+    $information['language'] = $language;
     $secInfo = Section::query()->first();
     $information['secInfo'] = $secInfo;
 
@@ -473,6 +474,7 @@ class HomeController extends Controller
     $misc = new MiscellaneousController();
     $language = $misc->getLanguage();
     $information['bgImg'] = $misc->getBreadcrumb();
+    $information['language'] = $language;
     $information['packageSecInfo'] = PackageSection::where('language_id', $language->id)->first();
     $information['seoInfo'] = $language->seoInfo()->select('meta_title_pricing', 'meta_keyword_pricing', 'meta_description_pricing')->first();
     $terms = [];

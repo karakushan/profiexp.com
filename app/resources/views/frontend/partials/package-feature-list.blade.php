@@ -2,9 +2,11 @@
 
   $customFeatures = [];
   $hasAiFeature = is_array($permissions) && in_array('AI Content & Image Generator', $permissions);
+  $customFeatureTranslations = json_decode($package->custom_features_translations ?? '', true) ?: [];
+  $customFeaturesValue = $customFeatureTranslations[$language->code ?? app()->getLocale()] ?? $package->custom_features;
 
-  if (!is_null($package->custom_features)) {
-      $customFeatures = array_values(array_filter(array_map('trim', explode("\n", $package->custom_features))));
+  if (!is_null($customFeaturesValue)) {
+      $customFeatures = array_values(array_filter(array_map('trim', preg_split('/\R/', $customFeaturesValue))));
   }
 
 @endphp

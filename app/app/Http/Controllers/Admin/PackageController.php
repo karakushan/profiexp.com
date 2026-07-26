@@ -62,6 +62,7 @@ class PackageController extends Controller
         }
         $search = $request->search;
         $data['bex'] = $currentLang->basic_extended;
+        $data['language'] = $currentLang;
         $data['packages'] = Package::query()->when($search, function ($query, $search) {
             return $query->where('title', 'like', '%' . $search . '%');
         })->orderBy('created_at', 'DESC')->get();
@@ -95,6 +96,7 @@ class PackageController extends Controller
             $in['features'] = $features;
             $in['slug'] = createSlug($request->title);
             $in['custom_features'] = Purifier::clean($request->custom_features);
+            $in['custom_features_translations'] = $this->cleanCustomFeatureTranslations($request->input('custom_features_translations', []));
             $in['pricing_features_title'] = Purifier::clean($request->pricing_features_title);
             $in['pricing_features_description'] = Purifier::clean($request->pricing_features_description);
             $in['ai_engine'] = $aiEnabled ? $request->ai_engine : null;
@@ -134,6 +136,7 @@ class PackageController extends Controller
             $currentLang = Language::where('is_default', 1)->first();
         }
         $data['bex'] = $currentLang->basic_extended;
+        $data['language'] = $currentLang;
         $data['package'] = Package::query()->findOrFail($id);
         return view("admin.packages.edit", $data);
     }
@@ -151,11 +154,18 @@ class PackageController extends Controller
             $permissions = $request->features;
             $aiEnabled = is_array($permissions) && in_array('AI Content & Image Generator', $permissions);
             return DB::transaction(function () use ($request, $features, $aiEnabled) {
-                Package::query()->findOrFail($request->package_id)
+                $package = Package::query()->findOrFail($request->package_id);
+                $existingTranslations = json_decode($package->custom_features_translations ?? '', true) ?: [];
+                $newTranslations = json_decode($this->cleanCustomFeatureTranslations($request->input('custom_features_translations', [])) ?? '[]', true) ?: [];
+
+                $package
                     ->update(array_merge($request->except('features'), [
                         'slug' => createSlug($request->title),
                         'features' => $features,
-                        'custom_features' => Purifier::clean($request->custom_features),
+                        'custom_features' => $request->has('custom_features')
+                            ? Purifier::clean($request->custom_features)
+                            : $package->custom_features,
+                        'custom_features_translations' => json_encode(array_merge($existingTranslations, $newTranslations), JSON_UNESCAPED_UNICODE),
                         'pricing_features_title' => Purifier::clean($request->pricing_features_title),
                         'pricing_features_description' => Purifier::clean($request->pricing_features_description),
                         'ai_engine' => $aiEnabled ? $request->ai_engine : null,
@@ -168,6 +178,26 @@ class PackageController extends Controller
         } catch (\Throwable $e) {
             return $e;
         }
+    }
+
+    private function cleanCustomFeatureTranslations(array $translations): ?string
+    {
+        $cleaned = [];
+
+        foreach ($translations as $languageCode => $features) {
+            if (!is_string($features)) {
+                continue;
+            }
+
+            $features = Purifier::clean($features);
+            $features = implode("\n", array_values(array_filter(array_map('trim', preg_split('/\R/', $features)))));
+
+            if ($features !== '') {
+                $cleaned[$languageCode] = $features;
+            }
+        }
+
+        return $cleaned ? json_encode($cleaned, JSON_UNESCAPED_UNICODE) : null;
     }
     /**
      * Remove the specified resource from storage.

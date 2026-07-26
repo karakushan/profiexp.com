@@ -281,9 +281,10 @@
                      </div>
 
 
+                     @php($customFeatureTranslations = [])
                      <div class="form-group">
-                         <label>{{ __('Custom Features') }}</label>
-                         <textarea class="form-control" name="custom_features" rows="5"
+                         <label>{{ __('Custom Features') }} ({{ $language->name }})</label>
+                         <textarea class="form-control" name="custom_features_translations[{{ $language->code }}]" rows="5"
                              placeholder="{{ __('Enter Custom Features') }}"></textarea>
                          <p class="text-warning">
                              <small>{{ __('Enter new line to seperate features') }}</small>

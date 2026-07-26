@@ -365,8 +365,9 @@
                 </div>
                 <div class="form-group">
                   <label>{{ __('Custom Features') }}</label>
-                  <textarea class="form-control" name="custom_features" rows="5"
-                    placeholder="{{ __('Enter Custom Features') }}">{{ $package->custom_features }}</textarea>
+                  @php($customFeatureTranslations = json_decode($package->custom_features_translations ?? '', true) ?: [])
+                  <textarea class="form-control" name="custom_features_translations[{{ $language->code }}]" rows="5"
+                    placeholder="{{ __('Enter Custom Features') }}">{{ $customFeatureTranslations[$language->code] ?? ($language->is_default ? $package->custom_features : '') }}</textarea>
                   <p class="text-warning">
                     <small>{{ __('Enter new line to seperate features') }}</small>
                   </p>
