@@ -55,11 +55,7 @@ class PackageController extends Controller
 
     public function index(Request $request)
     {
-        if (session()->has('lang')) {
-            $currentLang = Language::where('code', session()->get('lang'))->first();
-        } else {
-            $currentLang = Language::where('is_default', 1)->first();
-        }
+        $currentLang = $this->getPackageLanguage($request);
         $search = $request->search;
         $data['bex'] = $currentLang->basic_extended;
         $data['language'] = $currentLang;
@@ -97,6 +93,9 @@ class PackageController extends Controller
             $in['slug'] = createSlug($request->title);
             $in['custom_features'] = Purifier::clean($request->custom_features);
             $in['custom_features_translations'] = $this->cleanCustomFeatureTranslations($request->input('custom_features_translations', []));
+            $in['title_translations'] = $this->translationsWithCurrentValue($request, 'title');
+            $in['pricing_features_title_translations'] = $this->translationsWithCurrentValue($request, 'pricing_features_title');
+            $in['pricing_features_description_translations'] = $this->translationsWithCurrentValue($request, 'pricing_features_description');
             $in['pricing_features_title'] = Purifier::clean($request->pricing_features_title);
             $in['pricing_features_description'] = Purifier::clean($request->pricing_features_description);
             $in['ai_engine'] = $aiEnabled ? $request->ai_engine : null;
@@ -128,13 +127,9 @@ class PackageController extends Controller
      * @param int $id
      * @return
      */
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
-        if (session()->has('lang')) {
-            $currentLang = Language::where('code', session()->get('lang'))->first();
-        } else {
-            $currentLang = Language::where('is_default', 1)->first();
-        }
+        $currentLang = $this->getPackageLanguage($request);
         $data['bex'] = $currentLang->basic_extended;
         $data['language'] = $currentLang;
         $data['package'] = Package::query()->findOrFail($id);
@@ -155,6 +150,7 @@ class PackageController extends Controller
             $aiEnabled = is_array($permissions) && in_array('AI Content & Image Generator', $permissions);
             return DB::transaction(function () use ($request, $features, $aiEnabled) {
                 $package = Package::query()->findOrFail($request->package_id);
+                $languageCode = $this->getPackageLanguage($request)->code;
                 $existingTranslations = json_decode($package->custom_features_translations ?? '', true) ?: [];
                 $newTranslations = json_decode($this->cleanCustomFeatureTranslations($request->input('custom_features_translations', [])) ?? '[]', true) ?: [];
 
@@ -166,8 +162,11 @@ class PackageController extends Controller
                             ? Purifier::clean($request->custom_features)
                             : $package->custom_features,
                         'custom_features_translations' => json_encode(array_merge($existingTranslations, $newTranslations), JSON_UNESCAPED_UNICODE),
-                        'pricing_features_title' => Purifier::clean($request->pricing_features_title),
-                        'pricing_features_description' => Purifier::clean($request->pricing_features_description),
+                        'title_translations' => $this->mergeCurrentTranslation($package->title_translations, $languageCode, $request->title),
+                        'pricing_features_title_translations' => $this->mergeCurrentTranslation($package->pricing_features_title_translations, $languageCode, $request->pricing_features_title),
+                        'pricing_features_description_translations' => $this->mergeCurrentTranslation($package->pricing_features_description_translations, $languageCode, $request->pricing_features_description),
+                        'pricing_features_title' => $package->pricing_features_title ?: Purifier::clean($request->pricing_features_title),
+                        'pricing_features_description' => $package->pricing_features_description ?: Purifier::clean($request->pricing_features_description),
                         'ai_engine' => $aiEnabled ? $request->ai_engine : null,
                         'ai_token_limit' => $aiEnabled ? $request->ai_token_limit : 0,
                         'ai_image_limit' => $aiEnabled ? $request->ai_image_limit : 0,
@@ -198,6 +197,37 @@ class PackageController extends Controller
         }
 
         return $cleaned ? json_encode($cleaned, JSON_UNESCAPED_UNICODE) : null;
+    }
+
+    private function getPackageLanguage(Request $request): Language
+    {
+        return Language::where('code', $request->input('language'))->first()
+            ?: (session()->has('lang')
+                ? Language::where('code', session()->get('lang'))->first()
+                : Language::where('is_default', 1)->first());
+    }
+
+    private function translationsWithCurrentValue(Request $request, string $field): ?string
+    {
+        $value = $request->input($field);
+
+        return $value === null
+            ? null
+            : $this->mergeCurrentTranslation(null, $this->getPackageLanguage($request)->code, $value);
+    }
+
+    private function mergeCurrentTranslation(?string $existing, string $languageCode, ?string $value): ?string
+    {
+        $translations = json_decode($existing ?? '', true) ?: [];
+        $value = Purifier::clean($value);
+
+        if ($value === null || trim($value) === '') {
+            unset($translations[$languageCode]);
+        } else {
+            $translations[$languageCode] = $value;
+        }
+
+        return $translations ? json_encode($translations, JSON_UNESCAPED_UNICODE) : null;
     }
     /**
      * Remove the specified resource from storage.

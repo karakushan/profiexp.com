@@ -11,6 +11,7 @@ class Package extends Model
 
     protected $fillable = [
         'title',
+        'title_translations',
         'price',
         'term',
         'is_trial',
@@ -26,7 +27,9 @@ class Package extends Model
         'custom_features',
         'custom_features_translations',
         'pricing_features_title',
+        'pricing_features_title_translations',
         'pricing_features_description',
+        'pricing_features_description_translations',
         'features',
         'number_of_faq',
         'number_of_social_links',
@@ -41,5 +44,13 @@ class Package extends Model
     public function memberships()
     {
         return $this->hasMany(Membership::class);
+    }
+
+    public function translatedValue(string $field, ?string $languageCode = null): ?string
+    {
+        $translations = json_decode($this->{$field . '_translations'} ?? '', true) ?: [];
+        $languageCode = $languageCode ?: app()->getLocale();
+
+        return $translations[$languageCode] ?? $this->{$field};
     }
 }

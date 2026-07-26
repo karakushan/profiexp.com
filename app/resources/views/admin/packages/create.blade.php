@@ -13,6 +13,7 @@
                  <form id="ajaxForm" enctype="multipart/form-data" class="modal-form"
                      action="{{ route('admin.package.store') }}" method="POST">
                      @csrf
+                     <input type="hidden" name="language" value="{{ $language->code }}">
                      <div class="form-group">
                          <label for="title">{{ __('Package title') . '*' }}</label>
                          <input id="title" type="text" class="form-control" name="title"

@@ -64,9 +64,10 @@
                 enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="package_id" value="{{ $package->id }}">
+                <input type="hidden" name="language" value="{{ $language->code }}">
                 <div class="form-group">
                   <label for="title">{{ __('Package title') . '*' }}</label>
-                  <input id="title" type="text" class="form-control" name="title" value="{{ $package->title }}"
+                  <input id="title" type="text" class="form-control" name="title" value="{{ $package->translatedValue('title', $language->code) }}"
                     placeholder="{{ __('Enter Package title') }}">
                   <p id="err_title" class="mt-2 mb-0 text-danger em"></p>
                 </div>
@@ -74,7 +75,7 @@
                 <div class="form-group">
                   <label for="pricing_features_title">{{ __('Included features title') }}</label>
                   <input id="pricing_features_title" type="text" class="form-control"
-                    name="pricing_features_title" value="{{ $package->pricing_features_title }}"
+                    name="pricing_features_title" value="{{ $package->translatedValue('pricing_features_title', $language->code) }}"
                     placeholder="{{ __('Example: What\'s Included') }}">
                   <p id="err_pricing_features_title" class="mt-2 mb-0 text-danger em"></p>
                 </div>
@@ -83,7 +84,7 @@
                   <label for="pricing_features_description">{{ __('Included features description') }}</label>
                   <textarea id="pricing_features_description" class="form-control"
                     name="pricing_features_description" rows="3"
-                    placeholder="{{ __('Short description shown above the features') }}">{{ $package->pricing_features_description }}</textarea>
+                    placeholder="{{ __('Short description shown above the features') }}">{{ $package->translatedValue('pricing_features_description', $language->code) }}</textarea>
                   <p id="err_pricing_features_description" class="mt-2 mb-0 text-danger em"></p>
                 </div>
 

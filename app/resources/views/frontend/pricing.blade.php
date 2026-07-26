@@ -74,7 +74,7 @@
                         <div class="d-flex align-items-center">
                           <div class="icon"><i class="{{ $package->icon }}"></i></div>
                           <div class="label">
-                            <h3> {{ __($package->title) }}</h3>
+                            <h3> {{ $package->translatedValue('title', $language->code) }}</h3>
                             @if ($package->recommended == '1')
                               <span>{{ __('Popular') }}</span>
                             @endif
@@ -91,8 +91,8 @@
                             <span class="period">/ {{ __('Lifetime') }}</span>
                           @endif
                         </div>
-                        <h5>{{ $package->pricing_features_title ?: __('What\'s Included') }}</h5>
-                        <p class="text">{{ $package->pricing_features_description }}</p>
+                        <h5>{{ $package->translatedValue('pricing_features_title', $language->code) ?: __('What\'s Included') }}</h5>
+                        <p class="text">{{ $package->translatedValue('pricing_features_description', $language->code) }}</p>
                         <ul class="item-list list-unstyled p-0 pricing-list">
                           @include('frontend.partials.package-feature-list', [
                               'package' => $package,

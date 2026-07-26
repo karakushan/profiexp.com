@@ -2,7 +2,7 @@
 
 @php
   use App\Models\Language;
-  $selLang = Language::where('code', request()->input('language'))->first();
+  $selLang = $language ?? Language::where('code', request()->input('language'))->first();
 @endphp
 @if (!empty($selLang) && $selLang->rtl == 1)
   @section('styles')
