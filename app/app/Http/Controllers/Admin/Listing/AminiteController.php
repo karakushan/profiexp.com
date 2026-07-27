@@ -21,6 +21,9 @@ class AminiteController extends Controller
             ->paginate(20);
 
         $information['langs'] = Language::all();
+        $adminLanguageCode = str_replace('admin_', '', (string) auth('admin')->user()?->lang_code);
+        $information['adminLanguageId'] = Language::where('code', $adminLanguageCode)->value('id');
+        $information['systemDefaultLanguageId'] = Language::where('is_default', 1)->value('id');
 
         return view('admin.amenitie.index', $information);
     }

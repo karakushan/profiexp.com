@@ -86,6 +86,10 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $view->with('defaultLang', $language);
+        $view->with(
+          'systemDefaultLang',
+          Language::query()->where('is_default', 1)->first() ?? Language::query()->first()
+        );
         $view->with('settings', $websiteSettings);
         $view->with('footerTextInfo', $footerText);
         $view->with('pendingReviewsCount', ListingReview::query()->where('status', 'pending')->count());

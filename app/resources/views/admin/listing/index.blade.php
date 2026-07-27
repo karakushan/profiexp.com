@@ -160,13 +160,8 @@
                     <tbody>
                       @foreach ($listings as $listing)
                         @php
-                          $listing_content = $listing->listing_content->first();
-                          
-                          if (is_null($listing_content)) {
-                              $listing_content = App\Models\Listing\ListingContent::where('listing_id', $listing->id)
-                                  ->where('language_id', $language->id)
-                                  ->first();
-                          }
+                          $listing_content = $listing->listing_content_all->firstWhere('language_id', $language->id)
+                            ?? $listing->listing_content_all->firstWhere('language_id', $systemDefaultLang?->id);
                           if (empty($listing->vendor_id) || $listing->vendor_id == 0) {
                               $vendorId = 0;
                               $current_package = [];

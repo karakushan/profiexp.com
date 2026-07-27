@@ -27,6 +27,7 @@ class CategoryController extends Controller
 
         $information['langs'] = Language::all();
         $information['adminLanguageId'] = $this->getAdminLanguageId();
+        $information['systemDefaultLanguageId'] = Language::where('is_default', 1)->value('id');
 
         return view('admin.listing.category.index', $information);
     }

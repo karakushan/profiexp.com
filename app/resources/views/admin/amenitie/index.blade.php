@@ -76,7 +76,8 @@
                           <td><strong>{{ $aminite->id }}</strong></td>
                           <td>
                             @php
-                              $firstContent = $aminite->contents->first();
+                              $firstContent = $aminite->contents->firstWhere('language_id', $adminLanguageId ?? 0)
+                                ?? $aminite->contents->firstWhere('language_id', $systemDefaultLanguageId ?? 0);
                               $displayTitle = $firstContent ? $firstContent->title : '—';
                               $displayTitle = mb_strlen($displayTitle) > 50 ? mb_substr($displayTitle, 0, 50, 'UTF-8') . '...' : $displayTitle;
                             @endphp

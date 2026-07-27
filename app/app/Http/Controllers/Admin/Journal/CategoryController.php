@@ -18,17 +18,24 @@ class CategoryController extends Controller
     {
         $information['langs'] = Language::all();
 
-        $adminLangCode = Auth::guard('admin')->user()->lang_code ?? null;
-        if ($adminLangCode) {
-            $adminLang = Language::where('code', $adminLangCode)->first();
-            $information['adminLanguageId'] = $adminLang ? $adminLang->id : null;
-        } else {
-            $information['adminLanguageId'] = null;
-        }
+        // AdminLocale stores the selected admin locale as `admin_{code}`.
+        // Category contents use the public language code, so normalize it
+        // before selecting the title shown in the table.
+        $adminLangCode = str_replace(
+            'admin_',
+            '',
+            (string) (Auth::guard('admin')->user()->lang_code ?? '')
+        );
+        $adminLang = Language::where('code', $adminLangCode)->first();
+        $defaultLang = Language::where('is_default', 1)->first() ?? Language::first();
+        $information['adminLanguageId'] = $adminLang?->id;
+        $information['defaultLanguageId'] = $defaultLang?->id;
 
         $information['categories'] = BlogCategory::with('contents.language')
             ->orderByDesc('id')
             ->paginate(10);
+
+        $information['activeLanguageCode'] = $adminLang?->code ?? $defaultLang?->code;
 
         return view('admin.journal.category.index', $information);
     }
@@ -79,7 +86,10 @@ class CategoryController extends Controller
     public function update(Request $request)
     {
         $langs = Language::all();
-        $defaultLang = Language::where('is_default', 1)->first() ?? Language::first();
+        $activeLanguageCode = $request->input('language');
+        if (! $langs->contains('code', $activeLanguageCode)) {
+            $activeLanguageCode = Language::where('is_default', 1)->value('code') ?? Language::value('code');
+        }
 
         $rules = [
             'status' => 'required|numeric',
@@ -87,7 +97,7 @@ class CategoryController extends Controller
         ];
 
         foreach ($langs as $lang) {
-            $rules[$lang->code . '_name'] = ($lang->code === $defaultLang->code ? 'required|max:255' : 'nullable|max:255');
+            $rules[$lang->code . '_name'] = ($lang->code === $activeLanguageCode ? 'required|max:255' : 'nullable|max:255');
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -102,9 +112,21 @@ class CategoryController extends Controller
         $category->update($request->only(['status', 'serial_number']));
 
         foreach ($langs as $lang) {
-            $name = $request->{$lang->code . '_name'};
+            $name = $request->input($lang->code . '_name');
             if (empty($name)) {
                 continue;
+            }
+
+            $content = [
+                'name' => $name,
+                'slug' => createSlug($name),
+            ];
+
+            foreach (['meta_title', 'meta_description', 'seo_text'] as $field) {
+                $input = $lang->code . '_' . $field;
+                if ($request->has($input)) {
+                    $content[$field] = $request->input($input);
+                }
             }
 
             BlogCategoryContent::updateOrCreate(
@@ -112,10 +134,7 @@ class CategoryController extends Controller
                     'blog_category_id' => $category->id,
                     'language_id' => $lang->id,
                 ],
-                [
-                    'name' => $name,
-                    'slug' => createSlug($name),
-                ]
+                $content
             );
         }
 

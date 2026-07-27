@@ -14,6 +14,7 @@
           method="post">
           @csrf
           <input type="hidden" id="in_id" name="id">
+          <input type="hidden" name="language" value="{{ $activeLanguageCode }}">
 
           <div id="editAccordion" class="mt-3">
             @foreach ($langs as $language)
