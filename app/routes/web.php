@@ -89,6 +89,9 @@ Route::middleware('change.lang')->group(function () use ($dynamicPageSlugPattern
   Route::get('/about-us', 'FrontEnd\HomeController@about')->name('about_us');
   Route::get('/products', 'FrontEnd\Shop\ProductController@index')->name('shop.products')->middleware('shop.status');
   Route::get('/contact', 'FrontEnd\ContactController@contact')->name('contact');
+  Route::post('/contact/send-mail', 'FrontEnd\ContactController@sendMail')
+    ->name('contact.send_mail')
+    ->withoutMiddleware('change.lang');
   Route::get('/vendors', 'FrontEnd\VendorController@index')->name('frontend.vendors');
   Route::get('/vendor/{username}', 'FrontEnd\VendorController@details')->name('frontend.vendor.details');
   Route::get('/{slug}', 'FrontEnd\PageController@page')
@@ -214,7 +217,6 @@ Route::prefix('{lang?}')
   Route::prefix('/contact')->group(function () {
 
     Route::get('', 'FrontEnd\ContactController@contact')->name('contact');
-    Route::post('/send-mail', 'FrontEnd\ContactController@sendMail')->name('contact.send_mail')->withoutMiddleware('change.lang');
   });
 });
 
