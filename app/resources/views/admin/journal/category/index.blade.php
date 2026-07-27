@@ -70,7 +70,7 @@
                         @php
                           $defaultContent = $category->contents->firstWhere('language_id', $adminLanguageId ?? 0);
                           if (!$defaultContent) {
-                              $defaultContent = $category->contents->first();
+                              $defaultContent = $category->contents->firstWhere('language_id', $defaultLanguageId ?? 0);
                           }
                           $name = $defaultContent ? $defaultContent->name : '—';
                           $displayName = mb_strlen($name) > 50 ? mb_substr($name, 0, 50, 'UTF-8') . '...' : $name;
@@ -101,7 +101,8 @@
                           <td>{{ $category->serial_number }}</td>
                           <td>
                             @php
-                              $previewContent = $category->contents->firstWhere('language_id', $adminLanguageId ?? 0) ?? $category->contents->first();
+                              $previewContent = $category->contents->firstWhere('language_id', $adminLanguageId ?? 0)
+                                  ?? $category->contents->firstWhere('language_id', $defaultLanguageId ?? 0);
                             @endphp
                             @if ($previewContent)
                               <a class="btn btn-success btn-sm mr-1 mb-1"

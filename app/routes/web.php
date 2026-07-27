@@ -217,6 +217,7 @@ Route::prefix('{lang?}')
   Route::prefix('/contact')->group(function () {
 
     Route::get('', 'FrontEnd\ContactController@contact')->name('contact');
+    Route::post('/send-mail', 'FrontEnd\ContactController@sendMail')->name('contact.send_mail');
   });
 });
 

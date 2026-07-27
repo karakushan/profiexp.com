@@ -8,7 +8,7 @@
         }
     }
     if (!$defaultContent && ($category->contents->count() ?? 0) > 0) {
-        $defaultContent = $category->contents->first();
+        $defaultContent = $category->contents->firstWhere('language_id', $systemDefaultLanguageId ?? 0);
     }
     $name = $defaultContent ? $defaultContent->name : '—';
 @endphp

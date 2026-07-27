@@ -225,11 +225,11 @@ class ListingController extends Controller
         $information['currencyInfo'] = $this->getCurrencyInfo();
         $information['langs'] = Language::all();
 
-        if ($request->language) {
-            $language = Language::query()->where('code', '=', $request->language)->firstOrFail();
-        } else {
-            $language = Language::where('is_default', 1)->first();
-        }
+        $adminLanguageCode = str_replace('admin_', '', (string) Auth::guard('admin')->user()?->lang_code);
+        $language = Language::query()->where('code', $adminLanguageCode)->first()
+            ?? Language::query()->where('code', $request->language)->first()
+            ?? Language::where('is_default', 1)->first()
+            ?? Language::first();
         $information['language'] = $language;
 
         $language_id = $language->id;

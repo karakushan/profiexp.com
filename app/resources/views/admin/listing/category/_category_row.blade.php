@@ -9,7 +9,7 @@
         }
     }
     if (!$defaultContent && ($category->contents->count() ?? 0) > 0) {
-        $defaultContent = $category->contents->first();
+        $defaultContent = $category->contents->firstWhere('language_id', $systemDefaultLanguageId ?? 0);
     }
     $name = $defaultContent ? $defaultContent->name : ($category->name ?? '—');
     $displayName = mb_strlen($name) > 50 ? mb_substr($name, 0, 50, 'UTF-8') . '...' : $name;
