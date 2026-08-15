@@ -33,7 +33,7 @@ class WayforpayController extends Controller
         $randomNo = substr(uniqid(), 0, 8);
         $apiInfo = $info['api'];
         $merchantAccount = $apiInfo['merchant_account'];
-        $merchantDomainName = $websiteInfo->website_title;
+        $merchantDomainName = request()->getHost();
         $orderReference = $randomNo;
         $orderDate = time();
         $currency = $websiteInfo->base_currency_text;
@@ -69,7 +69,7 @@ class WayforpayController extends Controller
         $val['productCount[]'] = $productCount[0];
         $val['productPrice[]'] = $productPrice[0];
         $val['serviceUrl'] = route('membership.wayforpay.notify');
-        $val['returnUrl'] = route('membership.wayforpay.notify');
+        $val['returnUrl'] = route('success.page');
         $val['clientEmail'] = Auth::guard('vendor')->user()->email;
 
         if (Auth::guard('vendor')->user()->phone) {
@@ -79,11 +79,9 @@ class WayforpayController extends Controller
         $data['val'] = $val;
         $data['method'] = 'post';
 
-        if ($info['sandbox_status'] == 1) {
-            $data['url'] = 'https://secure.wayforpay.com/pay';
-        } else {
-            $data['url'] = 'https://api.wayforpay.com/api';
-        }
+        // This is the browser Purchase flow. The API endpoint accepts JSON
+        // CREATE_INVOICE requests and cannot process this HTML form payload.
+        $data['url'] = 'https://secure.wayforpay.com/pay';
 
         $cacheData = [
             'request' => $request->all(),
