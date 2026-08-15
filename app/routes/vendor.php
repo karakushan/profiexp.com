@@ -237,7 +237,7 @@ Route::prefix('vendor')->middleware(['auth:vendor', 'Demo', 'Deactive', 'email.v
     Route::get('/cancel', 'Vendor\VendorCheckoutController@cancel')->name('membership.cancel');
     Route::get('/offline/success', 'Front\CheckoutController@offlineSuccess')->name('membership.offline.success');
     Route::get('/trial/success', 'Front\CheckoutController@trialSuccess')->name('membership.trial.success');
-    Route::get('/online/success', 'Vendor\VendorCheckoutController@onlineSuccess')->name('success.page');
+    Route::match(['get', 'post'], '/online/success', 'Vendor\VendorCheckoutController@onlineSuccess')->name('success.page');
   });
 
   #====support tickets ============

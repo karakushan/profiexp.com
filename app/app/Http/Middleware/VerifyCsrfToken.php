@@ -36,6 +36,7 @@ class VerifyCsrfToken extends Middleware
     '/*flutterwave/success',
     '/vendor/membership/flutterwave/cancel',
     '/vendor/membership/mollie/cancel',
+    '/vendor/membership/online/success',
 
     '/membership/paytm/payment-status*',
     '/membership/mercadopago/cancel',
