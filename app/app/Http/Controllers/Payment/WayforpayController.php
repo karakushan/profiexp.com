@@ -39,12 +39,12 @@ class WayforpayController extends Controller
         $orderDate = time();
         // WayForPay's Purchase documentation uses UAH as the order currency.
         // Convert the site's base currency through USD and use WayForPay's
-        // current USD -> UAH rate for the actual order amount.
+        // the official NBU USD -> UAH rate for the actual order amount.
         $currency = 'UAH';
         $usdToUahRate = Cache::remember(
             'wayforpay_usd_to_uah_rate',
             now()->addMinutes(15),
-            fn () => self::fetchUsdToUahRate($apiInfo)
+            fn () => self::fetchUsdToUahRate()
         );
 
         if ($usdToUahRate === null || $usdToUahRate <= 0) {
@@ -122,22 +122,15 @@ class WayforpayController extends Controller
         return view('frontend.payment.wayforpay', compact('data'));
     }
 
-    private static function fetchUsdToUahRate(array $apiInfo): ?float
+    private static function fetchUsdToUahRate(): ?float
     {
-        $orderDate = time();
-        $signatureString = $apiInfo['merchant_account'] . ';' . $orderDate;
-        $merchantSignature = hash_hmac('md5', $signatureString, $apiInfo['secret_key']);
-
         try {
             $response = Http::timeout(10)
                 ->acceptJson()
-                ->post('https://api.wayforpay.com/api', [
-                    'apiVersion' => '1',
-                    'transactionType' => 'CURRENCY_RATES',
-                    'merchantAccount' => $apiInfo['merchant_account'],
-                    'orderDate' => $orderDate,
-                    'merchantSignature' => $merchantSignature,
-                    'currency' => 'USD',
+                ->get('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange', [
+                    'valcode' => 'USD',
+                    'date' => now()->format('Ymd'),
+                    'json' => '',
                 ]);
         } catch (\Throwable $exception) {
             return null;
@@ -148,10 +141,9 @@ class WayforpayController extends Controller
         }
 
         $payload = $response->json();
-        $reasonCode = (string) ($payload['reasonCode'] ?? $payload['REASONCODE'] ?? '');
-        $rate = $payload['rates']['USD'] ?? $payload['RATES']['USD'] ?? null;
+        $rate = is_array($payload) ? ($payload[0]['rate'] ?? null) : null;
 
-        if ($reasonCode !== '1100' || !is_numeric($rate) || (float) $rate <= 0) {
+        if (!is_numeric($rate) || (float) $rate <= 0) {
             return null;
         }
 
