@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use App\Services\ClaimAttachService;
 use Illuminate\Support\Facades\Auth;
 
@@ -36,12 +37,24 @@ class WayforpayController extends Controller
         $merchantDomainName = request()->getHost();
         $orderReference = $randomNo;
         $orderDate = time();
-        // WayForPay accepts USD for this merchant, while the application may
-        // keep membership prices in another base currency (for example TRY).
-        // base_currency_rate is configured as "1 USD = N base currency".
-        $currency = 'USD';
+        // WayForPay's Purchase documentation uses UAH as the order currency.
+        // Convert the site's base currency through USD and use WayForPay's
+        // current USD -> UAH rate for the actual order amount.
+        $currency = 'UAH';
+        $usdToUahRate = Cache::remember(
+            'wayforpay_usd_to_uah_rate',
+            now()->addMinutes(15),
+            fn () => self::fetchUsdToUahRate($apiInfo)
+        );
+
+        if ($usdToUahRate === null || $usdToUahRate <= 0) {
+            return redirect()->back()
+                ->with('warning', __('Unable to get the current WayForPay USD to UAH exchange rate.'))
+                ->withInput($request->all());
+        }
+
         $baseCurrency = strtoupper((string) $websiteInfo->base_currency_text);
-        if ($baseCurrency === 'USD') {
+        if ($baseCurrency === 'UAH') {
             $amount = $price;
         } else {
             $baseCurrencyRate = (float) $websiteInfo->base_currency_rate;
@@ -51,7 +64,7 @@ class WayforpayController extends Controller
                     ->withInput($request->all());
             }
 
-            $amount = round($price / $baseCurrencyRate, 2);
+            $amount = round(($price / $baseCurrencyRate) * $usdToUahRate, 2);
         }
 
         $productName = [$title];
@@ -107,6 +120,42 @@ class WayforpayController extends Controller
         Cache::put('wayforpay_' . $orderReference, $cacheData, now()->addDays(1));
 
         return view('frontend.payment.wayforpay', compact('data'));
+    }
+
+    private static function fetchUsdToUahRate(array $apiInfo): ?float
+    {
+        $orderDate = time();
+        $signatureString = $apiInfo['merchant_account'] . ';' . $orderDate;
+        $merchantSignature = hash_hmac('md5', $signatureString, $apiInfo['secret_key']);
+
+        try {
+            $response = Http::timeout(10)
+                ->acceptJson()
+                ->post('https://api.wayforpay.com/api', [
+                    'apiVersion' => '1',
+                    'transactionType' => 'CURRENCY_RATES',
+                    'merchantAccount' => $apiInfo['merchant_account'],
+                    'orderDate' => $orderDate,
+                    'merchantSignature' => $merchantSignature,
+                    'currency' => 'USD',
+                ]);
+        } catch (\Throwable $exception) {
+            return null;
+        }
+
+        if (!$response->successful()) {
+            return null;
+        }
+
+        $payload = $response->json();
+        $reasonCode = (string) ($payload['reasonCode'] ?? $payload['REASONCODE'] ?? '');
+        $rate = $payload['rates']['USD'] ?? $payload['RATES']['USD'] ?? null;
+
+        if ($reasonCode !== '1100' || !is_numeric($rate) || (float) $rate <= 0) {
+            return null;
+        }
+
+        return (float) $rate;
     }
 
     public function notify(Request $request)
