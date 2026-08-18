@@ -36,12 +36,27 @@ class WayforpayController extends Controller
         $merchantDomainName = request()->getHost();
         $orderReference = $randomNo;
         $orderDate = time();
-        $currency = $websiteInfo->base_currency_text;
-        $amount = $price;
+        // WayForPay accepts USD for this merchant, while the application may
+        // keep membership prices in another base currency (for example TRY).
+        // base_currency_rate is configured as "1 USD = N base currency".
+        $currency = 'USD';
+        $baseCurrency = strtoupper((string) $websiteInfo->base_currency_text);
+        if ($baseCurrency === 'USD') {
+            $amount = $price;
+        } else {
+            $baseCurrencyRate = (float) $websiteInfo->base_currency_rate;
+            if ($baseCurrencyRate <= 0) {
+                return redirect()->back()
+                    ->with('warning', __('Invalid base currency conversion rate.'))
+                    ->withInput($request->all());
+            }
+
+            $amount = round($price / $baseCurrencyRate, 2);
+        }
 
         $productName = [$title];
         $productCount = [1];
-        $productPrice = [$price];
+        $productPrice = [$amount];
 
         $signatureString = $merchantAccount . ';' . $merchantDomainName . ';' . $orderReference . ';' . $orderDate . ';' . $amount . ';' . $currency . ';';
         foreach ($productName as $name) {

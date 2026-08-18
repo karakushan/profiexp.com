@@ -428,8 +428,25 @@ class VendorCheckoutController extends Controller
     }
 
     //onlineSuccess
-    public function onlineSuccess()
+    public function onlineSuccess(Request $request)
     {
+        $transactionStatus = $request->input('transactionStatus');
+
+        // WayForPay sends failed Purchase attempts to returnUrl as well. Do
+        // not show the generic success page for a declined/cancelled payment.
+        if ($transactionStatus !== null && $transactionStatus !== 'Approved') {
+            $reason = trim((string) $request->input('reason'));
+            $message = __('Payment was not approved.');
+
+            if ($reason !== '') {
+                $message .= ' ' . $reason;
+            }
+
+            return redirect()
+                ->route('vendor.plan.extend.index')
+                ->with('warning', $message);
+        }
+
         return view('vendors.success');
     }
 
