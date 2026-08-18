@@ -14,7 +14,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 use App\Services\ClaimAttachService;
 use Illuminate\Support\Facades\Auth;
 
@@ -37,35 +36,11 @@ class WayforpayController extends Controller
         $merchantDomainName = request()->getHost();
         $orderReference = $randomNo;
         $orderDate = time();
-        // WayForPay's Purchase documentation uses UAH as the order currency.
-        // Convert the site's base currency through USD and use WayForPay's
-        // the official NBU USD -> UAH rate for the actual order amount.
-        $currency = 'UAH';
-        $usdToUahRate = Cache::remember(
-            'wayforpay_usd_to_uah_rate',
-            now()->addMinutes(15),
-            fn () => self::fetchUsdToUahRate()
-        );
-
-        if ($usdToUahRate === null || $usdToUahRate <= 0) {
-            return redirect()->back()
-                ->with('warning', __('Unable to get the current WayForPay USD to UAH exchange rate.'))
-                ->withInput($request->all());
-        }
-
+        // Send the amount in the currency configured as the site's base
+        // currency. No exchange-rate lookup is needed for this payment flow.
         $baseCurrency = strtoupper((string) $websiteInfo->base_currency_text);
-        if ($baseCurrency === 'UAH') {
-            $amount = $price;
-        } else {
-            $baseCurrencyRate = (float) $websiteInfo->base_currency_rate;
-            if ($baseCurrencyRate <= 0) {
-                return redirect()->back()
-                    ->with('warning', __('Invalid base currency conversion rate.'))
-                    ->withInput($request->all());
-            }
-
-            $amount = round(($price / $baseCurrencyRate) * $usdToUahRate, 2);
-        }
+        $currency = $baseCurrency ?: 'UAH';
+        $amount = $price;
 
         $productName = [$title];
         $productCount = [1];
@@ -120,34 +95,6 @@ class WayforpayController extends Controller
         Cache::put('wayforpay_' . $orderReference, $cacheData, now()->addDays(1));
 
         return view('frontend.payment.wayforpay', compact('data'));
-    }
-
-    private static function fetchUsdToUahRate(): ?float
-    {
-        try {
-            $response = Http::timeout(10)
-                ->acceptJson()
-                ->get('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange', [
-                    'valcode' => 'USD',
-                    'date' => now()->format('Ymd'),
-                    'json' => '',
-                ]);
-        } catch (\Throwable $exception) {
-            return null;
-        }
-
-        if (!$response->successful()) {
-            return null;
-        }
-
-        $payload = $response->json();
-        $rate = is_array($payload) ? ($payload[0]['rate'] ?? null) : null;
-
-        if (!is_numeric($rate) || (float) $rate <= 0) {
-            return null;
-        }
-
-        return (float) $rate;
     }
 
     public function notify(Request $request)
